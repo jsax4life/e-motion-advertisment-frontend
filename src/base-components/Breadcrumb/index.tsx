@@ -25,7 +25,7 @@ function Breadcrumb({ className, light, children }: BreadcrumbProps) {
       <nav className={clsx(["flex", className])} aria-label="breadcrumb">
         <ol
           className={clsx([
-            "flex items-center text-primary dark:text-slate-300",
+            "flex items-center text-slate-500 dark:text-slate-300",
             { "text-white/90": light },
           ])}
         >
@@ -77,7 +77,7 @@ Breadcrumb.Link = ({
         key > 0 && "dark:before:bg-bredcrumb-chevron-darkmode",
         !breadcrumb.light &&
           active &&
-          "text-slate-800 cursor-text dark:text-slate-400",
+          "text-purple-400 cursor-text dark:text-slate-400",
         breadcrumb.light && active && "text-white/70",
       ])}
       {...attr}

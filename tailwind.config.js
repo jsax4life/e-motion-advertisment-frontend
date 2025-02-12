@@ -19,7 +19,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "rgb(var(--color-primary) / <alpha-value>)",
+        primary: "#F5F5FA",
         secondary: "rgb(var(--color-secondary) / <alpha-value>)",
         success: "rgb(var(--color-success) / <alpha-value>)",
         info: "rgb(var(--color-info) / <alpha-value>)",
@@ -28,7 +28,7 @@ module.exports = {
         danger: "rgb(var(--color-danger) / <alpha-value>)",
         light: "rgb(var(--color-light) / <alpha-value>)",
         dark: "rgb(var(--color-dark) / <alpha-value>)",
-        customColor: "#6b4eff",
+        customColor: "#2775FF",
         darkmode: {
           50: "rgb(var(--color-darkmode-50) / <alpha-value>)",
           100: "rgb(var(--color-darkmode-100) / <alpha-value>)",

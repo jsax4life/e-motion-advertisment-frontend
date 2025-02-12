@@ -1,5 +1,11 @@
 import { Transition } from "react-transition-group";
-import { useState, useEffect, Dispatch, SetStateAction, useContext } from "react";
+import {
+  useState,
+  useEffect,
+  Dispatch,
+  SetStateAction,
+  useContext,
+} from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { selectSideMenu } from "../../stores/sideMenuSlice";
 import { useAppSelector } from "../../stores/hooks";
@@ -11,7 +17,7 @@ import MobileMenu from "../../components/MobileMenu";
 import DarkModeSwitcher from "../../components/DarkModeSwitcher";
 import MainColorSwitcher from "../../components/MainColorSwitcher";
 import SideMenuTooltip from "../../components/SideMenuTooltip";
-import Profile from '../../assets/images/fakers/profile-1.jpg';
+import Profile from "../../assets/images/fakers/profile-1.jpg";
 import { UserContext } from "../../stores/UserContext";
 import API from "../../utils/API";
 import LoadingIcon from "../../base-components/LoadingIcon";
@@ -30,10 +36,7 @@ interface LayoutProps {
 //         >
 //         <Outlet />
 //         </div>)
-// } 
-
-
-
+// }
 
 const Content = ({ dashboard }: { dashboard: boolean }) => {
   return dashboard ? (
@@ -52,17 +55,16 @@ const Content = ({ dashboard }: { dashboard: boolean }) => {
       //   "before:content-[''] before:w-full before:h-px before:block",
       // ])}
       className={clsx([
-        "max-w-full md:max-w-none rounded-[30px] md:rounded-none px-4 md:px-[22px] min-w-0 min-h-screen bg-white flex-1 md:pt-4 pb-10 mt-5 md:mt-0 relative dark:bg-darkmode-700",
+        "max-w-full md:max-w-none rounded-[30px] md:rounded-none px-4 md:px-[22px] min-w-0 min-h-screen bg-primary flex-1 md:pt-4 pb-10 mt-5 md:mt-0 relative dark:bg-darkmode-700",
         "before:content-[''] before:w-full before:h-px before:block",
       ])}
     >
       <Outlet />
     </div>
   );
-
 };
 
-const Main: React.FC<LayoutProps> = ({isDashboard}) => {
+const Main: React.FC<LayoutProps> = ({ isDashboard }) => {
   const location = useLocation();
   const [formattedMenu, setFormattedMenu] = useState<
     Array<FormattedMenu | "divider">
@@ -74,7 +76,6 @@ const Main: React.FC<LayoutProps> = ({isDashboard}) => {
     setFormattedMenu(sideMenu());
   }, [sideMenuStore, location.pathname]);
 
-
   const { user, userDispatch } = useContext(UserContext);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -85,7 +86,6 @@ const Main: React.FC<LayoutProps> = ({isDashboard}) => {
   useEffect(() => {
     setFormattedMenu(sideMenu());
   }, [sideMenuStore, location.pathname]);
-
 
   function logout() {
     setIsLoading(true);
@@ -104,8 +104,7 @@ const Main: React.FC<LayoutProps> = ({isDashboard}) => {
     setIsLoading(false);
   }
 
-
-  console.log(user)
+  console.log(user);
 
   return (
     <div className="py-5 md:py-0">
@@ -142,6 +141,7 @@ const Main: React.FC<LayoutProps> = ({isDashboard}) => {
                       }`]: !menu.active,
                     })}
                     menu={menu}
+                    
                     formattedMenuState={[formattedMenu, setFormattedMenu]}
                     level="first"
                   ></Menu>
@@ -229,58 +229,56 @@ const Main: React.FC<LayoutProps> = ({isDashboard}) => {
             {/* END: First Child */}
           </ul>
 
-
-
-          <div                         onClick={() => history(`/admin-profile`)}  className="font-medium flex flex-col gap-y-2 xl:flex-row px-4 text-md cursor-pointer">
-<img src={Profile} alt="Imge"  className="w-8 h-8 rounded-full mr-2"/>
-             
-             <div>
-             <div className="font-medium">
-          {user?.data?.firstName}           {user?.data?.lastName}
-
-</div>
-        <div className="text-xs  mt-0.5 dark:text-slate-500">
-Super Admin        </div>
-             </div>
-</div>
-
-          <div className="  py-3 border-b flex border-slate-200/60 dark:border-darkmode-400 mt-20">
-          {isLoading ? (
-            <div className="flex">
-                            
-                            <div className="flex flex-col items-center justify-center w-full">
-                <LoadingIcon icon="three-dots" className="w-8 h-8" />
-                <div className="mt-2 text-xs text-center">Loging out...</div>
-              </div>
-
-            </div>
-          ) : (
-            <div className="flex gap-x-4 items-center lg:px-4 cursor-pointer"  onClick={logout}
-            >
-            <div>
-            <Lucide
-              icon="LogOut"
-              className="w-6 h-6 text-red-500 dark:red-500 "
+          {/* <div
+            onClick={() => history(`/admin-profile`)}
+            className="font-medium flex flex-col gap-y-2 xl:flex-row px-4 text-md cursor-pointer"
+          >
+            <img
+              src={Profile}
+              alt="Imge"
+              className="w-8 h-8 rounded-full mr-2"
             />
-          </div>
-            <div className="text-md font-medium text-red-500">Log Out</div>
+
+            <div>
+              <div className="font-medium">
+                {user?.data?.firstName} {user?.data?.lastName}
+              </div>
+              <div className="text-xs  mt-0.5 dark:text-slate-500">
+                Super Admin{" "}
+              </div>
             </div>
-          )}
-
-          
-        </div>
-
+          </div> */}
+{/* 
+          <div className="  py-3 border-b flex border-slate-200/60 dark:border-darkmode-400 mt-20">
+            {isLoading ? (
+              <div className="flex">
+                <div className="flex flex-col items-center justify-center w-full">
+                  <LoadingIcon icon="three-dots" className="w-8 h-8" />
+                  <div className="mt-2 text-xs text-center">Loging out...</div>
+                </div>
+              </div>
+            ) : (
+              <div
+                className="flex gap-x-4 items-center lg:px-4 cursor-pointer"
+                onClick={logout}
+              >
+                <div>
+                  <Lucide
+                    icon="LogOut"
+                    className="w-6 h-6 text-red-500 dark:red-500 "
+                  />
+                </div>
+                <div className="text-md font-medium text-red-500">Log Out</div>
+              </div>
+            )}
+          </div> */}
         </nav>
-
-
-      
-
 
         {/* END: Side Menu */}
         {/* BEGIN: Content */}
         {
           // Content(isDashboard)
-          <Content dashboard = {isDashboard}/>
+          <Content dashboard={isDashboard} />
         }
         {/* <div
           className={clsx([
@@ -294,7 +292,7 @@ Super Admin        </div>
       </div>
     </div>
   );
-}
+};
 
 function Menu(props: {
   className?: string;
@@ -314,10 +312,9 @@ function Menu(props: {
       content={props.menu.title}
       href={props.menu.subMenu ? "#" : props.menu.pathname}
       className={clsx([
-        "h-[40px] flex items-center pl-5 text-slate-600 mb-1 relative rounded-xl dark:text-slate-300",
+        "h-[60px] text-lg flex items-center pl-5 text-slate-600 mb-1 relative rounded-xl dark:text-slate-300",
         {
-          " dark:text-slate-400 ":
-            !props.menu.active && props.level != "first",
+          " dark:text-slate-400 ": !props.menu.active && props.level != "first",
           "bg-customColor dark:bg-transparent ":
             props.menu.active && props.level == "first",
           "before:content-[''] before:block  before:inset-0 before:rounded-xl before:absolute before:border-b-[3px] before:border-solid before:border-black/[0.08] before:dark:border-black/[0.08] before:dark:bg-darkmode-700":

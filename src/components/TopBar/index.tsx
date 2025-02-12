@@ -4,7 +4,6 @@ import LagoslogoUrl from "../../assets/images/logo.png";
 import { Link } from "react-router-dom";
 import { FormInput } from "../../base-components/Form";
 import { Menu, Popover } from "../../base-components/Headless";
-import fakerData from "../../utils/faker";
 import _ from "lodash";
 import clsx from "clsx";
 import { Transition } from "@headlessui/react";
@@ -12,6 +11,7 @@ import API from "../../utils/API";
 import { UserContext } from "../../stores/UserContext";
 import { SearchResultContext } from "../../stores/SearchDataContext";
 import { debounce } from '../../utils/debounce'; // Import the debounce function
+import Breadcrumb from "../../base-components/Breadcrumb";
 
 
 interface SearchResult {
@@ -176,26 +176,73 @@ function Main() {
   return (
     <>
       {/* BEGIN: Top Bar */}
-      <div className="top-bar-boxed h-[50px] z-[51] text-primary  relative border-b border-white/[0.08]   -mx-3 sm:-mx-8 px-3 sm:px-8 md:pt-0 bg-white/90 lg:mb-0 lg:shadow-md shadow-slate-400 ">
-        <div className="flex items-center ml-5 h-full gap-x-48">
+      <div 
+      
+      // className={clsx([
+      //   "  top-bar-boxed h-[70px] md:h-[90px] z-[51] text-primary border-b border-white/[0.08]  md:mt-0 -mx-3 sm:-mx-8 md:-mx-0 px-3  lg:mb-0 lg:shadow-sm shadow-slate-200 md:border-b-0 relative md:fixed md:inset-x-0 md:top-0 sm:px-8 md:px-10 md:pt-10 md:bg-gradient-to-b md:from-slate-100 md:to-transparent dark:md:from-darkmode-700",
+      // ])}
+      
+      
+      className="
+      top-bar-boxed mt-12 md:mt-0 md:-mx-0 h-[70px] md:h-[90px] z-[51] text-primary  relative border-b border-white/[0.08]   -mx-3 sm:-mx-8 px-3 sm:px-5 md:pt-0 bg-white/90 lg:mb-0 lg:shadow-sm shadow-slate-200 "
+      
+
+      
+      >
+        <div className="flex items-center  h-full ">
           {/* BEGIN: Logo */}
-          <Link to="/" className="hidden -intro-x md:flex ">
+          {/* <Link to="/" className="hidden -intro-x md:flex ">
             <img
               alt="Icewall Tailwind HTML Admin Template"
               className="w-6"
               src={LagoslogoUrl}
             />
             <span className="ml-3 text-lg text-primary"> Lagrev </span>
+          </Link> */}
+
+          <Link
+            to="/"
+            className={clsx([
+              "-intro-x hidden md:flex xl:w-[180px] ",
+            
+            ])}
+          >
+            <img
+              alt="Enigma Tailwind HTML Admin Template"
+              className="w-6"
+              src={LagoslogoUrl}
+            />
+            <span
+              className={clsx([
+                "ml-3 text-2xl font-bold text-black hidden md:block",
+                
+              ])}
+            >
+              {" "}
+              Siitech{" "}
+            </span>
+            
           </Link>
 
-
+          <Breadcrumb
+            light = {false}
+            className={clsx([
+              "md:hidden h-[45px] md:ml-10 md:pl-6 md:border-l border-white/[0.08] dark:border-white/[0.08] mr-auto -intro-x",
+          
+            ])}
+          >
+            <Breadcrumb.Link to="/">Application</Breadcrumb.Link>
+            <Breadcrumb.Link to="/" active={true}>
+              Dashboard
+            </Breadcrumb.Link>
+          </Breadcrumb>
 
 {/* searches */}
- <div className="relative mr-3 intro-x sm:mr-6">
-            <div className="hidden search sm:block">
+ <div className="relative md:ml-28  mr-3 intro-x sm:mr-auto xl:w-1/4 ">
+            <div className="hidden search sm:block ">
               <FormInput
                 type="text"
-                className="border-transparent w-56 border-slate-300 shadow-none rounded-lg bg-white pr-8 transition-[width] duration-300 ease-in-out focus:border-transparent focus:w-72 dark:bg-darkmode-400/70 h-8"
+                className="border-transparent w-full text-black border-slate-100  pl-12 shadow-none rounded-xl bg-primary pr-8 transition-[width] duration-300 ease-in-out focus:border-transparent focus:w-96 dark:bg-darkmode-400/70 h-12"
                 placeholder="Search..."
                 onFocus={showSearchDropdown}
                 onBlur={hideSearchDropdown}
@@ -204,10 +251,11 @@ function Main() {
               />
               <Lucide
                 icon="Search"
-                className="absolute inset-y-0 right-0 w-4 h-4 my-auto mr-3 text-slate-600 dark:text-slate-500"
+                className="absolute inset-y-0 left-4 w-6 h-6 my-auto mr-3 text-slate-300 dark:text-slate-500"
               />
             </div>
-            <a className="relative text-white/70 sm:hidden" href="">
+           
+            <a className="relative text-black/70 sm:hidden" href="">
               <Lucide icon="Search" className="w-5 h-5 dark:text-slate-500" />
             </a>
 
@@ -394,121 +442,12 @@ function Main() {
             )}
           </div>
 
-          {/* END: Logo */}
-          {/* BEGIN: Breadcrumb */}
-          {/* <Breadcrumb
-            light
-            className="h-full md:ml-10 md:pl-10 md:border-l border-white/[0.08] mr-auto -intro-x"
-          >
-            <Breadcrumb.Link to="/">Application</Breadcrumb.Link>
-            <Breadcrumb.Link to="/" active={true}>
-              Dashboard
-            </Breadcrumb.Link>
-          </Breadcrumb> */}
-          {/* END: Breadcrumb */}
-          {/* BEGIN: Search */}
-          {/* <div className="relative mr-3 intro-x sm:mr-6">
-            <div className="hidden search sm:block">
-              <FormInput
-                type="text"
-                className="border-transparent w-56 shadow-none rounded-full bg-slate-200 pr-8 transition-[width] duration-300 ease-in-out focus:border-transparent focus:w-72 dark:bg-darkmode-400/70"
-                placeholder="Search..."
-                onFocus={showSearchDropdown}
-                onBlur={hideSearchDropdown}
-              />
-              <Lucide
-                icon="Search"
-                className="absolute inset-y-0 right-0 w-5 h-5 my-auto mr-3 text-slate-600 dark:text-slate-500"
-              />
-            </div>
-            <a className="relative text-white/70 sm:hidden" href="">
-              <Lucide icon="Search" className="w-5 h-5 dark:text-slate-500" />
-            </a>
-            <Transition
-              as={Fragment}
-              show={searchDropdown}
-              enter="transition-all ease-linear duration-150"
-              enterFrom="mt-5 invisible opacity-0 translate-y-1"
-              enterTo="mt-[3px] visible opacity-100 translate-y-0"
-              leave="transition-all ease-linear duration-150"
-              leaveFrom="mt-[3px] visible opacity-100 translate-y-0"
-              leaveTo="mt-5 invisible opacity-0 translate-y-1"
-            >
-              <div className="absolute right-0 z-10 mt-[3px]">
-                <div className="w-[450px] p-5 box">
-                  <div className="mb-2 font-medium">Pages</div>
-                  <div className="mb-5">
-                    <a href="" className="flex items-center">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-success/20 dark:bg-success/10 text-success">
-                        <Lucide icon="Inbox" className="w-4 h-4" />
-                      </div>
-                      <div className="ml-3">Mail Settings</div>
-                    </a>
-                    <a href="" className="flex items-center mt-2">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-pending/10 text-pending">
-                        <Lucide icon="Users" className="w-4 h-4" />
-                      </div>
-                      <div className="ml-3">Users & Permissions</div>
-                    </a>
-                    <a href="" className="flex items-center mt-2">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 dark:bg-primary/20 text-primary/80">
-                        <Lucide icon="CreditCard" className="w-4 h-4" />
-                      </div>
-                      <div className="ml-3">Transactions Report</div>
-                    </a>
-                  </div>
-                  <div className="mb-2 font-medium">Users</div>
-                  <div className="mb-5">
-                    {_.take(fakerData, 4).map((faker, fakerKey) => (
-                      <a
-                        key={fakerKey}
-                        href=""
-                        className="flex items-center mt-2"
-                      >
-                        <div className="w-8 h-8 image-fit">
-                          <img
-                            alt="Midone Tailwind HTML Admin Template"
-                            className="rounded-full"
-                            src={faker.photos[0]}
-                          />
-                        </div>
-                        <div className="ml-3">{faker.users[0].name}</div>
-                        <div className="w-48 ml-auto text-xs text-right truncate text-slate-500">
-                          {faker.users[0].email}
-                        </div>
-                      </a>
-                    ))}
-                  </div>
-                  <div className="mb-2 font-medium">Products</div>
-                  {_.take(fakerData, 4).map((faker, fakerKey) => (
-                    <a
-                      key={fakerKey}
-                      href=""
-                      className="flex items-center mt-2"
-                    >
-                      <div className="w-8 h-8 image-fit">
-                        <img
-                          alt="Midone Tailwind HTML Admin Template"
-                          className="rounded-full"
-                          src={faker.images[0]}
-                        />
-                      </div>
-                      <div className="ml-3">{faker.products[0].name}</div>
-                      <div className="w-48 ml-auto text-xs text-right truncate text-slate-500">
-                        {faker.products[0].category}
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            </Transition>
-          </div> */}
-          {/* END: Search */}
-          {/* BEGIN: Notifications */}
-          {/* <Popover className="mr-4 intro-x sm:mr-6">
+              <div className=" flex justify-center space-x-8 items-center mr-4">
+                      {/* BEGIN: Notifications */}
+                      <Popover className="intro-x sm:p-4">
             <Popover.Button
               className="
-              relative text-white/70 outline-none block
+              relative text-slate-600 outline-none block
               before:content-[''] before:w-[8px] before:h-[8px] before:rounded-full before:absolute before:top-[-2px] before:right-0 before:bg-danger
             "
             >
@@ -516,53 +455,55 @@ function Main() {
             </Popover.Button>
             <Popover.Panel className="w-[280px] sm:w-[350px] p-5 mt-2">
               <div className="mb-5 font-medium">Notifications</div>
-              {_.take(fakerData, 5).map((faker, fakerKey) => (
+              {/* {_.take(fakerData, 5).map((faker, fakerKey) => ( */}
                 <div
-                  key={fakerKey}
+                  key={"key"}
                   className={clsx([
                     "cursor-pointer relative flex items-center",
-                    { "mt-5": fakerKey },
+                    { "mt-5": "key" },
                   ])}
                 >
                   <div className="relative flex-none w-12 h-12 mr-1 image-fit">
                     <img
                       alt="Midone Tailwind HTML Admin Template"
                       className="rounded-full"
-                      src={faker.photos[0]}
+                      // src={faker.photos[0]}
                     />
                     <div className="absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full bg-success dark:border-darkmode-600"></div>
                   </div>
                   <div className="ml-2 overflow-hidden">
                     <div className="flex items-center">
                       <a href="" className="mr-5 font-medium truncate">
-                        {faker.users[0].name}
+                        {/* {faker.users[0].name} */}
+                        Bello
                       </a>
                       <div className="ml-auto text-xs text-slate-400 whitespace-nowrap">
-                        {faker.times[0]}
+                        {/* {faker.times[0]} */}
+                        10:15AM
                       </div>
                     </div>
                     <div className="w-full truncate text-slate-500 mt-0.5">
-                      {faker.news[0].shortContent}
+                      {/* {faker.news[0].shortContent} */}
                     </div>
                   </div>
                 </div>
-              ))}
+              {/* ))} */}
             </Popover.Panel>
-          </Popover> */}
+          </Popover>
           {/* END: Notifications */}
           {/* BEGIN: Account Menu */}
-          {/* <Menu>
-            <Menu.Button className="block w-8 h-8 overflow-hidden scale-110 rounded-full shadow-lg image-fit zoom-in intro-x">
+          <Menu>
+            <Menu.Button className="block w-8 h-8 sm:w-12 sm:h-12 overflow-hidden rounded-full shadow-lg image-fit zoom-in intro-x">
               <img
                 alt="Midone Tailwind HTML Admin Template"
-                src={fakerData[9].photos[0]}
+                src={""}
               />
             </Menu.Button>
             <Menu.Items className="w-56 mt-px relative bg-primary/80 before:block before:absolute before:bg-black before:inset-0 before:rounded-md before:z-[-1] text-white">
               <Menu.Header className="font-normal">
-                <div className="font-medium">{fakerData[0].users[0].name}</div>
+                <div className="font-medium">Bello</div>
                 <div className="text-xs text-white/70 mt-0.5 dark:text-slate-500">
-                  {fakerData[0].jobs[0]}
+                  Job
                 </div>
               </Menu.Header>
               <Menu.Divider className="bg-white/[0.08]" />
@@ -583,8 +524,11 @@ function Main() {
                 <Lucide icon="ToggleRight" className="w-4 h-4 mr-2" /> Logout
               </Menu.Item>
             </Menu.Items>
-          </Menu> */}
+          </Menu>
           {/* END: Account Menu */}
+              </div>
+
+
         </div>
       </div>
       {/* END: Top Bar */}

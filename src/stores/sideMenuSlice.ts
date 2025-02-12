@@ -24,75 +24,75 @@ const initialState: SideMenuState = {
 
     
     },
-    {
-      icon: "MapPin",
-      title: "Vehicles",
-      pathname: "/vehicle",
+    // {
+    //   icon: "MapPin",
+    //   title: "Vehicles",
+    //   pathname: "/vehicle",
 
-    },
+    // },
  
     // "divider",
-    {
-      icon: "Users",
-      title: "Admins",
-      subMenu: [
-        {
-          icon: "User",
-          pathname: "/admins",
-          title: "All Admins",
-        },
+    // {
+    //   icon: "Users",
+    //   title: "Admins",
+    //   subMenu: [
+    //     {
+    //       icon: "User",
+    //       pathname: "/admins",
+    //       title: "All Admins",
+    //     },
     
       
-        {
-          icon: "User",
-          pathname: "/admin-role-management",
-          title: "Role Management",
-        },
+    //     {
+    //       icon: "User",
+    //       pathname: "/admin-role-management",
+    //       title: "Role Management",
+    //     },
      
-        {
-          icon: "Book",
-          pathname: "/survey",
-          title: "Survey",
-        },
-      ],
-    },
+    //     {
+    //       icon: "Book",
+    //       pathname: "/survey",
+    //       title: "Survey",
+    //     },
+    //   ],
+    // },
 
-    {
-      icon: "Users",
-      title: "Users",
-      subMenu: [
-        {
-          icon: "User",
-          pathname: "/users",
-          title: "All Users",
-        },
-        // {
-        //   icon: "User",
-        //   pathname: "/add-user",
-        //   title: "Add new User",
-        // },
-        {
-          icon: "User",
-          pathname: "#",
-          title: "Attendance",
-        },
-        {
-          icon: "User",
-          pathname: "#",
-          title: "Performance",
-        },
-        {
-          icon: "User",
-          pathname: "/role-management",
-          title: "Role Management",
-        },
-      ],
-    },
-    {
-      icon: "Lock",
-      title: "Security",
+    // {
+    //   icon: "Users",
+    //   title: "Users",
+    //   subMenu: [
+    //     {
+    //       icon: "User",
+    //       pathname: "/users",
+    //       title: "All Users",
+    //     },
+    //     // {
+    //     //   icon: "User",
+    //     //   pathname: "/add-user",
+    //     //   title: "Add new User",
+    //     // },
+    //     {
+    //       icon: "User",
+    //       pathname: "#",
+    //       title: "Attendance",
+    //     },
+    //     {
+    //       icon: "User",
+    //       pathname: "#",
+    //       title: "Performance",
+    //     },
+    //     {
+    //       icon: "User",
+    //       pathname: "/role-management",
+    //       title: "Role Management",
+    //     },
+    //   ],
+    // },
+    // {
+    //   icon: "Lock",
+    //   title: "Security",
    
-    },
+    // },
 
     "divider",
 

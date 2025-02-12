@@ -28,6 +28,10 @@ import { date } from "yup";
 import FilterModal from "./filterModal";
 import LoadingIcon from "../../base-components/LoadingIcon";
 import axios from "axios";
+import Breadcrumb from "../../base-components/Breadcrumb";
+import clsx from "clsx";
+import Tippy from "../../base-components/Tippy";
+import TopClient from "./TopClient";
 
 interface Change {
   original: string | number | null;
@@ -854,10 +858,28 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
     </Dialog>
     }
 
-      <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 lg:mt-0 intro-y  lg:py-0 py-8  ">
-        <div className="col-span-12 justify-end items-center flex  intro-y sm:flex">
+      <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 lg:mt-0 intro-y   py-8  ">
+        <div className="col-span-12 justify-end items-start flex  intro-y sm:flex">
        
-
+      <div className=" hidden mr-auto md:block">
+              <h2 className="mr-5 text-3xl font-bold truncate">
+                Dashboard
+              </h2>
+        <Breadcrumb
+            light = {false}
+            className={clsx([
+              "h-[45px] md:border-l border-white/[0.08] dark:border-white/[0.08] mr-auto -intro-x",
+              // props.layout != "top-menu" && "md:pl-6",
+              
+            ])}
+          >
+            <Breadcrumb.Link to="/">Application</Breadcrumb.Link>
+            <Breadcrumb.Link to="/" active={true}>
+              Dashboard
+            </Breadcrumb.Link>
+          </Breadcrumb>
+      </div>
+          
           <FilterChips
           selectedRole=""
           selectedStatus=""
@@ -869,11 +891,11 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
             onRemoveFilter={handleRemoveFilter}
           />
 
-          <Menu className="text-xs ml-2">
-            <Menu.Button as={Button} className="bg-customColor text-secondary">
-              <Lucide icon="Filter" className="w-4 h-4 mr-2" />
+          <Menu className="text-xs ml-2 border rounded-lg border-customColor">
+            <Menu.Button as={Button} className=" text-customColor text-[18px]">
+              <Lucide icon="Filter" className="w-4 h-4 mr-2 " />
               Filter
-              <Lucide icon="ChevronDown" className="w-4 h-4 ml-2" />
+              {/* <Lucide icon="ChevronDown" className="w-4 h-4 ml-2 " /> */}
             </Menu.Button>
             <Menu.Items className="w-40 text-xs">
               <Menu.Header className="">Filter Categories</Menu.Header>
@@ -964,167 +986,64 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
           </Menu>
         </div>
 
-        {/* <div className="col-span-12 intro-y text-black mb-8 bg-secondary p-2">
-
-
-        <FilterChips
-          lagosLGAs={lagosLGAs}
-          selectedLGA={selectedLGA}
-          selectedPark={selectedPark}
-          dateRange={dateRange}
-          onRemoveFilter={handleRemoveFilter}
-        />
-        
-
-          <div className="flex flex-col lg:flex-row w-full gap-y-2 text-primary">
-            <div className="relative lg:w-1/4 w-full text-slate-500">
-              <FormInput
-                type="text"
-                className="pr-10 !box"
-                placeholder="Search database..."
-              />
-              <Lucide
-                icon="Search"
-                className="absolute inset-y-0 right-0 w-4 h-4 my-auto mr-3"
-              />
-            </div>
-
-           
-          
-
-            <FormSelect
-              className="w-48 lg:ml-2 lg:w-1/5 !box mr-2"
-              // onChange={(e) => setSelectedLGA(e.target.value)}
-              onChange={(e) => {
-                const value = e.target.value;
-                // handleAddFilter('LGA', value);
-                handleFilterChange('LGA', value);
-
-              }}
-              value={selectedLGA}
-              // onChange={(e) => {
-              //   const value = e.target.value;
-              //   setSelectedLGA(value);
-              //   handleFilterChange({ lga: value, park: selectedPark, date: dateRange });
-              // }}
-            >
-              <option value="" disabled>
-                --All LGA--
-              </option>
-              {lagosLGAs.map((lga, index) => (
-                <option key={index} value={lga}>
-                  {lga}
-                </option>
-              ))}
-            </FormSelect>
-
-            <FormSelect className="w-48  lg:w-1/5 !box mr-2"
-             onChange={(e) => {
-              const value = e.target.value;
-              // handleAddFilter('Park', value);
-              handleFilterChange('Park', value);
-
-            }}
-            value={selectedPark}
-            >
-              <option>All Parks</option>
-              <option>Active</option>
-              <option>Removed</option>
-            </FormSelect>
-
-            <div className="relative sm:mt-0 text-slate-500">
-              <Lucide
-                icon="Calendar"
-                className="absolute inset-y-0 left-0 z-10 w-4 h-4 my-auto ml-3"
-              />
-              <Litepicker
-                placeholder="Select a date range"
-                // value={dateRange}
-                // onChange={setDateRange}
-                onChange={(date) => {
-                  setDateRange
-                  const dateString = date.toString(); // Convert date object to string
-                  // handleAddFilter('Date', dateString);
-                  handleFilterChange('Date', dateString);
-
-                }}
-
-                options={{
-                  startDate: "",
-                  autoApply: false,
-                  singleMode: false,
-                  numberOfColumns: 2,
-                  numberOfMonths: 2,
-                  showWeekNumbers: true,
-                  dropdowns: {
-                    minYear: 2023,
-                    maxYear: null,
-                    months: true,
-                    years: true,
-                  },
-                }}
-                className="pl-10 sm:w-56 !box text-slate-500"
-              />
-            </div>
-          </div>
-        </div> */}
+      
 
         <div className="col-span-12 intro-y lg:col-span-8">
           <div className="grid grid-cols-12 gap-6 mt-5 lg:mt-0">
             <DashboardCard
               count={dashboardData?.daily_registered_vehicles}
-              label="Daily Registered Vehicles"
-              bgColor="bg-orange-200"
-              iconFill="primary"
-              iconText="text-primary"
+              label="Total Revenue"
+              bgColor="bg-emerald-300"
+              iconFill=""
+              iconText="text-white"
               laadingCount={loadingAnalytics}
             />
             <DashboardCard
               count={dashboardData?.daily_untagged_vehicles}
-              label="Daily Untagged Vehicles"
-              bgColor="bg-orange-200"
+              label="upfront"
+              bgColor="bg-blue-500"
               iconFill="orange"
-              iconText="text-orange-300"
+              iconText="text-white"
               laadingCount={loadingAnalytics}
             />
             <DashboardCard
               count={dashboardData?.daily_tagged_vehicles}
-              label="Daily Tagged Vehicles"
-              bgColor="bg-pink-200"
+              label="postpaid"
+              bgColor="bg-violet-700"
               iconFill="pink"
-              iconText="text-pink-600"
+              iconText="text-white"
               laadingCount={loadingAnalytics}
             />
             <DashboardCard
               count={dashboardData?.total_registered_vehicles}
-              label="Total Registered Vehicles"
-              bgColor="bg-green-200"
-              iconFill="green"
-              iconText="green-500"
+              label="Total Billboard Space"
+              bgColor="bg-blue-300"
+              iconFill=""
+              iconText="text-white"
               laadingCount={loadingAnalytics}
             />
             <DashboardCard
               count={dashboardData?.total_untagged_vehicles}
-              label="Total Untagged Vehicles"
-              bgColor="bg-slate-200"
-              iconFill="quinary"
-              iconText=""
+              label="Occupied Billboard Space"
+              bgColor="bg-fuchsia-200"
+              iconFill=""
+              iconText="text-white"
               laadingCount={loadingAnalytics}
             />
             <DashboardCard
               count={dashboardData?.total_tagged_vehicles}
-              label="Total Tagged Vehicles"
-              bgColor="bg-blue-200"
-              iconFill="blue"
-              iconText=""
+              label="Vacant Billboard Space"
+              bgColor="bg-amber-500"
+              iconFill=""
+              iconText="text-white"
               laadingCount={loadingAnalytics}
             />
           </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-4">
-          <div className="grid grid-cols-12 gap-5 mt-5 lg:mt-0">
-            <div onClick={() => setDailyReveneModal(true)} className="col-span-12 p-4 cursor-pointer  shadow-lg rounded-xl bg-white py-5 zoom-in flex" >
+        <div className=" flex flex-col col-span-12 justify-center items-center lg:col-span-4 gap-y-4 bg-white border-slate-300  rounded-2xl">
+          {/* <div className="flex flex-col flex-cols-12  lg:mt-0 justify-center items-center"> */}
+            {/* <div onClick={() => setDailyReveneModal(true)} className="col-span-12 p-4 cursor-pointer  shadow-lg rounded-xl bg-white py-5 zoom-in flex" >
               <div
                 className={`flex mr-4 items-center justify-center rounded-md  bg-green-200 w-10 h-10`}
               >
@@ -1152,212 +1071,39 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
                   Daily Registration Fee
                 </div>
               </div>
+            </div> */}
+            <div>
+              Occupancy
             </div>
 
-            <div onClick={() => seTotalReveneModal(true)}  className="col-span-12 cursor-pointer shadow-lg rounded-xl bg-white p-5 zoom-in flex">
-              <div
-                className={`flex mr-4 items-center justify-center rounded-md bg-green-200 w-10 h-10`}
-              >
-                <Lucide
-                  icon="Banknote"
-                  fill="green"
-                  className={`p-1 w-[40px] h-[38px] text-green-300`}
-                />
-              </div>
-              <div>
-                <div className="text-base font-medium">
-                  {loadingAnalytics ? (
-                    <div className="flex flex-col items-center justify-end col-span-6 sm:col-span-3 xl:col-span-2">
-                      <LoadingIcon icon="three-dots" className="w-6 h-6" />
-                    </div>
-                  ) : (
-                    `N ${formatCurrency(
-                      dashboardData?.total_registered_vehicles * 6000
-                    )}`
-                  )}
-                </div>
-                <div className="text-slate-500 text-xs">
-                  Total Registration Fee
-                </div>
-              </div>
-            </div>
-          </div>
+
+
+<div className="relative size-40 " onClick = {() => setDailyReveneModal(true)}>
+  <svg className="rotate-[135deg] size-full rounded-full bg-green-100" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+
+    <circle cx="18" cy="18" r="17" fill="none" className="stroke-current text-green-500 dark:text-green-500" stroke-width="2" stroke-dasharray="56.25 100" stroke-linecap="round"></circle>
+  </svg>
+
+  <div className="absolute top-1/2 start-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+  <span className="text-center text-4xl font-bold text-green-600 dark:text-green-500">35%</span>
+
+  </div>
+</div>
+    
+          {/* </div> */}
         </div>
       </div>
 
       <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 intro-y">
-        <div className="col-span-12 intro-y lg:col-span-8">
-          <div className="grid grid-cols-12 gap-5 mt-5 lg:mt-0 ">
-            <div className="col-span-12 p-5 cursor-pointer  rounded-2xl box">
-              <div className="flow-root overflow-y-auto h-72">
-                <h2 className="text-lg mb-4">Activity Log</h2>
+                
 
-                {loadingActivityData ? (
-            <div className="col-span-12 flex items-center justify-center h-full">
-              <div className="flex flex-col items-center justify-center w-full">
-                <LoadingIcon icon="puff" className="w-8 h-8" />
-                <div className="mt-2 text-xs text-center">Loading data</div>
-              </div>
-            </div>
-          ) : 
-                /* <div className="flex mb-4 items-center">   <Lucide icon="ArrowUp" className="h-5 w-5 text-green-600"  /> <p className="text-xs text-slate-500"></p> </div> */
-                <ul role="list" className="-mb-8">
-                  {activitylogs.map((activityItem: any, activityItemIdx) => (
-                    <li key={activityItem.id}>
-                      <div className="relative pb-8">
-                        {activityItemIdx !== activitylogs.length - 1 ? (
-                          <span
-                            className="absolute top-3 left-2 -ml-px h-full w-0.5 bg-gray-200"
-                            aria-hidden="true"
-                          />
-                        ) : null}
-                        <div className="relative flex items-start space-x-3">
-                          <>
-                            <div>
-                              <div className="relative px-1">
-                                <div className="h-2 w-2  bg-customColor rounded-full ring-4 ring-customColor/20 flex items-center justify-center">
-                                  {/* <Lucide icon="Activity" className="h-5 w-5 text-gray-400" aria-hidden="true" /> */}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="min-w-0 flex-1 py-0">
-                              <div className="text-sm  text-gray-500">
-                                <span className="mr-2">
-                                  <Link
-                                    to={activityItem.admin.id}
-                                    className="font-medium text-gray-900"
-                                  >
-                                    {activityItem.action}
-                                  </Link>
-                                </span>
+<TopClient title="Top Client"/>  
+<TopClient title="Top Performing Billboard"/>
+<TopClient title="Top Campaigns"/>
 
-                                <span className="whitespace-nowrap">
-                                  {" "}
-                                  {formatDate(activityItem.created_at)}
-                                </span>
 
-                                <div className="mr-0.5">
-                                  <span className="mr-2">
-                                    {activityItem.admin.firstName}{" "}
-                                    {activityItem.admin.lastName}
-                                  </span>
 
-                                  <span
-                                    className="bg-slate-400 h-1.5 w-1.5 rounded-full inline-block "
-                                    aria-hidden="true"
-                                  />
 
-                                  <span className="ml-3  text-slate-500">
-                                    {formatChanges(activityItem.changes)}
-                                  </span>
-
-                                  <span className="mr-2 text-xs">
-                                    {activityItem.admin.name}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-span-12 lg:col-span-4">
-          <div className="grid grid-cols-12 gap-5 mt-5 lg:mt-0">
-            <div className="col-span-12 p-4 cursor-pointer rounded-2xl box zoom-in">
-              <div className="">
-                <div className="flex space-x-2 justify-start items-center">
-                  <div
-                    className={`flex items-center justify-center rounded-md bg-customColor/20 w-7 h-7`}
-                  >
-                    <Lucide
-                      icon="Target"
-                      fill="white"
-                      className={`p-1 w-[22px] h-[32px] text-customColor  `}
-                    />
-                  </div>
-                  <div className="mr-auto text-xs">Project Target</div>
-                </div>
-                <div className="flex mt-4">
-                  <div className="mr-auto text-xl font-bold text-customColor">
-                    {kpiData?.total_registrations}
-                    <span className="text-slate-700 font-normal text-sm">
-                      {loadingKpiData? <div className="flex flex-col items-center justify-end col-span-6 sm:col-span-3 xl:col-span-2">
-                      <LoadingIcon icon="three-dots" className="w-6 h-6" />
-                    </div>: 
-                      ` (${(kpiData?.percentage_achieved).toFixed(2)}%)`
-                      }
-                    </span>
-                  </div>
-                  <div className="text-xl font-bold">60,000</div>
-                </div>
-
-                <Progress className="h-1 mt-2">
-                  <Progress.Bar
-                    className="bg-customColor"
-                    role="progressbar"
-                    aria-valuenow={kpiData?.percentage_achieved}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    style={{ width: `${kpiData?.percentage_achieved}%` }}
-                  ></Progress.Bar>
-                </Progress>
-              </div>
-            </div>
-            <div className="col-span-12 p-4 cursor-pointer  box rounded-2xl zoom-in">
-              <div className="text-base font-medium">Top Performing LGAs</div>
-              <div className="text-slate-500">
-                Total vehicles successfully registered on Lagrev
-              </div>
-              {kpiData?.top_performing_lgas.map(
-                (top_performing_lga: any, index: Key | null | undefined) => (
-                  <div className="box mt-4 p-4" key={index}>
-                    <div className="mr-auto text-xs">
-                      {top_performing_lga.lga} LGA
-                    </div>
-
-                    <div className="flex mt-2">
-                      <div className="mr-auto text-xl font-bold text-slate-500">
-                        {top_performing_lga?.total}
-                      </div>
-                      <div className="text-xs">
-                        {` (${(top_performing_lga?.percentage).toFixed(2)}%)`}
-                      </div>
-                    </div>
-
-                    <Progress className="h-1 mt-2">
-                      <Progress.Bar
-                        className="bg-customColor"
-                        role="progressbar"
-                        aria-valuenow={kpiData?.lga_contribution_percentage}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        style={{
-                          width: `${kpiData?.lga_contribution_percentage}%`,
-                        }}
-                      ></Progress.Bar>
-                    </Progress>
-                  </div>
-                )
-              )}
-            </div>
-            {/* <div className="col-span-12 p-4 cursor-pointer sm:col-span-4 2xl:col-span-3 box zoom-in">
-              <div className="text-base font-medium">Soup</div>
-              <div className="text-slate-500">5 Items</div>
-            </div>
-            <div className="col-span-12 p-4 cursor-pointer sm:col-span-4 2xl:col-span-3 box zoom-in">
-              <div className="text-base font-medium">Soup</div>
-              <div className="text-slate-500">5 Items</div>
-            </div> */}
-          </div>
-        </div>
       </div>
     </>
   );
