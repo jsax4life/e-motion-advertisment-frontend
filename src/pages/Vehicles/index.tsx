@@ -6,7 +6,6 @@ import { Fragment, Key, useContext, useEffect } from 'react'
 import _ from "lodash";
 import clsx from "clsx";
 import { useState, useRef } from "react";
-import fakerData from "../../utils/faker";
 import Button from "../../base-components/Button";
 import Pagination from "../../base-components/Pagination";
 import { FormCheck, FormInput, FormLabel, FormSelect } from "../../base-components/Form";

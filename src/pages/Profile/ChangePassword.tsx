@@ -6,7 +6,6 @@ import { UserContext } from "../../stores/UserContext";
 
 import Toastify from "toastify-js";
 import {  useNavigate } from "react-router-dom";
-// import fakerData from "../../utils/faker";
 import Button from "../../base-components/Button";
 import Notification from "../../base-components/Notification";
 import { FormInput, FormLabel, FormSelect } from "../../base-components/Form";

@@ -2,7 +2,6 @@ import { Fragment, Key, useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import _ from "lodash";
 import clsx from "clsx";
-import fakerData from "../../utils/faker";
 import Button from "../../base-components/Button";
 import Pagination from "../../base-components/Pagination";
 import {

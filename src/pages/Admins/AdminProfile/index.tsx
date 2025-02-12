@@ -7,7 +7,6 @@ import { Fragment, JSXElementConstructor, ReactElement, ReactNode, useContext, u
 import _ from "lodash";
 import clsx from "clsx";
 import { useState, useRef } from "react";
-import fakerData from "../../../utils/faker";
 
 import { Dialog, Menu, Tab } from "../../../base-components/Headless";
 
