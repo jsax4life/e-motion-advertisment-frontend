@@ -108,8 +108,8 @@ function Main() {
   const [datepickerModalPreview, setDatepickerModalPreview] = useState(false);
   const [lgaModal, setLGAModal] = useState(false);
   const [tempSelectedLGA, setTempSelectedLGA] = useState("");
-  const [activeFilter, setActiveFilter] = useState<"LGA" | "Date" | "Park" | "Users">(
-    "LGA"
+  const [activeFilter, setActiveFilter] = useState<"State" | "Status" | "Orientation" | "Type">(
+    "State"
   );
 
   const cancelButtonRef = useRef(null);
@@ -868,7 +868,7 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
         <Breadcrumb
             light = {false}
             className={clsx([
-              "h-[45px] md:border-l border-white/[0.08] dark:border-white/[0.08] mr-auto -intro-x",
+              "h-[45px]  text-xs md:border-l border-white/[0.08] dark:border-white/[0.08] mr-auto -intro-x",
               // props.layout != "top-menu" && "md:pl-6",
               
             ])}
@@ -913,12 +913,12 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
                   // event.preventDefault();
                   // setLGAModal(true);
 
-                  setActiveFilter("LGA");
+                  setActiveFilter("State");
                   setOpenModal(true);
                 }}
               >
                 <Lucide icon="Home" className="w-4 h-4 mr-2" />
-                LGA
+                State
                 <Lucide icon="ChevronRight" className="w-4 h-4 ml-auto" />
               </Menu.Item>
 
@@ -948,23 +948,23 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
                 // onClick={() => setShowLgaSubMenu(!showLgaSubMenu)}
                 onClick={() => {
                   setOpenModal(true);
-                  setActiveFilter("Park");
+                  setActiveFilter("Status");
                 }}
               >
                 <Lucide icon="Cloud" className="w-4 h-4 mr-2" />
-                Park
+                Status
                 <Lucide icon="ChevronRight" className="w-4 h-4 ml-auto" />
               </Menu.Item>
               <Menu.Item
                 onClick={(event: React.MouseEvent) => {
                   event.preventDefault();
                   // setDatepickerModalPreview(true);
-                  setActiveFilter("Date");
+                  setActiveFilter("Orientation");
                   setOpenModal(true);
                 }}
               >
                 <Lucide icon="Calendar" className="w-4 h-4 mr-2" />
-                Date
+                Orientation
                 <Lucide icon="ChevronRight" className="w-4 h-4 ml-auto" />
               </Menu.Item>
 
@@ -972,10 +972,10 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
                 // onClick={() => setShowLgaSubMenu(!showLgaSubMenu)}
                 onClick={() => {
                   setOpenModal(true);
-                  setActiveFilter("Users");
+                  setActiveFilter("Type");
                 }}
               >
-                <Lucide icon="Users" className="w-4 h-4 mr-2" />
+                <Lucide icon="Type" className="w-4 h-4 mr-2" />
                 Users
                 <Lucide icon="ChevronRight" className="w-4 h-4 ml-auto" />
               </Menu.Item>

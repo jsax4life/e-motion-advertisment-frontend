@@ -43,7 +43,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        roboto: ["Roboto"],
+        'poppin': ["Poppins", "sans-serif"]
       },
       container: {
         center: true,

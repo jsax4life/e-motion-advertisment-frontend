@@ -28,8 +28,8 @@ interface FilterModalProps {
   setEndDate: (date: string) => void;
   selectedUser: string;
   setSelectedUser:  (user: string) => void;
-  activeFilter: "LGA" | "Date" | "Park" | "Users";
-  setActiveFilter: (filter: "LGA" | "Date" | "Park" | "Users") => void;
+  activeFilter: "State" | "Status" | "Orientation" | "Type";
+  setActiveFilter: (filter: "State" | "Status" | "Orientation" | "Type") => void;
 }
 
 const FilterModal: React.FC<FilterModalProps> = ({
@@ -107,13 +107,13 @@ const FilterModal: React.FC<FilterModalProps> = ({
             <div className="bg-customColor/20 fill-customColor text-customColor mr-2 rounded-lg p-2">
               <Lucide
                 icon={
-                  activeFilter === "LGA"
+                  activeFilter === "State"
                     ? "Home"
-                    : activeFilter === "Park"
+                    : activeFilter === "Status"
                     ? "Car"
-                    : activeFilter === "Date" 
+                    : activeFilter === "Orientation" 
                     ? "Calendar" 
-                    : "Users"
+                    : "Type"
                 }
                 className="w-5 h-5"
               />
@@ -121,20 +121,20 @@ const FilterModal: React.FC<FilterModalProps> = ({
             </div>
             <div className="">
               <h2 className="mr-auto text-slate-600 font-bold">
-                {activeFilter === "LGA"
+                {activeFilter === "State"
                   ? "Local Government Area (LGA)"
-                  : activeFilter === "Park"
+                  : activeFilter === "Status"
                   ? "Car Park"
-                  : activeFilter === "Users"
+                  : activeFilter === "Orientation"
                   ? "All Users"
                   : "Date Range"}
               </h2>
               <p className="text-xs text-slate-500">
-                {activeFilter === "LGA"
+                {activeFilter === "State"
                   ? "Choose an LGA to filter"
-                  : activeFilter === "Park"
+                  : activeFilter === "Status"
                   ? "Choose a Car Park to filter"
-                  : activeFilter === "Users"
+                  : activeFilter === "Type"
                   ? "Select a User to filter data"
                   : "Choose a date range to filter"}
               </p>
@@ -143,7 +143,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
         </Dialog.Title>
 
         <Dialog.Description className="grid grid-cols-12 gap-4 gap-y-3">
-          {activeFilter === "LGA" ? (
+          {activeFilter === "State" ? (
             <div className="col-span-12 ">
               <FormLabel htmlFor="lga">Select LGA</FormLabel>
               <FormSelect
@@ -165,7 +165,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 ))}
               </FormSelect>
             </div>
-          ) : activeFilter === "Park" ? (
+          ) : activeFilter === "Status" ? (
             <div className="col-span-12 ">
               <FormLabel htmlFor="carPark">Select Car Park</FormLabel>
               <FormSelect
@@ -187,7 +187,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 ))}
               </FormSelect>
             </div>
-          ) : activeFilter === "Users" ? (
+          ) : activeFilter === "Type" ? (
             <div className="col-span-12 ">
               <FormLabel htmlFor="lga">Select User</FormLabel>
               <FormSelect
@@ -272,11 +272,11 @@ const FilterModal: React.FC<FilterModalProps> = ({
             className="lg:w-25 bg-customColor"
             ref={sendButtonRef}
             onClick={
-              activeFilter === "LGA"
+              activeFilter === "State"
               ? applyLGAFilter
-              : activeFilter === "Park"
+              : activeFilter === "Status"
               ? applyCarParkFilter
-              : activeFilter === "Date"
+              : activeFilter === "Orientation"
               ? applyDateFilter
               : applyUsersFilter
             }

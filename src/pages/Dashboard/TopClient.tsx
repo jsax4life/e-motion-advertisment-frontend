@@ -5,6 +5,8 @@ import Avatar from "../../assets/images/Avatar.png"
 import ClientItem from './ClientItem'
 
 const TopClient = ({title}: any) => {
+
+
   return (
     <div
     key={"rt"}
@@ -37,13 +39,13 @@ const TopClient = ({title}: any) => {
   
     <div className="p-5 flex flex-col gap-y-4">
   
-    < ClientItem clientName="Maltina" clietImage={Avatar} clientAmount="#20,000,000" clientNumberOfCampaigns="127" />
-    < ClientItem clientName="MTN" clietImage={Avatar} clientAmount="#7,000,000" clientNumberOfCampaigns="127" />
+    < ClientItem clientName="Maltina" clietImage={Avatar} clientAmount="20,000,000" clientNumberOfCampaigns="127" />
+    < ClientItem clientName="MTN" clietImage={Avatar} clientAmount="7,000,000" clientNumberOfCampaigns="127" />
 
-    < ClientItem clientName="Glo" clietImage={Avatar} clientAmount="#16,000,000" clientNumberOfCampaigns="127" />
+    < ClientItem clientName="Glo" clietImage={Avatar} clientAmount="16,000,000" clientNumberOfCampaigns="127" />
 
-    < ClientItem clientName="Pepsi" clietImage={Avatar} clientAmount="#70,000,000" clientNumberOfCampaigns="127" />
-    < ClientItem clientName="Yale" clietImage={Avatar} clientAmount="8,000,000" clientNumberOfCampaigns="127" />
+    < ClientItem clientName="Pepsi" clietImage={Avatar} clientAmount="70,000,000" clientNumberOfCampaigns="127" />
+    < ClientItem clientName="Yale" clietImage={Avatar} clientAmount=",000,000" clientNumberOfCampaigns="127" />
 
 
     </div> 

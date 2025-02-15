@@ -125,7 +125,7 @@ Table.Th = ({ className, ...props }: ThProps) => {
   return (
     <th
       className={twMerge([
-        "font-medium px-3 py-1 border-b-2 dark:border-darkmode-300",
+        "font-medium px-5 py-3 border-b-2 dark:border-darkmode-300",
         thead.variant === "light" && "border-b-0 text-slate-700",
         thead.variant === "dark" && "border-b-0",
         table.dark && "border-slate-600 dark:border-darkmode-300",
@@ -147,7 +147,7 @@ Table.Td = ({ className, ...props }: TdProps) => {
   return (
     <td
       className={twMerge([
-        "px-3 py-1 border-b dark:border-darkmode-300",
+        "px-5 py-3 border-b dark:border-darkmode-300",
         table.dark && "border-slate-600 dark:border-darkmode-300",
         table.bordered && "border-l border-r border-t",
         table.sm && "px-4 py-2",

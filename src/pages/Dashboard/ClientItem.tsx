@@ -18,8 +18,8 @@ const ClientItem = ({clientName, clietImage, clientAmount, clientNumberOfCampaig
                   </div>
 
                   <div className='text-end'>
-                    <h2 className='text-xl font-bold'>{clientAmount}</h2>
-                      <div className="text-sm">{clientNumberOfCampaigns} campaigns</div>
+                    <h2 className='text-sm font-bold'>&#x20A6;{clientAmount}</h2>
+                      <div className="text-xs text-slate-400">{clientNumberOfCampaigns} campaigns</div>
                       </div>
             </div>
                 </div>

@@ -24,12 +24,12 @@ const initialState: SideMenuState = {
 
     
     },
-    // {
-    //   icon: "MapPin",
-    //   title: "Vehicles",
-    //   pathname: "/vehicle",
+    {
+      icon: "Tv2",
+      pathname: "/billboards",
+      title: "Billboards",
 
-    // },
+    },
  
     // "divider",
     // {
