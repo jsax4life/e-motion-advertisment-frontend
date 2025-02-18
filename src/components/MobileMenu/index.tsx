@@ -76,7 +76,7 @@ function Main() {
         <div className="h-[70px] px-3 sm:px-8 flex items-center">
           <a href="" className="flex mr-auto">
             <img
-              alt="Midone Tailwind HTML Admin Template"
+              alt="lostard"
               className="w-6"
               src={logoUrl}
             />
@@ -94,7 +94,7 @@ function Main() {
         <div
           ref={scrollableRef}
           className={clsx([
-            "h-screen z-20 top-0 left-0 w-[270px] -ml-[100%] bg-primary transition-all duration-300 ease-in-out dark:bg-darkmode-800",
+            "h-screen z-20 top-0 left-0 w-[270px] -ml-[100%] bg-customColor transition-all duration-300 ease-in-out dark:bg-darkmode-800",
             "[&[data-simplebar]]:fixed [&_.simplebar-scrollbar]:before:bg-black/50",
             activeMobileMenu && "ml-0",
           ])}

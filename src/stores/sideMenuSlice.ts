@@ -24,6 +24,14 @@ const initialState: SideMenuState = {
 
     
     },
+
+    {
+      icon: "Users",
+      pathname: "/clients",
+      title: "Client",
+
+    },
+    
     {
       icon: "Tv2",
       pathname: "/billboards",
