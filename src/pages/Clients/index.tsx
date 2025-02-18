@@ -72,7 +72,7 @@ export default function Main() {
 
   const [openModal, setOpenModal] = useState(false);
 
-  const [billboardList, setBillboardList] = useState<any[]>([]);
+  const [clientList, setClientList] = useState<any[]>([]);
 
   const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false);
   const deleteButtonRef = useRef(null);
@@ -145,7 +145,7 @@ export default function Main() {
       params,
       // {lga: 'Alimosho'},
       function (clientData: any) {
-        setBillboardList(clientData.registered_clients);
+        setClientList(clientData.registered_clients);
         setLoading(false);
         console.log(clientData);
       },
@@ -169,7 +169,7 @@ export default function Main() {
       {...data},
       function (reponse: any) {
         console.log(reponse);
-        setBillboardList([...billboardList, reponse]);
+        setClientList([...clientList, reponse]);
         setLoading(false);
         setIsModalOpen(false);
 
@@ -567,24 +567,25 @@ export default function Main() {
                         S/N
                       </Table.Th>
                       <Table.Th className="   whitespace-nowrap">
-                        BILLBOARD NAME
+                        COMPANY NAME
                       </Table.Th>
                       <Table.Th className="   whitespace-nowrap">
-                        PRICE PER DAY
+                        CONTACT PERSON
                       </Table.Th>
                       <Table.Th className="   whitespace-nowrap">
-                        BILLBOARD NUMBER
+                        CONTACT NUMBER
                       </Table.Th>
                       <Table.Th className="   whitespace-nowrap">
-                        STATE
+                        INDUSTRY
+                      </Table.Th>
+                      <Table.Th className="   whitespace-nowrap">
+                        LOCATION
                       </Table.Th>
                     
                       <Table.Th className="text-start    whitespace-nowrap">
                         STATUS
                       </Table.Th>
-                      <Table.Th className="   whitespace-nowrap">
-                        SPECIFICATION
-                      </Table.Th>
+                      
                       {/* <Table.Th className="text-right border-b-0   whitespace-nowrap">
                   <div className="pr-16">TOTAL TRANSACTION</div>
                 </Table.Th> */}
@@ -596,15 +597,15 @@ export default function Main() {
                   <Table.Tbody
                   className=''
                   >
-                    {billboardList.map(
-                      (billboard: any, billboardKey: any | null | undefined) => (
+                    {clientList.map(
+                      (client: any, clientKey: any | null | undefined) => (
                         <Table.Tr
-                          key={billboardKey}
+                          key={clientKey}
                           className="intro-x text-black capitalize"
                         >
                           <Table.Td className=" first:rounded-l-md last:rounded-r-md bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                             <div className=" whitespace-nowrap">
-                              {billboardKey + 1}
+                              {clientKey + 1}
                             </div>
                           </Table.Td>
 
@@ -638,7 +639,7 @@ export default function Main() {
 <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white  dark:bg-darkmode-600 border-slate-200 border-b">
                             <>
                               <div className="whitespace-nowrap">
-                                {billboard?.billboardName}
+                                {client.company_name}
                               </div>
                             </>
                           </Table.Td>
@@ -647,45 +648,40 @@ export default function Main() {
                           <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                             <>
                               <div className=" whitespace-nowrap">
-                              &#x20A6;{billboard?.pricePerDay}
+                              {client?.contact_person_name}
                               </div>
                             </>
                           </Table.Td>
                           <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                             <>
                               <div className="whitespace-nowrap">
-                                {billboard?.internalCode}
+                                {client?.contact_person_phone}
                               </div>
                             </>
                           </Table.Td>
                           <Table.Td className="first:rounded-l-md last:rounded-r-md w-40  bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                             <div className="">
-                              {billboard.state}
+                              {client?.brand_industry}
+                            </div>
+                          </Table.Td>
+                          <Table.Td className="first:rounded-l-md last:rounded-r-md w-40  bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
+                            <div className="">
+                              {client?.state}
                             </div>
                           </Table.Td>
 
                           <Table.Td className="first:rounded-l-md last:rounded-r-md text-start bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                             <span
                               className={`items-center  lg:py-1  text-xs font-medium uppercase ${
-                                billboard?.status == 'active'
-                                  ? "text-green-600" : billboard?.status == 'inactive'? "text-red-600"
-                                  : "text-orange-400"
+                                client?.client_type == 'direct'
+                                  ? "text-green-600" : "text-orange-400"
                               }`}
                             >
-                              {billboard?.status == 'active'
-                                ? "running"
-                                : billboard?.status}
+                            {client?.client_type}
                             </span>
                           </Table.Td>
 
-                          <Table.Td className="first:rounded-l-md last:rounded-r-md text-start   dark:bg-darkmode-600 border-slate-200 border-b">
-                          <div className="">
-                              
-                              <span className="mr-1 bg-purple-100 text-indigo-600 px-1">{billboard?.orientation}</span>
-
-                              <span className="bg-blue-100 text-blue-7600 px-1">{billboard?.billboardType}</span>
-                            </div>
-                          </Table.Td>
+                      
 
                           <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white border-slate-200 border-b   dark:bg-darkmode-600  py-0 relative before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400">
                             {/* <div className="flex items-center justify-center">
@@ -708,10 +704,10 @@ export default function Main() {
         </Menu.Button>
         <Menu.Items className="w-40">
         <Menu.Item>
-            <Lucide icon="Edit2" className="w-4 h-4 mr-2" /> View Details
+            <Lucide icon="Edit2" className="w-4 h-4 mr-2" /> View Client
           </Menu.Item>
           <Menu.Item>
-            <Lucide icon="Edit2" className="w-4 h-4 mr-2" /> Edit Details
+            <Lucide icon="Edit2" className="w-4 h-4 mr-2" /> Edit Client
           </Menu.Item>
           <Menu.Item className="text-red-500">
             <Lucide icon="Trash" className="w-4 h-4 mr-2 " /> Delete 
