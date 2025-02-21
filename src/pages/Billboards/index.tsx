@@ -169,7 +169,7 @@ export default function Main() {
       {...data},
       function (reponse: any) {
         console.log(reponse);
-        setBillboardList([...billboardList, reponse]);
+        setBillboardList((prev) => [...prev, reponse]);
         setLoading(false);
         setIsModalOpen(false);
 
