@@ -105,7 +105,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                           : "bg-red-500 border-red-500"
                       }`}
                     ></div>
-                    <div> {order?.status} Delivered</div>
+                    <div> {order?.status}</div>
                    </div>
                   </Table.Td>
                   <Table.Td className="first:rounded-l-md last:rounded-r-md w-40 bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
