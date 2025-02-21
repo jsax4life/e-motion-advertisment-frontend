@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Dialog } from "../../base-components/Headless";
 import { FormInput, FormLabel, FormSelect } from "../../base-components/Form";
@@ -9,6 +9,7 @@ import Button from "../../base-components/Button";
 import ImageUploadSection from "./ImageUpoadSection";
 import Lucide from "../../base-components/Lucide";
 import LoadingIcon from "../../base-components/LoadingIcon";
+import { formatCurrency } from "../../utils/utils";
 
 
 interface BillboardCreationModalProps {
@@ -48,7 +49,7 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     billboardName: yup.string().required("Billboard Name is required"),
     state: yup.string().required("State is required"),
     lga: yup.string().required("LGA is required"),
-    location: yup.string().required("Location is required"),
+    address: yup.string().required("Adddress is required"),
     lat: yup.string().required("Latitude is required"),
     lng: yup.string().required("Longitude is required"),
     // height: yup.string().required("Height is required"),
@@ -67,6 +68,7 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm({
     mode: "onBlur",
     resolver: yupResolver(validationSchema),
@@ -78,7 +80,7 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     billboardName: "",
     state: "",
     lga: "",
-    location: "",
+    address: "",
     geolocation: { lat: "", lng: "" },
     dimension: "Standard", // Default dimension
     height: "",
@@ -99,6 +101,9 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
   ) => {
     const { name, value } = e.target;
 
+    setValue(name, value); // Ensure React Hook Form tracks this change
+
+
     if (name === "pricePerDay") {
       const pricePerDay = parseFloat(value);
       const pricePerMonth = pricePerDay * 30; // Assuming 30 days in a month
@@ -114,13 +119,37 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
         [name]: value,
       }));
     }
+
+// Handle logic for resetting dependent fields
+if (name === "billboardType") {
+  if (value === "static" || value === "bespoke") {
+    setValue("numberOfSlots", ""); // Reset numberOfSlots
+  }
+  if (value === "digital" || value === "bespoke") {
+    setValue("numberOfFaces", ""); // Reset numberOfFaces
+  }
+}
+
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files).slice(0, 10); // Limit to 10 files
-      setFormData((prev) => ({ ...prev, images: files }));
-    }
+  
+
+    // Generate a serial number when the modal is opened
+    useEffect(() => {
+      if (isOpen) {
+        const newSerialNumber = generateSerialNumber(); // Generate a new serial number
+        setValue("serialNumber", newSerialNumber); // Set the serial number in the form
+        // setFormData((prev) => ({ ...prev, serialNumber: newSerialNumber }));
+      }
+    }, [isOpen]);
+
+      // Function to generate a serial number
+  const generateSerialNumber = () => {
+    // return uuidv4();
+
+   //using timestamp-based serial number
+    return `SN-${Date.now()}`;
+
   };
 
   const handleAddBillboard = async  (data: any) => {
@@ -130,26 +159,16 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
        const payload = {
         // Other form fields...
         ...data,
-        serialNumber: "6768702",
+        // serialNumber: "6768702",
         images: base64Images, // Include Base64 images
       };
   
 
-    // console.log(payload);
+    console.log(payload);
     onSubmit(payload);
-    // onClose();
+    // onClose();s
   };
 
-
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: {
-      "image/*": [".jpeg", ".jpg", ".png"],
-    },
-    maxFiles: 10, // Limit to 10 files
-    onDrop: (acceptedFiles) => {
-      setUploadedImages((prev) => [...prev, ...acceptedFiles.slice(0, 10 - prev.length)]);
-    },
-  });
 
   if (!isOpen) return null;
 
@@ -170,7 +189,7 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
           </Dialog.Title>
 
           <Dialog.Description className="grid grid-cols-12  gap-y-3 max-h-[90vh] overflow-y-auto ">
-            <form onSubmit={ handleSubmit(handleAddBillboard)} className="col-span-12 rounded-lg w-full max-w-2xl  p-4 space-y-8 ">
+            <form onSubmit={ handleSubmit(handleAddBillboard)} className="col-span-12 rounded-lg w-full max-w-2xl  md:p-4 space-y-8 ">
 
             {/* image */}
             {/* <div className="col-span-12">
@@ -197,11 +216,17 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
 <div className="col-span-12 ">
               <FormLabel htmlFor="billboardNumber" className="font-medium lg:text-[16px] text-black">Billboard Number</FormLabel>
               <FormInput
+              formInputSize="lg"
+
+
+                            {...register("serialNumber")}
+
+                            readOnly 
+
                 id="serialNumber"
                 type="text"
                 placeholder="6768787"
-                disabled
-                formInputSize="lg"
+                
               />
              
             </div>
@@ -267,15 +292,15 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
               </div>
 
               <div className="col-span-12">
-                <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="location">Location</FormLabel>
+                <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="address">Addresss</FormLabel>
                 <FormInput
                 formInputSize="lg"
-                  id="location"
-                  type="text"
+                  id="address"
+                  type="address"
                   placeholder="Type here"
-                  {...register("location")}
+                  {...register("address")}
                 />
-                {errors.location && ( <p className="text-red-500">{errors.location.message?.toString()}</p>)}
+                {errors.address && ( <p className="text-red-500">{errors.address.message?.toString()}</p>)}
               </div>
 
               <div className="space-y-2">
@@ -330,6 +355,8 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
                   })}
                     className="w-full p-2 border rounded"
                     >
+                                          <option value="" disabled selected>--select--</option>
+
                     <option value="Standard">Standard</option>
                     <option value="Non-Standard">Non-Standard</option>
                     <option value="Custom">Custom</option>
@@ -385,6 +412,8 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
                     },})}
                   className="w-full p-2 border rounded"
                 >
+                                    <option disabled  selected value="">--Select--</option>
+
                   <option value="static">Static</option>
                   <option value="digital">Digital</option>
                   <option value="bespoke">Bespoke (Innovative)</option>
@@ -467,7 +496,7 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
                 formInputSize="lg"
                 disabled
                   type="text"
-                  value={formData.pricePerMonth}
+                  value={formatCurrency(Number(formData.pricePerMonth))}
                   {...register("pricePerMonth", {
                     onChange: (e) => {
                       handleChange(e);

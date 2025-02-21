@@ -8,6 +8,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Billboard from "../pages/Billboards";
 import Client from "../pages/Clients";
+import Order from "../pages/Campaigns/Orders";
 import ProfileDetails from "../pages/Billboards/VehicleDetails";
 import UpdateVehicleProfile from "../pages/Billboards/UpdateVehicleProfile";
 import AdminProfileDetails from "../pages/Admins/AdminDetails";
@@ -82,6 +83,11 @@ function Router() {
  
             path: "/clients",
             element: <Client />,
+          },
+
+          {
+            path: "/orders",
+            element: <Order />,
           },
         
         

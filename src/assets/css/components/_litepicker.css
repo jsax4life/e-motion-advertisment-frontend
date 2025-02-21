@@ -85,7 +85,7 @@
       margin-right: 0;
     }
     .button-apply {
-      background-color: theme("colors.primary");
+      background-color: theme("colors.customColor");
       color: white;
     }
     .button-cancel {
@@ -183,13 +183,13 @@
       &.is-today,
       &.is-today:hover {
         font-weight: theme("fontWeight.medium");
-        color: theme("colors.primary");
+        color: theme("colors.customColor");
       }
       &.is-start-date,
       &.is-start-date:hover,
       &.is-end-date,
       &.is-end-date:hover {
-        background-color: theme("colors.primary");
+        background-color: theme("colors.customColor");
         color: white;
       }
       &.is-in-range,
@@ -251,7 +251,7 @@
         &.is-start-date:hover,
         &.is-end-date,
         &.is-end-date:hover {
-          background-color: theme("colors.primary");
+          background-color: theme("colors.customColor");
           color: theme("colors.slate.200");
         }
         &.is-in-range,

@@ -70,8 +70,8 @@ Tab.Button = <C extends React.ElementType = "a">({
   return (
     <Component
       className={twMerge([
-        "cursor-pointer bg-white block appearance-none px-3 py-2.5 border border-transparent text-slate-700 dark:text-slate-400 ",
-        tab.selected && "text-slate-800 dark:text-white",
+        "cursor-pointer block appearance-none px-3 py-2.5 border  border-transparent text-slate-500 dark:text-slate-400 ",
+        tab.selected && "text-customColor dark:text-white",
 
         // Default
         list.variant == "tabs" &&
@@ -101,7 +101,7 @@ Tab.Button = <C extends React.ElementType = "a">({
           "border-b-2 border-transparent dark:border-transparent",
         list.variant == "link-tabs" &&
           tab.selected &&
-          "border-b-customColor font-medium dark:border-b-primary",
+          "border-b-customColor font-bold text-sm dark:border-b-primary",
 
         className,
       ])}

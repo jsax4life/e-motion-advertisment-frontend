@@ -155,7 +155,7 @@ const Main: React.FC<LayoutProps> = ({ isDashboard }) => {
                     >
                       <ul
                         className={clsx([
-                          "bg-white/[0.04] rounded-xl relative dark:bg-transparent",
+                          "bg-white/[0.04] rounded-xl relative dark:bg-transparent pl-4",
                           "before:content-[''] before:block before:inset-0 before:bg-white/30 before:rounded-xl before:absolute before:z-[-1] before:dark:bg-darkmode-900/30",
                           { block: menu.activeDropdown },
                           { hidden: !menu.activeDropdown },

@@ -425,7 +425,7 @@ export default function Main() {
          
 
           <div className="grid grid-cols-12 gap-6 ">
-            <div className="col-span-12 intro-y text-black  bg-white  lg:px-0">
+            {/* <div className="col-span-12 intro-y text-black  bg-white  lg:px-0">
               <div className="flex flex-col lg:flex-row w-full gap-y-2 text-primary items-center space-x-3">
                 {datepickerModalPreview && (
                   <Dialog
@@ -439,7 +439,6 @@ export default function Main() {
                     <Dialog.Panel
                       className=""
                     >
-                      {/* BEGIN: Modal Header */}
                       <Dialog.Title>
                         <div className="flex justify-center items-center">
                           <div className="bg-customColor/20 fill-customColor text-customColor mr-2 rounded-lg p-1.5">
@@ -455,8 +454,7 @@ export default function Main() {
                           </div>
                         </div>
                       </Dialog.Title>
-                      {/* END: Modal Header */}
-                      {/* BEGIN: Modal Body */}
+                
                       <Dialog.Description className="grid grid-cols-12 gap-x gap-y-6">
                         <div className="col-span-12 relative">
                           <FormLabel htmlFor="modal-datepicker-1">
@@ -506,8 +504,7 @@ export default function Main() {
                           </div>
                         </div>
                       </Dialog.Description>
-                      {/* END: Modal Body */}
-                      {/* BEGIN: Modal Footer */}
+                  
                       <Dialog.Footer className="text-right">
                         <Button
                           variant="outline-secondary"
@@ -526,8 +523,7 @@ export default function Main() {
                           ref={cancelButtonRef}
                           onClick={() => {
                             setDateRange(`${startDate}-${endDate}`);
-                            // const dateString = date.toString(); // Convert date object to string
-                            // handleAddFilter('Date', dateString);
+                  
                             handleFilterChange(
                               "Date",
                               `${startDate} - ${endDate}`
@@ -538,14 +534,13 @@ export default function Main() {
                           Apply Filter
                         </Button>
                       </Dialog.Footer>
-                      {/* END: Modal Footer */}
                     </Dialog.Panel>
                   </Dialog>
                 )}
 
           
               </div>
-            </div>
+            </div> */}
 
             {/* Data List or Loading Indicator */}
             {loading ? (

@@ -26,12 +26,37 @@ const initialState: SideMenuState = {
     },
 
     {
+      icon: "Book",
+      title: "Campaigns",
+      subMenu: [
+        {
+          icon: "Book",
+          pathname: "/orders",
+          title: "Orders",
+        },
+    
+      
+        {
+          icon: "Book",
+          pathname: "#",
+          title: "Calendar",    
+        },
+     
+        {
+          icon: "Book",
+          pathname: "/running-campaigns",
+          title: "Running",
+        },
+      ],
+    },
+
+    {
       icon: "Users",
       pathname: "/clients",
       title: "Client",
 
     },
-    
+
     {
       icon: "Tv2",
       pathname: "/billboards",
@@ -39,31 +64,8 @@ const initialState: SideMenuState = {
 
     },
  
-    // "divider",
-    // {
-    //   icon: "Users",
-    //   title: "Admins",
-    //   subMenu: [
-    //     {
-    //       icon: "User",
-    //       pathname: "/admins",
-    //       title: "All Admins",
-    //     },
-    
-      
-    //     {
-    //       icon: "User",
-    //       pathname: "/admin-role-management",
-    //       title: "Role Management",
-    //     },
-     
-    //     {
-    //       icon: "Book",
-    //       pathname: "/survey",
-    //       title: "Survey",
-    //     },
-    //   ],
-    // },
+
+ 
 
     // {
     //   icon: "Users",
