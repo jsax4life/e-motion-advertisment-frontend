@@ -176,10 +176,10 @@ export default function Main() {
       "post",
       `create-order`,
 
-      { ...data },
+      data,
       function (reponse: any) {
         console.log(reponse);
-        setOrderList((prev) => [reponse.data, ...prev]);
+        setOrderList((prev) => [...reponse.orders, ...prev]);
         setLoading(false);
         setIsModalOpen(false);
 
@@ -224,6 +224,8 @@ export default function Main() {
     );
     // Call your API to add a new billboard here
   };
+
+ 
 
   return (
     <>
