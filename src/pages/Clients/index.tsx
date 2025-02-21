@@ -169,7 +169,7 @@ export default function Main() {
       {...data},
       function (reponse: any) {
         console.log(reponse);
-        setClientList((prev) => [...prev, reponse]);
+        setClientList((prev) => [reponse.data, ...prev]);
         setLoading(false);
         setIsModalOpen(false);
 

@@ -179,7 +179,7 @@ export default function Main() {
       { ...data },
       function (reponse: any) {
         console.log(reponse);
-        setOrderList((prev) => [reponse, ...prev]);
+        setOrderList((prev) => [reponse.data, ...prev]);
         setLoading(false);
         setIsModalOpen(false);
 
