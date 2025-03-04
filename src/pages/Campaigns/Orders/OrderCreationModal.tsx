@@ -22,7 +22,7 @@ interface BillboardCreationModalProps {
   isOpen: boolean;
   isLoading: boolean;
   clients: Client[];
-  billboards: Billboard[];
+  availableBillboards: AvailableBillboard[];
   onClose: () => void;
   onSubmit: (data: any) => void;
 }
@@ -37,7 +37,26 @@ interface Client {
   company_name: string;
 }
 
-interface Billboard {
+interface BillboardOrder {
+  id: string;
+  name: string;
+  type: "Static" | "Digital" | "Bespoke";
+  slotsAvailable: number;
+  facesAvailable: number;
+  price: number;
+}
+
+// !formData.client_id ||
+// !formData.billboard_id ||
+// !formData.campaign_name ||
+// !formData.start_date ||
+// !formData.end_date ||
+// !formData.payment_option ||
+// !formData.media_purchase_order ||
+// !formData.actual_amount ||
+// !formData.campaign_duration
+
+interface AvailableBillboard {
   id: string;
   serialNumber: string;
   internalCode: string;
@@ -67,7 +86,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
   isOpen,
   isLoading,
   clients,
-  billboards,
+  availableBillboards,
   onClose,
   onSubmit,
 }) => {
@@ -79,9 +98,11 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
   const [endDate, setEndDate] = useState<string>("");
   const { user } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
-  const [selectedBillboard, setSelectedBillboard] = useState<Billboard>();
+  const [selectedBillboard, setSelectedBillboard] = useState<AvailableBillboard>();
+  // const [duration, setDuration] = useState<string>("")
   const [orders, setOrders] = useState<any[]>([]);
-  const [usedSlotsFaces, setUsedSlotsFaces] = useState<Record<string, string[]>>({});
+
+
   // const [clients, setClients] = useState<Client[]>([]);
   // const [billboards, setBillboards] = useState<Billboard[]>([]);
 
@@ -136,22 +157,35 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
   });
 
   const [formData, setFormData] = useState({
-    client_id: "",
     billboard_id: "",
-    campaign_name: "",
-    campaign_duration: "",
-    // billboard_type: "",
+    billboard_type: "",
+    orientation: "",
     slot: "",
     face: "",
-    comment: "",
-    // slot_or_face: "",
     start_date: "",
     end_date: "",
+    actual_amount: 0,
+    billboard_price_per_day: 0,
+ 
+  });
+
+
+
+  // State for order-level details
+  const [orderDetails, setOrderDetails] = useState({
+    client_id: "",
+    campaign_name: "",
+    campaign_duration: "",
     payment_option: "",
     media_purchase_order: "",
-    actual_amount: 0,
-    discount_amount: 0,
+    total_order_amount: 0,
+    discount_order_amount: 0,
+    comment: "",
   });
+
+  const [billboards, setBillboards] = useState<any[]>([]); // List of billboards in the order
+  const [usedSlotsFaces, setUsedSlotsFaces] = useState<Record<string, string[]>>({});
+
 
   // Fetch states and LGAs from API
   useEffect(() => {
@@ -171,21 +205,25 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
 
   useEffect(() => {
     if (startDate && endDate && formData.billboard_id) {
-      const selectedBillboard = billboards.find(
+      const selectedBillboard = availableBillboards.find(
         (b) => b.id == formData.billboard_id
       );
       if (selectedBillboard) {
         const numberOfDays = calculateNumberOfDays(startDate, endDate);
-        const actualAmount = numberOfDays * selectedBillboard.pricePerDay;
+        const actualAmount =  numberOfDays * selectedBillboard.pricePerDay
+       
         const campaignDuration = `${startDate}-${endDate}`;
 
         setFormData((prev) => ({
           ...prev,
           actual_amount: actualAmount,
-          campaign_duration: campaignDuration,
           start_date: startDate,
           end_date: endDate,
         }));
+        setDuration(campaignDuration);
+
+        // setOrderDetails((prev) => ({...prev, campaign_duration:campaignDuration }))
+
       }
     }
   }, [startDate, endDate, formData.billboard_id, billboards]);
@@ -198,62 +236,96 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+  };
+  
+   // Handle order-level field changes
+   const handleOrderDetailsChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setOrderDetails((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddOrder = () => {
+   // Get available slots/faces for the selected billboard
+   const availableSlotsFaces = (billboardId: string, type: string) => {
+    const billboard = availableBillboards.find((b) => b.id === billboardId);
+    if (!billboard) return [];
+
+    const used = usedSlotsFaces[billboardId] || [];
+    const total = type === "digital" ? billboard.available_slots : billboard.available_faces;
+
+    return Array.from({ length: Number(total) }, (_, i) => {
+      const slotOrFace = type === "Digital" ? `Slot ${i + 1}` : `Face ${i + 1}`;
+      return {
+        value: slotOrFace,
+        isUsed: used.includes(slotOrFace),
+      };
+    });
+  };
+
+  const handleAddBilboard = () => {
     // Validate required fields
     if (
-      !formData.client_id ||
       !formData.billboard_id ||
-      !formData.campaign_name ||
+      !formData.billboard_type ||
+      !formData.orientation ||
       !formData.start_date ||
-      !formData.end_date ||
-      !formData.payment_option ||
-      !formData.media_purchase_order ||
-      !formData.actual_amount ||
-      !formData.campaign_duration
+      !formData.end_date 
+      
     ) {
       alert("Please fill all required fields.");
       return;
     }
 
-    // Add the current form data to the orders list
-    setOrders((prev) => [...prev, formData]);
+    // Add the current form data to the billboard list
+    // setOrders((prev) => [...prev, formData]);
+    setBillboards((prev) => [...prev, formData]);
 
     // Reset the form (optional)
     setFormData({
-      client_id: "",
       billboard_id: "",
-      campaign_name: "",
-      campaign_duration: "",
-      // billboard_type: "",
+      billboard_type: "",
+      orientation: "",
       slot: "",
       face: "",
-      comment: "",
       start_date: "",
       end_date: "",
-      payment_option: "",
-      media_purchase_order: "",
+      billboard_price_per_day: 0,
       actual_amount: 0,
-      discount_amount: 0,
     });
+
+    // // Mark the selected slot/face as used
+    // setUsedSlotsFaces((prev) => ({
+    //   ...prev,
+    //   [formData.billboard_id]: [...(prev[formData.billboard_id] || []), formData.slotOrFace],
+    // }));
+
+    // Clear the selected billboard
+    setSelectedBillboard(undefined);
   };
+
+
 
   // Handle billboard selection
   const handleBillboardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const billboardId = e.target.value;
-    const selectedBillboard = billboards.find((b) => b.id == billboardId);
+    const selectedBillboard = availableBillboards.find((b) => b.id == billboardId);
     // console.log(typeof(selectedBillboard));
     setFormData((prev) => ({
       ...prev,
       billboard_id: billboardId,
-      // billboard_type: selectedBillboard?.billboardType || "",
-      actual_amount: selectedBillboard?.pricePerDay || 0,
+      billboard_type: selectedBillboard?.billboardType || "",
+      orientation: selectedBillboard?.orientation || "",
+
+      billboard_price_per_day: selectedBillboard?.pricePerDay || 0,
     }));
     if (selectedBillboard) {
       setSelectedBillboard(selectedBillboard);
     }
   };
+
+
   
 
   // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -262,6 +334,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
   //     setFormData((prev) => ({ ...prev, images: files }));
   //   }
   // };
+
 
   const calculateNumberOfDays = (
     startDate: string,
@@ -278,51 +351,50 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
   const handleSubmitOrder = async (data: any) => {
     // Prepare the payload
 
-    // If no orders are added, treat it as a single order
-    if (orders.length === 0) {
-      // Validate required fields
       if (
-        !formData.client_id ||
-        !formData.billboard_id ||
-        !formData.campaign_name ||
-        !formData.start_date ||
-        !formData.end_date ||
-        !formData.payment_option ||
-        !formData.media_purchase_order ||
-        !formData.actual_amount ||
-        !formData.campaign_duration
+        !orderDetails.client_id ||
+        !orderDetails.campaign_name ||
+        !orderDetails.payment_option ||
+        !orderDetails.media_purchase_order ||
+        billboards.length === 0
       ) {
         alert("No orders to create.");
         return;
       }
 
-      // Submit the single order
-      onSubmit([formData]);
-    } else {
-      // Submit all orders
-      onSubmit(orders);
-    }
+         // Prepare the payload
+    const payload = {
+      ...orderDetails,
+      campaign_duration: duration,
+      billboards,
+      total_order_amount : billboards.reduce((acc, item) => acc + item.actual_amount, 0),
+    };
 
-    setOrders([]);
-    setFormData({
+        // Submit the order
+        onSubmit(payload);
+
+        console.log(payload);
+      
+         // Clear the state and close the modal
+    setBillboards([]);
+    setUsedSlotsFaces({});
+    setOrderDetails({
       client_id: "",
-      billboard_id: "",
       campaign_name: "",
       campaign_duration: "",
-      // billboard_type: "",
-      slot: "",
-      face: "",
-      comment: "",
-      start_date: "",
-      end_date: "",
       payment_option: "",
       media_purchase_order: "",
-      actual_amount: 0,
-      discount_amount: 0,
+      total_order_amount: 0,
+      discount_order_amount: 0,
+      comment: "",
+
     });
+
     // onClose();
   };
 
+//   console.log(formData)
+// console.log(orderDetails)
   if (!isOpen) return null;
 
   return (
@@ -346,101 +418,10 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
               onSubmit={handleSubmit(handleSubmitOrder)}
               className="col-span-12 rounded-lg w-full max-w-2xl  md:p-4 space-y-8 "
             >
-              <div className="col-span-12">
-                <FormLabel
-                  className="font-medium lg:text-[16px] text-black"
-                  htmlFor="client_type"
-                >
-                  Client
-                </FormLabel>
-                <FormSelect
-                  name="client_id"
-                  value={formData.client_id}
-                  onChange={handleChange}
-                  formSelectSize="lg"
-                  // {...register("client", {
-                  //   onChange: (e) => {
-                  //     handleChange(e);
-                  //   },
-                  // })}
-                  className="w-full"
-                >
-                  <option value="" disabled>
-                    --Select--
-                  </option>
-                  {clients?.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.company_name}
-                    </option>
-                  ))}
-                </FormSelect>
-                {errors.client_type && (
-                  <p className="text-red-500">
-                    {errors.client_type.message?.toString()}
-                  </p>
-                )}
-              </div>
 
-              <div className="border-b border-slate-200"></div>
+              {/* Billboard selection Section */}
 
-              {/* campaign name */}
-
-              <div className="col-span-12">
-                <FormLabel
-                  className="font-medium lg:text-[16px] text-black"
-                  htmlFor="campaign_name "
-                >
-                  Campaign Name
-                </FormLabel>
-                <FormInput
-                  formInputSize="lg"
-                  id="campaign_name"
-                  type="text"
-                  name="campaign_name"
-                  onChange={handleChange}
-                  placeholder="Type here"
-                  required
-                  // {...register("campaign_name")}
-                />
-                {errors.campaign_name && (
-                  <p className="text-red-500">
-                    {errors.campaign_name.message?.toString()}
-                  </p>
-                )}
-              </div>
-
-              {/* paymentt option */}
-
-              <div className="col-span-12">
-                <FormLabel
-                  className="font-medium lg:text-[16px] text-black"
-                  htmlFor="payment_option"
-                >
-                  Payment Option
-                </FormLabel>
-                <FormSelect
-                  name="payment_option"
-                  value={formData.payment_option}
-                  onChange={handleChange}
-                  formSelectSize="lg"
-                  // {...register("payment_option")}
-
-                  className="w-full"
-                >
-                  <option value="" selected disabled>
-                    --Select--
-                  </option>
-                  <option value="prepaid">Upfront</option>
-                  <option value="postpaid">Postpaid</option>
-                </FormSelect>
-
-                {errors.payment_option && (
-                  <p className="text-red-500">
-                    {errors.payment_option.message?.toString()}
-                  </p>
-                )}
-              </div>
-
+              {/* select billboard */}
               <div className="col-span-12">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
@@ -452,6 +433,8 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                   name="billboard_id"
                   onChange={handleBillboardChange}
                   formSelectSize="lg"
+                  value={formData.billboard_id}
+
                   // {...register("bilboard_name", {
                   //   onChange: (e) => {
                   //     handleBillboardChange(e);
@@ -462,7 +445,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                   <option disabled selected value="">
                     --select--
                   </option>
-                  {billboards.map((billboard) => (
+                  {availableBillboards.map((billboard) => (
                     <option
                       key={billboard.id}
                       value={billboard.id}
@@ -488,7 +471,117 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                 )}
               </div>
 
-              {/* campaign duration */}
+                  {/* billboard type */}
+              {formData?.billboard_type && (
+                <>
+                  <div className="col-span-12">
+                    <FormLabel
+                      className="font-medium lg:text-[16px] text-black"
+                      htmlFor="billboardType"
+                    >
+                      Type
+                    </FormLabel>
+                    <FormSelect
+                      id="billboardType"
+                      formSelectSize="lg"
+                      value={formData?.billboard_type}
+                      className="w-full "
+                      disabled
+                    >
+                      <option value="">
+                        {formData?.billboard_type}
+                      </option>
+                    </FormSelect>
+                  </div>
+
+                
+
+                  
+                </>
+              )}
+
+              {/* Billboard Orientation  */}
+
+             {formData?.orientation && ( <div className="col-span-12">
+                    <FormLabel
+                      className="font-medium lg:text-[16px] text-black"
+                      htmlFor="orientation"
+                    >
+                      Orientation
+                    </FormLabel>
+                    <FormSelect
+                      id="orientation"
+                      formSelectSize="lg"
+                      value={formData?.orientation}
+                      className="w-full "
+                      disabled
+                    >
+                      <option value="">{formData?.orientation}</option>
+                    </FormSelect>
+              </div>)}
+
+               {/* Billboard price  */}
+            <div className="col-span-12">
+              <FormLabel  className="font-medium lg:text-[16px] text-black">Billboard Price/Day</FormLabel>
+              <FormInput
+              formInputSize="lg"
+                type="number"
+                name="actualAmount"
+                value={formData.billboard_price_per_day}
+                readOnly
+                className="w-full p-2 border rounded bg-gray-100 cursor-not-allowed"
+              />
+            </div>
+
+                {/* Slot or Face Selection */}
+              {formData?.billboard_type && (
+                <div className="">
+                    <FormLabel
+                      className="font-medium lg:text-[16px] text-black"
+                      htmlFor="client_type"
+                    >
+                      {formData?.billboard_type === "digital"
+                        ? " Slot Placement"
+                        : "Face Placement"}
+                    </FormLabel>
+
+                    <FormSelect
+                      formSelectSize="lg"
+                      name={`${
+                        formData?.billboard_type === "digital"
+                          ? "slot"
+                          : "face"
+                      }`}
+                      value={`${
+                        formData?.billboard_type === "digital"
+                          ? formData.slot
+                          : formData.face
+                      }`}
+                      onChange={handleChange}
+                      // {...register("slot_or_face")}
+                      className="w-full "
+                    >
+                      <option value="">
+                        --Select--
+                        {/* {selectedBillboard.billboardType === "digital" ? "Slot" : "Face"} */}
+                      </option>
+                      {selectedBillboard?.billboardType === "digital"
+                        ? selectedBillboard?.available_slots.map((slot) => (
+                            <option key={slot} value={slot}>
+                              Slot {slot}
+                            </option>
+                          )) || []
+                        : selectedBillboard?.available_faces.map((face) => (
+                            <option key={face} value={face}>
+                              Face {face}
+                            </option>
+                          )) || []}
+                    </FormSelect>
+                </div>
+              )}  
+
+
+              {/* campaign dates */}
               <div className="col-span-12   ">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
@@ -542,171 +635,190 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                 </div>
               </div>
 
-              <div className="border-b border-slate-200 my-2"></div>
 
-              {orders.length > 0 && (
-                <div className="col-span-12 flex flex-col gap-y-2">
-                  <h3 className="text-lg font-semibold ">Order Summary</h3>
-                  {orders.map((order, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center lg:space-x-8 space-x-2  text-xs lg:text-sm p-2 lg:p-4 bg-primary text-customColor rounded-2xl "
-                    >
-                      <div className="w-full ">
-                        <div className="text-sm md:text-[16px] text-black font-semibold mb-2">
-                          {
-                            billboards.find((b) => b.id == order.billboard_id)
-                              ?.billboardName
-                          }
-                        </div>
-                        <div className="flex space-x-2 text-xs capitalize ">
-                          <div className="bg-violet-200 text-violet-600 p-0.5">
-                            {
-                              billboards.find((b) => b.id == order.billboard_id)
-                                ?.orientation
-                            }
-                          </div>
-                          <div className="bg-blue-100 text-blue-600 p-0.5">
-                            {
-                              billboards.find((b) => b.id == order.billboard_id)
-                                ?.billboardType
-                            }
-                          </div>
-                          <div className="bg-orange-100 text-orange-500 p-0.5">
-                            {order.slot
-                              ? `Slot ${order.slot}`
-                              : `Face ${order.face} `}
-                          </div>
-                        </div>
-                      </div>
+              <div className="border-b border-slate-200 "></div>
 
-                      <div className="flex lg:w-full w-1/3 justify-end items-center space-x-2">
-                        <div className="lg:text-lg text-xs text-customColor font-semibold">
-                          &#x20A6;{formatCurrency(order.actual_amount)}{" "}
-                          <span className="text-slate-500 lg:text-sm text-xs">
-                            full cost
-                          </span>{" "}
-                        </div>
-                        <button
-                          onClick={() => {
-                            setOrders((prev) =>
-                              prev.filter((_, i) => i !== index)
-                            );
-                          }}
-                          className="  hover:bg-white text-customColor hover:text-white rounded-lg w-5 h-5 flex items-center justify-center"
-                        >
-                          {/* &times; */}
-                          <Lucide icon="X" className="text-red-600" />
-                        </button>
-                      </div>
+{billboards.length > 0 && (
+  <div className="col-span-12 flex flex-col gap-y-2">
+    <h3 className="text-lg font-semibold ">Added Billboards</h3>
+    {billboards.map((billboard, index) => (
+      <div
+        key={index}
+        className="flex items-center lg:space-x-8 space-x-2  text-xs lg:text-sm p-2 lg:p-4 bg-primary text-customColor rounded-2xl "
+      >
+        <div className="w-full ">
+          <div className="text-sm md:text-[16px] text-black font-semibold mb-2">
+            {
+              availableBillboards.find((b) => b.id == billboard.billboard_id)
+                ?.billboardName
+            }
+          </div>
+          <div className="flex space-x-2 text-xs capitalize ">
+            <div className="bg-violet-200 text-violet-600 p-0.5">
+              {
+                availableBillboards.find((b) => b.id == billboard.billboard_id)
+                  ?.orientation
+              }
+            </div>
+            <div className="bg-blue-100 text-blue-600 p-0.5">
+              {
+                availableBillboards.find((b) => b.id == billboard.billboard_id)
+                  ?.billboardType
+              }
+            </div>
+            <div className="bg-orange-100 text-orange-500 p-0.5">
+              {billboard.slot
+                ? `Slot ${billboard.slot}`
+                : `Face ${billboard.face} `}
+            </div>
+          </div>
+        </div>
 
-                      {/* <p><strong>Client:</strong> {clients.find((c) => c.id === order.client_id)?.company_name}</p>
-        <p><strong>Billboard:</strong> {billboards.find((b) => b.id === order.billboard_id)?.billboardName}</p>
-        <p><strong>Campaign Name:</strong> {order.campaign_name}</p>
-        <p><strong>Duration:</strong> {order.start_date} to {order.end_date}</p>
-        <p><strong>Amount:</strong> ${order.actual_amount}</p>
-        <button
-          type="button"
-          onClick={() => {
-            setOrders((prev) => prev.filter((_, i) => i !== index));
-          }}
-          className="mt-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-        >
-          Remove
-        </button> */}
-                    </div>
+        <div className="flex lg:w-full w-1/3 justify-end items-center space-x-2">
+          <div className="lg:text-lg text-xs text-customColor font-semibold">
+          <div className="text-slate-500 lg:text-sm text-xs">
+              campaign cost
+            </div>
+            &#x20A6;{formatCurrency(billboard.actual_amount)}
+            
+          </div>
+          <button
+            onClick={() => {
+              setBillboards((prev) => prev.filter((_, i) => i !== index));
+              setUsedSlotsFaces((prev) => ({
+                ...prev,
+                [billboard.billboardId]: prev[billboard.billboardId]?.filter(
+                  (slotOrFace) => slotOrFace !== billboard.slotOrFace
+                ),
+              }));
+            }}
+            className="  hover:bg-white text-customColor hover:text-white rounded-lg w-5 h-5 flex items-center justify-center"
+          >
+            {/* &times; */}
+            <Lucide icon="X" className="text-red-600" />
+          </button>
+        </div>
+
+
+      </div>
+    ))}
+  </div>
+)}
+
+{/* Add billboard button */}
+<             Button
+                  disabled={isLoading}
+                  variant="primary"
+                  type="button"
+                  className="w-auto text-sm bg-white md:text-[16px] font-semibold border-customColor text-customColor"
+                  ref={sendButtonRef}
+                  onClick={handleAddBilboard}
+
+                  // onClick={handleSubmit((data) => {
+                  //   onSubmit(data);
+                  //   onClose();
+                  // })}
+                >
+                  <Lucide icon="Plus" className="w-4 h-4 mr-1" />
+
+                  <div className="  text-center">Add Billboard</div>
+                </Button>
+
+                <div className="border-b border-slate-200"></div>
+
+                  {/* Order data section */}
+
+                {/* select client */}
+              <div className="col-span-12">
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="client_type"
+                >
+                  Client
+                </FormLabel>
+                <FormSelect
+                  name="client_id"
+                  value={orderDetails.client_id}
+                  onChange={handleOrderDetailsChange}
+                  formSelectSize="lg"
+                  // {...register("client", {
+                  //   onChange: (e) => {
+                  //     handleChange(e);
+                  //   },
+                  // })}
+                  className="w-full"
+                >
+                  <option value="" disabled>
+                    --Select--
+                  </option>
+                  {clients?.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.company_name}
+                    </option>
                   ))}
-                </div>
-              )}
+                </FormSelect>
+                {errors.client_type && (
+                  <p className="text-red-500">
+                    {errors.client_type.message?.toString()}
+                  </p>
+                )}
+              </div>
 
-              {selectedBillboard?.billboardType && (
-                <>
-                  <div className="col-span-12">
-                    <FormLabel
-                      className="font-medium lg:text-[16px] text-black"
-                      htmlFor="billboardType"
-                    >
-                      Type
-                    </FormLabel>
-                    <FormSelect
-                      id="billboardType"
-                      formSelectSize="lg"
-                      value={selectedBillboard?.billboardType}
-                      className="w-full "
-                      disabled
-                    >
-                      <option value="">
-                        {selectedBillboard?.billboardType}
-                      </option>
-                    </FormSelect>
-                  </div>
 
-                  <div className="col-span-12">
-                    <FormLabel
-                      className="font-medium lg:text-[16px] text-black"
-                      htmlFor="orientation"
-                    >
-                      Orientation
-                    </FormLabel>
-                    <FormSelect
-                      id="orientation"
-                      formSelectSize="lg"
-                      value={selectedBillboard?.orientation}
-                      className="w-full "
-                      disabled
-                    >
-                      <option value="">{selectedBillboard?.orientation}</option>
-                    </FormSelect>
-                  </div>
+              {/* campaign name */}
+              <div className="col-span-12">
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="campaign_name "
+                >
+                  Campaign Name
+                </FormLabel>
+                <FormInput
+                  formInputSize="lg"
+                  id="campaign_name"
+                  type="text"
+                  value={orderDetails.campaign_name}
+                  name="campaign_name"
+                  onChange={handleOrderDetailsChange}
+                  placeholder="Type here"
+                  required
+                  // {...register("campaign_name")}
+                />
+               
+              </div>
 
-                  {/* Slot or Face Selection */}
+              {/* paymentt option */}
+              <div className="col-span-12">
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="payment_option"
+                >
+                  Payment Option
+                </FormLabel>
+                <FormSelect
+                  name="payment_option"
+                  value={orderDetails.payment_option}
+                  onChange={handleOrderDetailsChange}
+                  formSelectSize="lg"
+                  // {...register("payment_option")}
 
-                  <div className="">
-                    <FormLabel
-                      className="font-medium lg:text-[16px] text-black"
-                      htmlFor="client_type"
-                    >
-                      {selectedBillboard.billboardType === "digital"
-                        ? " Slot Placement"
-                        : "Face Placement"}
-                    </FormLabel>
+                  className="w-full"
+                >
+                  <option value="" selected disabled>
+                    --Select--
+                  </option>
+                  <option value="prepaid">Upfront</option>
+                  <option value="postpaid">Postpaid</option>
+                </FormSelect>
 
-                    <FormSelect
-                      formSelectSize="lg"
-                      name={`${
-                        selectedBillboard.billboardType === "digital"
-                          ? "slot"
-                          : "face"
-                      }`}
-                      value={`${
-                        selectedBillboard.billboardType === "digital"
-                          ? formData.slot
-                          : formData.face
-                      }`}
-                      onChange={handleChange}
-                      // {...register("slot_or_face")}
-                      className="w-full "
-                    >
-                      <option value="">
-                        --Select--
-                        {/* {selectedBillboard.billboardType === "digital" ? "Slot" : "Face"} */}
-                      </option>
-                      {selectedBillboard.billboardType === "digital"
-                        ? selectedBillboard?.available_slots.map((slot) => (
-                            <option key={slot} value={slot}>
-                              Slot {slot}
-                            </option>
-                          )) || []
-                        : selectedBillboard?.available_faces.map((face) => (
-                            <option key={face} value={face}>
-                              Face {face}
-                            </option>
-                          )) || []}
-                    </FormSelect>
-                  </div>
-                </>
-              )}
+                {errors.payment_option && (
+                  <p className="text-red-500">
+                    {errors.payment_option.message?.toString()}
+                  </p>
+                )}
+              </div>   
 
+                  {/* media purchase input */}
               <div className="col-span-12">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
@@ -718,8 +830,9 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                   formInputSize="lg"
                   id="media_purchase_order"
                   type="url"
+                  value={orderDetails.media_purchase_order}
                   name="media_purchase_order"
-                  onChange={handleChange}
+                  onChange={handleOrderDetailsChange}
                   placeholder="Type here"
                   // {...register("media_purchase_order")}
                 />
@@ -730,6 +843,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                 )}
               </div>
 
+                  {/* comment */}
               <div className="col-span-12">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
@@ -741,25 +855,94 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                   formTextareaSize="lg"
                   id="comment"
                   name="comment"
-                  onChange={handleChange}
+                  onChange={handleOrderDetailsChange}
                   placeholder="Add comment..."
                 />
               </div>
 
+
+    <div className="border-b border-slate-200 my-2"></div>
+
+{billboards.length > 0 && (
+  <div className="col-span-12 flex flex-col gap-y-2">
+    <h3 className="text-lg font-semibold ">Order Summary</h3>
+    {/* {billboards.map((billboard, index) => (
+      <div
+        key={index}
+        className="flex items-center lg:space-x-8 space-x-2  text-xs lg:text-sm p-2 lg:p-4 bg-primary text-customColor rounded-2xl "
+      >
+        <div className="w-full ">
+          <div className="text-sm md:text-[16px] text-black font-semibold mb-2">
+            {
+              availableBillboards.find((b) => b.id == billboard.billboard_id)
+                ?.billboardName
+            }
+          </div>
+          <div className="flex space-x-2 text-xs capitalize ">
+            <div className="bg-violet-200 text-violet-600 p-0.5">
+              {
+                availableBillboards.find((b) => b.id == billboard.billboard_id)
+                  ?.orientation
+              }
+            </div>
+            <div className="bg-blue-100 text-blue-600 p-0.5">
+              {
+                availableBillboards.find((b) => b.id == billboard.billboard_id)
+                  ?.billboardType
+              }
+            </div>
+            <div className="bg-orange-100 text-orange-500 p-0.5">
+              {billboard.slot
+                ? `Slot ${billboard.slot}`
+                : `Face ${billboard.face} `}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex lg:w-full w-1/3 justify-end items-center space-x-2">
+          <div className="lg:text-lg text-xs text-customColor font-semibold">
+            &#x20A6;{formatCurrency(formData.actual_amount)}{" "}
+            <span className="text-slate-500 lg:text-sm text-xs">
+              campaign cost
+            </span>{" "}
+          </div>
+          <button
+            onClick={() => {
+              setBillboards((prev) => prev.filter((_, i) => i !== index));
+              setUsedSlotsFaces((prev) => ({
+                ...prev,
+                [billboard.billboardId]: prev[billboard.billboardId]?.filter(
+                  (slotOrFace) => slotOrFace !== billboard.slotOrFace
+                ),
+              }));
+            }}
+            className="  hover:bg-white text-customColor hover:text-white rounded-lg w-5 h-5 flex items-center justify-center"
+          >
+            <Lucide icon="X" className="text-red-600" />
+          </button>
+        </div>
+
+
+      </div>
+    ))} */}
+  </div>
+)}
+
+
               <div className="col-span-12">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
-                  htmlFor="actual_amount"
+                  htmlFor="total_order_amount"
                 >
-                  Amount
+                  Total Order Amount
                 </FormLabel>
                 <FormInput
                   formInputSize="lg"
                   id="actual_amount"
                   type="text"
-                  name="actual_amount"
+                  name="total_order_amount"
                   readOnly
-                  value={`₦${formatCurrency(formData.actual_amount)}`}
+                  value={`₦${formatCurrency( billboards.reduce((acc, item) => acc + item.actual_amount, 0))}`}
                   placeholder="Type here"
                   // {...register("actual_amount")}
                 />
@@ -778,7 +961,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                   type="text"
                   name="discount_amount"
                   onChange={handleChange}
-                  value={`${formData.discount_amount}`}
+                  value={`${orderDetails.discount_order_amount}`}
                   placeholder="Type here"
                   // {...register("discount_amount")}
                 />
@@ -788,6 +971,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                   </p>
                 )}
               </div>
+
 
               <div className="flex flex-col lg:flex-row lg:space-x-2 gap-y-2 lg:gap-y-0 lg:text-lg text-sm">
                 <Button
@@ -800,23 +984,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                   <div className=""> Cancel</div>
                 </Button>
 
-                <Button
-                  disabled={isLoading}
-                  variant="primary"
-                  type="button"
-                  className="w-auto text-sm bg-white md:text-[16px] font-semibold border-customColor text-customColor"
-                  ref={sendButtonRef}
-                  onClick={handleAddOrder}
-
-                  // onClick={handleSubmit((data) => {
-                  //   onSubmit(data);
-                  //   onClose();
-                  // })}
-                >
-                  <Lucide icon="Plus" className="w-4 h-4 mr-1" />
-
-                  <div className="  text-center">Add Billboard</div>
-                </Button>
+              
 
                 <Button
                   disabled={isLoading}

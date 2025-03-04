@@ -9,7 +9,6 @@ import Register from "../pages/Register";
 import Billboard from "../pages/Billboards";
 import Client from "../pages/Clients";
 import Order from "../pages/Campaigns/Orders";
-import ProfileDetails from "../pages/Billboards/VehicleDetails";
 import UpdateVehicleProfile from "../pages/Billboards/UpdateVehicleProfile";
 import AdminProfileDetails from "../pages/Admins/AdminDetails";
 import EditAdminProfile from "../pages/Admins/AdminProfile/EditProfile"
@@ -17,7 +16,7 @@ import AllUsers from "../pages/Users"
 import UserProfileDetails from "../pages/Users/UserDetails";
 import UpdateUserProfile from "../pages/Users/UpdateUserDetails";
 import UpdateAdminProfile from "../pages/Admins/UpdateAdminDetails";
-
+import BillboardDetails from "../pages/Billboards/BillboardDetails";
 import AddNewUser from "../pages/Users/AddUser";
 import PrivateRoute from './PrivateRoute';
 import RolePrivilegesTable from "../pages/Users/RoleManagement";
@@ -27,6 +26,7 @@ import SurveyResponse from "../pages/Surevy/ViewResponse"
 
 import AdminRolePrivilegesTable from "../pages/Admins/AdminRoleManagement";
 import AddNewAdmiin from "../pages/Admins/AddAdmin";
+import CampaignDetails from "../pages/Campaigns/Orders/CampaignDetails";
 
 
 function Router() {
@@ -90,8 +90,10 @@ function Router() {
             element: <Order />,
           },
         
-        
-          { path: "/profile/:id", element: <ProfileDetails />},
+          { path: "/details/:id", element: <BillboardDetails />},
+          { path: "/campaign-details/:id", element: <CampaignDetails />},
+
+         
   
           { path: "/update-profile/:id", element: <UpdateVehicleProfile />},
   

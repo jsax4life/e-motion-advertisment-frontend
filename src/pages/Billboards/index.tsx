@@ -6,6 +6,9 @@ import { Fragment, Key, useContext, useEffect } from "react";
 import _, { set } from "lodash";
 import clsx from "clsx";
 import { useState, useRef } from "react";
+import toast, { Toaster } from "react-hot-toast";
+
+
 import Button from "../../base-components/Button";
 import Pagination from "../../base-components/Pagination";
 import {
@@ -30,6 +33,8 @@ import Breadcrumb from "../../base-components/Breadcrumb";
 import BillboardCreationModal from "./BillboardCreationModal";
 import Notification from "../../base-components/Notification";
 import Toastify from "toastify-js";
+import { PullBillboardContext } from "../../stores/BillboardDataContext";
+import ChangeStatusModal from "./ChangeStatusModal";
 
 const lagosLGAs = [
   "Agege",
@@ -54,6 +59,8 @@ const lagosLGAs = [
   "Surulere",
 ];
 
+
+
 const lagosParks = [
   "Agege Park",
   "Alimosho Park",
@@ -62,10 +69,7 @@ const lagosParks = [
   "Epe Park",
 ];
 
-const tagStyle = [
-  "bg-orange-100 text-orange-600",
-  "bg-green-100 text-green-600",
-];
+
 
 export default function Main() {
   const { user } = useContext(UserContext);
@@ -73,6 +77,7 @@ export default function Main() {
   const [openModal, setOpenModal] = useState(false);
 
   const [billboardList, setBillboardList] = useState<any[]>([]);
+  const { billboards, billboardDispatch } = useContext(PullBillboardContext);
 
   const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false);
   const deleteButtonRef = useRef(null);
@@ -84,9 +89,11 @@ export default function Main() {
   const [selectedLGA, setSelectedLGA] = useState<string>("");
   const [selectedUser, setSelectedUser] = useState<string>("");
 
-  const [kpiData, setKpiData] = useState(null);
   const [selectedPark, setSelectedPark] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isStatusModalOpen, setStatusModalOpen] = useState(false);
+
+  const [selectedBillboard, setSelectedBillboard] = useState();
 
   const [error, setError] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -146,6 +153,7 @@ export default function Main() {
       // {lga: 'Alimosho'},
       function (bbListData: any) {
         setBillboardList(bbListData.registered_billboards);
+        billboardDispatch({ type: "STORE_BILLBOARD_DATA", billboard: bbListData.registered_billboards });
         setLoading(false);
         console.log(bbListData);
       },
@@ -211,6 +219,44 @@ export default function Main() {
         position: "right",
         stopOnFocus: true,
       }).showToast();
+      },
+      user?.token && user.token
+    );
+    // Call your API to add a new billboard here
+  };
+
+const handleChangeStatusClick = (billboard: any) => {
+    setSelectedBillboard(billboard);
+    setStatusModalOpen(true)
+}
+  const handleUpdateBillboardStatus = (data: any) => {
+    console.log(data);
+    // setIsModalOpen(false);
+    setLoading(true);
+
+    API(
+      "patch",
+      `billboards/${data?.id}/status`,
+
+      data,
+      function (reponse: any) {
+        console.log(reponse);
+        setLoading(false);
+        setStatusModalOpen(false);
+
+
+        setLoading(false);
+        toast.success("Status updated successfully");
+      },
+
+      function (error: any) {
+        console.error("Error fetching recent searches:", error);
+        setLoading(false);
+
+
+        setErrorMessage(error);
+        toast.error(error)
+     
       },
       user?.token && user.token
     );
@@ -323,6 +369,14 @@ export default function Main() {
         isLoading={loading}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleAddBillboard}
+      />
+
+<ChangeStatusModal
+        isOpen={isStatusModalOpen}
+        billboard={selectedBillboard}
+        isLoading={loading}
+        onClose={() => setStatusModalOpen(false)}
+        onSubmit={handleUpdateBillboardStatus}
       />
         </div>
 
@@ -702,11 +756,11 @@ export default function Main() {
           <Lucide icon="MoreVertical" className="w-5 h-5" />
         </Menu.Button>
         <Menu.Items className="w-40">
-        <Menu.Item>
+        <Menu.Item onClick = {() => {navigate(`/details/${billboard?.id}`)}}>
             <Lucide icon="Edit2" className="w-4 h-4 mr-2" /> View Details
           </Menu.Item>
-          <Menu.Item>
-            <Lucide icon="Edit2" className="w-4 h-4 mr-2" /> Edit Details
+          <Menu.Item  onClick = {() =>  handleChangeStatusClick(billboard) } >
+            <Lucide icon="Edit2" className="w-4 h-4 mr-2" /> Change Status
           </Menu.Item>
           <Menu.Item className="text-red-500">
             <Lucide icon="Trash" className="w-4 h-4 mr-2 " /> Delete 
@@ -764,6 +818,7 @@ export default function Main() {
           </div>
         </div>
       </div>
+
 
       <Notification
               id="success-notification-content"

@@ -6,9 +6,13 @@ import { store } from "./stores/store";
 import Router from "./router";
 import "./assets/css/app.css";
 import UserContextProvider from "./stores/UserContext";
+import BillboardDataContextProvider from "./stores/BillboardDataContext";
+import CampaignContextProvider from "./stores/CampaignDataContext";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <UserContextProvider>
+    <CampaignContextProvider>
+   <BillboardDataContextProvider>
 
  <BrowserRouter>
     <Provider store={store}>
@@ -16,6 +20,9 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     </Provider>
     <ScrollToTop />
   </BrowserRouter>
+  </BillboardDataContextProvider>
+  </CampaignContextProvider>
   </UserContextProvider>
+  
 
 );

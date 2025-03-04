@@ -10,6 +10,7 @@ import Lucide from "../../../base-components/Lucide";
 import { Tab } from "../../../base-components/Headless";
 
 import { UserContext } from "../../../stores/UserContext";
+import { PullCampaignContext } from "../../../stores/CampaignDataContext";
 import API from "../../../utils/API";
 import { Link, useNavigate } from "react-router-dom";
 import LoadingIcon from "../../../base-components/LoadingIcon";
@@ -27,7 +28,7 @@ interface Client {
   company_name: string;
 }
 
-interface Billboard {
+interface AvailableBillboard {
   id: string;
   serialNumber: string,
   internalCode: string,
@@ -55,6 +56,7 @@ interface Billboard {
 
 export default function Main() {
   const { user } = useContext(UserContext);
+  const { campaignDispatch} = useContext(PullCampaignContext)
 
   const [openModal, setOpenModal] = useState(false);
 
@@ -75,7 +77,7 @@ export default function Main() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [clients, setClients] = useState<Client[]>([]);
-  const [billboards, setBillboards] = useState<Billboard[]>([]);
+  const [billboards, setBillboards] = useState<AvailableBillboard[]>([]);
 
   const [loading, setLoading] = useState(true);
 
@@ -108,11 +110,12 @@ export default function Main() {
 
     API(
       "get",
-      `orders-data`,
+      `campaign-orders`,
       params,
       // {lga: 'Alimosho'},
       function (orderData: any) {
-        setOrderList(orderData?.created_orders);
+        setOrderList(orderData?.data);
+        campaignDispatch({ type: "STORE_CAMPAIGN_DATA", campaign: orderData?.data });
         setLoading(false);
         console.log(orderData);
       },
@@ -174,12 +177,12 @@ export default function Main() {
 
     API(
       "post",
-      `create-order`,
+      `campaign-orders`,
 
       data,
       function (reponse: any) {
         console.log(reponse);
-        setOrderList((prev) => [...reponse.orders, ...prev]);
+        setOrderList((prev) => [reponse.data, ...prev]);
         setLoading(false);
         setIsModalOpen(false);
 
@@ -266,7 +269,7 @@ export default function Main() {
 
           <OrderCreationModal
             clients={clients}
-            billboards={billboards}
+            availableBillboards={billboards}
             isOpen={isModalOpen}
             isLoading={loading}
             onClose={() => setIsModalOpen(false)}

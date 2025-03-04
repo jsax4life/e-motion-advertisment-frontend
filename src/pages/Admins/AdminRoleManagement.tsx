@@ -25,57 +25,69 @@ import Notification from "../../base-components/Notification";
 
 type Role =
   |'Super Admin'
+  |'Admin'
+  |'Manager'
   |'Administrator'
   |'Operation Manager'
   |'Support Administrator'
   
 type Privilege =
-  | "Add users"
-  | "Change Password"
-  | "Edit Users"
-  | "Delete User"
-  | "Edit Vehicles"
-  | "Dashboard"
-  | "Delete Role";
+|'add_users'
+|'change_password'
+|'edit_users'
+|'delete_user'
+|'delete_role'
+|'update_billboard_status'
+|'update_campaign_status'
+|'approve_campaign_order'
+|'mark_campaign_as_paid'
+|'deliver_campaign_order'
 
 // Initial privileges for each role (can be fetched from backend)
 const roles: Role[] = [
   'Super Admin',
+  'Admin',
+  'Manager',
   'Administrator',
   'Operation Manager',
   'Support Administrator',
 ];
+
 const privileges: Privilege[] = [
-  "Add users",
-  "Change Password",
-  "Edit Users",
-  "Delete User",
-  // "Register Vehicle",
-  // "Attach Vehicle",
-  "Edit Vehicles",
-  "Dashboard",
-  "Delete Role",
+  'add_users',
+  'change_password',
+  'edit_users',
+  'delete_user',
+  'delete_role',
+  'update_billboard_status',
+  'update_campaign_status',
+  'approve_campaign_order',
+  'mark_campaign_as_paid',
+  'deliver_campaign_order',
 ];
 
 
   
   const roleMapping: Record<Role, number> = {
     "Super Admin": 1,
-    "Administrator": 2,
-    "Operation Manager": 3,
-    "Support Administrator": 4,
+    "Admin": 2,
+    "Manager" : 3,
+    "Administrator": 4,
+    "Operation Manager": 5,
+    "Support Administrator": 6,
   };
   
   const privilegeMapping: Record<Privilege, number> = {
-    "Add users": 1,
-    "Change Password": 2,
-    "Edit Users": 3,
-    "Delete User": 4,
-    // "Register Vehicle": 5,
-    // "Attach Vehicle": 6,
-    "Edit Vehicles": 5,
-    "Dashboard": 6,
-    "Delete Role": 7,
+    'add_users': 1,
+    'change_password' :2,
+    'edit_users': 3,
+    'delete_user': 4,
+    'delete_role': 5,
+    'update_billboard_status': 6,
+    'update_campaign_status': 7,
+    'approve_campaign_order': 8,
+    'mark_campaign_as_paid': 9,
+    'deliver_campaign_order': 10,
   };
 
   const initialPrivileges = roles.reduce((acc, role) => {

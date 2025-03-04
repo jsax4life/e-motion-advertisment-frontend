@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Pagination from "../../../base-components/Pagination";
 import { FormSelect } from "../../../base-components/Form";
 import Lucide from "../../../base-components/Lucide";
@@ -11,6 +12,8 @@ interface Order {
   client_id: string;
   billboard_id: string;
   campaign_name: string;
+  order_id: string;
+  billboards: Array<{ start_date: string; end_date: string }>;
   campaign_duration: string;
   status: "approved" | "pending" | "paid" | "delivered" | "cancelled";
   slot: string;
@@ -21,7 +24,7 @@ interface Order {
   end_date: string;
   payment_option: string;
   media_purchase_order: string;
-  actual_amount: number;
+  total_order_amount: number;
   discount_amount: number;
   // Add other fields as needed
 }
@@ -35,6 +38,9 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
   loading,
   orderList,
 }) => {
+
+  const navigate = useNavigate();
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -47,7 +53,9 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
             <Table.Thead className="lg:h-10 text-slate-400">
               <Table.Tr>
                 <Table.Th className="whitespace-nowrap">S/N</Table.Th>
-                <Table.Th className="whitespace-nowrap">COMPANY NAME</Table.Th>
+                <Table.Th className="whitespace-nowrap">CAMPAIGN NAME</Table.Th>
+                <Table.Th className="whitespace-nowrap">ORDER NUMBER</Table.Th>
+
                 <Table.Th className="whitespace-nowrap">
                   PAYMENT OPTION
                 </Table.Th>
@@ -63,7 +71,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {orderList.map((order, orderKey) => (
+              {orderList?.map((order, orderKey) => (
                 <Table.Tr
                   key={orderKey}
                   className="intro-x text-black capitalize"
@@ -71,9 +79,16 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                   <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                     <div className="whitespace-nowrap">{orderKey + 1}</div>
                   </Table.Td>
+                  
                   <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white dark:bg-darkmode-600 border-slate-200 border-b">
                     <div className="whitespace-nowrap">
                       {order?.campaign_name}
+                    </div>
+                  </Table.Td>
+                    
+                  <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white dark:bg-darkmode-600 border-slate-200 border-b">
+                    <div className="whitespace-nowrap">
+                      {order?.order_id}
                     </div>
                   </Table.Td>
                   <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
@@ -83,11 +98,11 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                   </Table.Td>
                   <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                     <div className="whitespace-nowrap">
-                      {formatDate(order?.start_date)}
+                      {formatDate(order?.billboards?.[0]?.start_date)}
                     </div>
                   </Table.Td>
                   <Table.Td className="first:rounded-l-md last:rounded-r-md w-40 bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
-                    <div>{formatDate(order?.end_date)}</div>
+                    <div>{formatDate(order?.billboards?.[0]?.end_date)}</div>
                   </Table.Td>
 
                   <Table.Td className="first:rounded-l-md   last:rounded-r-md text-start bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
@@ -109,7 +124,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                    </div>
                   </Table.Td>
                   <Table.Td className="first:rounded-l-md last:rounded-r-md w-40 bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
-                    <div>&#x20A6;{formatCurrency(order?.actual_amount)}</div>
+                    <div>&#x20A6;{formatCurrency(order?.total_order_amount)}</div>
                   </Table.Td>
 
                   <Table.Td className="first:rounded-l-md text-sm last:rounded-r-md bg-white border-slate-200 border-b dark:bg-darkmode-600 py-0 relative before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400">
@@ -118,7 +133,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                         <Lucide icon="MoreVertical" className="w-5 h-5" />
                       </Menu.Button>
                       <Menu.Items className="w-40">
-                        <Menu.Item>
+                        <Menu.Item onClick={() => {navigate(`/campaign-details/${order?.id}`)}}>
                           <Lucide icon="Edit2" className="w-4 h-4 mr-2" /> View
                           Order
                         </Menu.Item>
