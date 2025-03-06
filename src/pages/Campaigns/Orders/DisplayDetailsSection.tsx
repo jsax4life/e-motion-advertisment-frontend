@@ -22,7 +22,7 @@ interface Campaign {
   media_purchase_order:string;
   total_order_amount: number;
   discount_order_amount: number;
-  comment: string;
+  description: string;
   
 }
 
@@ -104,7 +104,7 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
               description
             </div>
             <div className=" text lowercase  text-black text-sm">
-              {campaign?.comment}
+              {campaign?.description}
             </div>
           </div>
         </div>
@@ -231,16 +231,7 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
         <div className="border-b border-slate-200 pb-4 text-lg font-bold text-black">
           preview
         </div>
-        <div className="grid grid-cols-3 gap-4 uppercase lg:mb-8 ">
-          {campaign?.status_logs.map((log, index) => (
-            <div
-              key={index}
-              className="col-span-1 rounded-2xl border max-w-1/3 "
-            >
-              <p>{log?.new_status}</p>
-            </div>
-          ))}
-        </div>
+      
       </div>
      </div>
     </div>

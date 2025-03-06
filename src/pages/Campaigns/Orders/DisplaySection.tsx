@@ -96,12 +96,12 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                       {order?.payment_option}
                     </div>
                   </Table.Td>
-                  <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
+                  <Table.Td className="first:rounded-l-md last:rounded-r-md  text-xs bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                     <div className="whitespace-nowrap">
                       {formatDate(order?.billboards?.[0]?.start_date)}
                     </div>
                   </Table.Td>
-                  <Table.Td className="first:rounded-l-md last:rounded-r-md w-40 bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
+                  <Table.Td className="first:rounded-l-md last:rounded-r-md w-40 text-xs bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                     <div>{formatDate(order?.billboards?.[0]?.end_date)}</div>
                   </Table.Td>
 

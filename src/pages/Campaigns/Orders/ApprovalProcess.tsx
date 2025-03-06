@@ -55,7 +55,7 @@ export default function ApprrovalProcess({ statusLog }: any) {
               </div>
               <div className="w-auto  px-1 text-center ">
                 <p className="text-[8px] px-1 rounded-sm  truncate font-medium  bg-green-100 text-green-700">
-                  Processed
+                  completed
                 </p>
                 <p className="text-[8px]  text-slate-600">
                   {formatDate(log?.updated_at, "MM-DD-YYYY")}
