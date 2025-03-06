@@ -180,7 +180,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     media_purchase_order: "",
     total_order_amount: 0,
     discount_order_amount: 0,
-    comment: "",
+    description: "",
   });
 
   const [billboards, setBillboards] = useState<any[]>([]); // List of billboards in the order
@@ -386,7 +386,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
       media_purchase_order: "",
       total_order_amount: 0,
       discount_order_amount: 0,
-      comment: "",
+      description: "",
 
     });
 
@@ -843,20 +843,20 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                 )}
               </div>
 
-                  {/* comment */}
+                  {/* description */}
               <div className="col-span-12">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
                   htmlFor="contact_person_name"
                 >
-                  Comment
+                  Description
                 </FormLabel>
                 <FormTextarea
                   formTextareaSize="lg"
-                  id="comment"
-                  name="comment"
+                  id="description"
+                  name="description"
                   onChange={handleOrderDetailsChange}
-                  placeholder="Add comment..."
+                  placeholder="Add description..."
                 />
               </div>
 

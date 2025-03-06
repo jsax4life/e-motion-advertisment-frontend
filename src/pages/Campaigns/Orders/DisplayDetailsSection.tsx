@@ -5,6 +5,8 @@ import Lucide from "../../../base-components/Lucide";
 import { Menu, Tab } from "../../../base-components/Headless";
 import Table from "../../../base-components/Table";
 import { formatCurrency, formatDate } from "../../../utils/utils";
+import ApprrovalProcess from "./ApprovalProcess";
+import ContactDetails from "./ContactDetails";
 
 interface Campaign {
   id: string;
@@ -88,12 +90,21 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
                     <div className="text-sm md:text-[12px] text-slate-400 font-bold mb-1 ">Billboard Name</div>
                     <div className="text-lg font-bold  text-slate-800">{billboard?.billboardName}</div>
                   </div> */}
-          <div className="col-span-2 ">
+          <div className="col-span-2 mb-4">
             <div className=" md:text-[12px] text-slate-500 font-bold mb-1">
-              media order document
+              media purchase order document
             </div>
             <div className=" font-bold   text-customColor">
               {campaign?.media_purchase_order}
+            </div>
+          </div>
+
+          <div className="col-span-2 ">
+            <div className=" md:text-[12px] text-slate-500 font-bold mb-1">
+              description
+            </div>
+            <div className=" text lowercase  text-black text-sm">
+              {campaign?.comment}
             </div>
           </div>
         </div>
@@ -199,45 +210,21 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
       </div>
 
 
-     <div className="flex flex-col  gap-6 lg:col-span-4 ">
+     <div className="flex flex-col  gap-6  col-span-12 lg:col-span-4 ">
      <div className=" p-5  flex flex-col gap-y-4 rounded-2xl  bg-white col-span-12 lg:col-span-4 overflow-auto intro-y 2xl:overflow-visible capitalize ">
         <div className="border-b border-slate-200 pb-4 text-lg font-bold text-black">
           approval process
         </div>
-        <div className="grid grid-cols-3 gap-4 uppercase lg:mb-8 ">
-          {campaign?.status_logs.map((log, index) => (
-            <div
-              key={index}
-              className="col-span-1 rounded-2xl border max-w-1/3 "
-            >
-              <p>{log?.new_status}</p>
-            </div>
 
-
-
-
-              
-
-
-
-          ))}
-        </div>
+          <ApprrovalProcess statusLog = {campaign.status_logs}/>
+         
       </div>
 
-      <div className=" p-5  flex flex-col gap-y-4 rounded-2xl  bg-white col-span-12 lg:col-span-4 overflow-auto intro-y 2xl:overflow-visible capitalize">
-        <div className="border-b border-slate-200 pb-4 text-lg font-bold text-black">
+      <div className=" p-5  flex flex-col gap-y-4 rounded-2xl  bg-white col-span-12 lg:col-span-4  intro-y  capitalize">
+        <div className="border-b border-slate-200 pb-4 text-lg font-bold text-black ">
           contact details
         </div>
-        <div className="grid grid-cols-3 gap-4 uppercase lg:mb-8 ">
-          {campaign?.status_logs.map((log, index) => (
-            <div
-              key={index}
-              className="col-span-1 rounded-2xl border max-w-1/3 "
-            >
-              <p>{log?.new_status}</p>
-            </div>
-          ))}
-        </div>
+            <ContactDetails campaign={campaign}/> 
       </div>
 
       <div className=" p-5  flex flex-col gap-y-4 rounded-2xl  bg-white col-span-12 lg:col-span-4 overflow-auto intro-y 2xl:overflow-visible capitalize">

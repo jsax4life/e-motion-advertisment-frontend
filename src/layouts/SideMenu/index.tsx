@@ -55,7 +55,7 @@ const Content = ({ dashboard }: { dashboard: boolean }) => {
       //   "before:content-[''] before:w-full before:h-px before:block",
       // ])}
       className={clsx([
-        "max-w-full md:max-w-none rounded-[30px] md:rounded-none px-4 md:px-[28px] min-w-0 min-h-screen bg-primary flex-1 md:pt-4 pb-10 mt-5 md:mt-0 relative dark:bg-darkmode-700",
+        "max-w-full md:max-w-none rounded-[30px] md:rounded-none px-4 md:px-[22px] min-w-0 min-h-screen bg-primary flex-1 md:pt-4 pb-10 mt-5 md:mt-0 relative dark:bg-darkmode-700",
         "before:content-[''] before:w-full before:h-px before:block",
       ])}
     >

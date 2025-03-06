@@ -315,6 +315,9 @@ const {id} = useParams<{id: any}>();
                     <div className="text-customColor text-sm font-bold" key={logKey}>
                             {log?.admin.firstName} {log?.admin.lastName} {log?.type}  {campaign?.campaign_name}
                     </div>
+                    <div className="text-black text-sm">
+                            {log?.remarks}
+                    </div>
                     <div className="text-slate-500 text-sm">
                             {formatDate(log?.created_at)}
                     </div>
@@ -324,6 +327,8 @@ const {id} = useParams<{id: any}>();
             }
                     
         )}
+
+
      
        
 

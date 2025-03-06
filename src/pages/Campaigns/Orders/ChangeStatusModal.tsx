@@ -72,9 +72,9 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
 
     console.log(data);
 
-    console.log(formData);
+    // console.log(formData);
     onSubmit(data);
-    // onClose();s
+    // onClose();
   };
 
     console.log(campaign);
