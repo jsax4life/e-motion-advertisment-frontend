@@ -34,6 +34,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
 
   const [states, setStates] = useState<StateData[]>([]);
   const [lgas, setLGA] = useState<string[]>([]);
+  const [dateOfBirth, setDateOfBirth] = useState<string>("");
   
 
 const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
@@ -284,8 +285,24 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
                 <FormLabel className="lg:text-[16px]" htmlFor="modal-datepicker-1">Date of Birth</FormLabel>
                 <Litepicker
                   id="modal-datepicker-1"
-                  // value={tempStartDate}
-                  // onChange={setTempStartDate}
+                  value={dateOfBirth}
+                 
+                  // onChange={setDateOfBirth}
+
+                  onChange={(e:any) => {
+                    console.log(e);
+                    const newValue = e;
+
+                  
+                    // Call your custom function
+                    setDateOfBirth(newValue);                  
+                    // Update state with validation
+                    setValue("birthday", newValue, {
+                      shouldValidate: true,
+                    });
+                  }}
+                  
+                  
                   options={{
                     autoApply: false,
                     showWeekNumbers: true,

@@ -721,9 +721,7 @@ const handleChangeStatusClick = (billboard: any) => {
                                   : "text-orange-400"
                               }`}
                             >
-                              {billboard?.status == 'active'
-                                ? "running"
-                                : billboard?.status}
+                              {billboard?.status}
                             </span>
                           </Table.Td>
 
