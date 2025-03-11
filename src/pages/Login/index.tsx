@@ -1,12 +1,14 @@
+
 import React, { useState, useContext } from "react";
 
-import { FormInput, FormCheck } from "../../base-components/Form";
+
+import { FormInput, FormCheck, FormLabel } from "../../base-components/Form";
 import Button from "../../base-components/Button";
-import lag from "../../assets/images/lag.jpg";
+import billboard from "../../assets/images/billboard.png";
 
 import clsx from "clsx";
 
-import logo from "../../assets/images/logo.svg";
+import Logo from "../../assets/images/logo.png";
 import Notification from "../../base-components/Notification";
 import Lucide from "../../base-components/Lucide";
 import LoadingIcon from "../../base-components/LoadingIcon";
@@ -21,7 +23,7 @@ import * as yup from "yup";
 import Toastify from "toastify-js";
 
 
-function Main() {
+export default function Main() {
 
   const { user, userDispatch } = useContext(UserContext);
   const location = useLocation();
@@ -119,59 +121,63 @@ function Main() {
     }).showToast();
   }
 
+
+
   return (
     <>
-      <div
-        className={clsx([
-          "-m-3  p-3  relative h-screen lg:overflow-hidden bg-primary xl:bg-white dark:bg-darkmode-800 xl:dark:bg-darkmode-600",
-        ])}
-      >
-        <div className="container relative z-10 h-full grid lg:grid-cols-2">
-          {/* BEGIN: Login Info */}
-          <div className="hidden lg:block bg-cover bg-center" style={{ backgroundImage: `url(${lag})` }}>
-            <div className="flex items-center pt-5 -intro-x">
-              {/* <img
-                alt="Midone Tailwind HTML Admin Template"
-                className="w-6"
-                src={logoUrl}
-              /> */}
+      {/*
+        This example requires updating your template:
+
+        ```
+        <html class="h-full bg-white">
+        <body class="h-full">
+        ```
+      */}
+      <div className="h-screen lg:overflow-hidden flex">
+      <div className="hidden lg:block relative w-0 flex-1">
+          <img
+            className="absolute inset-0 h-full w-full object-cover"
+            src={billboard}
+            alt=""
+          />
+        </div>
+
+        <div className="bg-white flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+          <div className="mx-auto w-full max-w-sm lg:w-96">
+            <div className="">
+              <img
+                className="h-12 w-auto"
+                src={Logo}
+                alt="Workflow"
+              />
+              <h2 className="mt-14 text-3xl font-semibod text-gray-900">Welcome to <span className="font-bold text-customColor">E-motion</span></h2>
+           
             </div>
-          </div>
-          {/* END: Login Info */}
-          {/* BEGIN: Login Form */}
-          <div className="flex h-screen py-5 my-10 xl:h-auto xl:py-0 xl:my-0 lg:flex lg:items-center">
-            <div className="w-full px-5 py-8 mx-auto my-auto bg-white rounded-md shadow-md dark:bg-darkmode-600 xl:bg-transparent sm:px-8 xl:p-0 xl:shadow-none sm:w-3/4 lg:w-3/4 xl:w-auto">
 
-              <h2 className="text-2xl mb-4 font-bold text-center intro-x xl:text-3xl xl:text-left">
-                LagRev
-              </h2>
+          
+  
 
-              <h2 className="text-2xl font-medium text-center intro-x xl:text-3xl xl:text-left">
-                Sign In
-              </h2>
               
-              <div className=" mt-2 text-start intro-x text-slate-400 ">
-                Sign In to stay connected
-              </div>
-              {error && <div className="mt-2 text-danger">{error}</div>}
 
-            
 
 
               <form
-                  className="validate-form"
+                  className="validate-form  flex flex-col space-y-12 text-sm"
                   onSubmit={handleSubmit(onSubmit)}
                 >
                   <div className="mt-8 intro-x">
+                  <FormLabel htmlFor="email" className="block  font-medium text-gray-700">
+                      Enter your username or email address
+                    </FormLabel>
                     <FormInput
                       type="text"
-                      placeholder="Email address"
+                      placeholder="Username or Email address"
                       {...register("email")}
                       id="validation-form-1"
                       name="email"
                       className={`${clsx({
                         "border-danger": errors.email,
-                      })} block px-4 py-3 intro-x login__input min-w-full xl:min-w-[350px]`}
+                      })} block px-4 py-4 rounded-xl intro-x login__input min-w-full xl:min-w-[350px]`}
 
                       // className="block px-4 py-3 intro-x login__input min-w-full xl:min-w-[350px]"
                       // placeholder="Full Name"
@@ -182,14 +188,20 @@ function Main() {
                           errors.email.message}
                       </div>
                     )}
+                    </div>
+
+
                     <div className="relative">
+                    <FormLabel htmlFor="password" className="block font-medium text-gray-700">
+                      Enter your Password
+                    </FormLabel>
                       <FormInput
                         {...register("password")}
                         type={showPassword ? "text" : "password"}
                         name="password"
                         className={`${clsx({
-                          "border-danger": errors.email,
-                        })} block px-4 py-3 mt-4  login__input min-w-full xl:min-w-[350px]`}
+                          "border-danger": errors.password,
+                        })} block px-4 py-4 mt-4  login__input min-w-full xl:min-w-[350px]`}
                         placeholder="Password"
                       />
                       {errors.password && (
@@ -200,7 +212,7 @@ function Main() {
                       )}
 
                       <div
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                        className={`absolute ${!errors.password? 'bottom-3' : 'bottom-10'} right-0 pr-3 flex items-center cursor-pointer`}
                         onClick={toggleShowPasswd}
                       >
                         {showPassword ? (
@@ -216,8 +228,9 @@ function Main() {
                         )}
                       </div>
                     </div>
-                  </div>
-                  <div className="flex mt-4 text-xs intro-x text-slate-600 dark:text-slate-500 sm:text-sm">
+
+
+                  <div className="flex mt-4 text-xs intro-x text-slate-600 dark:text-slate-500 ">
                     <div className="flex items-center mr-auto">
                       <FormCheck.Input
                         id="remember-me"
@@ -235,14 +248,14 @@ function Main() {
                       <Link to="/forgotpassword">forgot Password?</Link>
                     </p>
                   </div>
-                  <div className="mt-5 text-center intro-x xl:mt-8 xl:text-left">
+                  <div className="mt-5 text-center intro-x xl:mt-8 text-white lg:w-1/2 ">
                     <Button
-                      variant="primary"
-                      className="w-full px-4 py-3 align-top xl:mr-3"
+                     
+                      className="w-full px-4 py-4 align-top xl:mr-3 bg-customColor"
                     >
                     
 
-{isLoading ?  "Logging in" : 'Login'}
+{isLoading ?  "Signning in " : 'Sign in'}
 {isLoading && (
                         <span className="ml-4">
                           <LoadingIcon icon="three-dots" color="#fff" />
@@ -254,18 +267,10 @@ function Main() {
                   </div>
 
 
-
-                  <div className="mt-10 text-center intro-x xl:mt-10 text-slate-600 dark:text-slate-500 xl:text-left">
-                    By signin up, you agree to our{" "}
-                    <a className="text-primary dark:text-slate-200" href="">
-                      Terms and Conditions
-                    </a>
-                    &
-                    <a className="text-primary dark:text-slate-200" href="">
-                      Privacy Policy
-                    </a>
-                  </div>
                 </form>
+
+
+
 
                 <Notification
               id="success-notification-content"
@@ -294,13 +299,14 @@ function Main() {
               </div>
             </Notification>
 
-            </div>
+
+
           </div>
-          {/* END: Login Form */}
         </div>
+    
       </div>
     </>
-  );
+  )
 }
 
-export default Main;
+

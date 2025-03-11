@@ -175,7 +175,9 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
   const [orderDetails, setOrderDetails] = useState({
     client_id: "",
     campaign_name: "",
-    campaign_duration: "",
+    campaign_duration: 0,
+    campaign_start_date: "",
+    campaign_end_date: "",
     payment_option: "",
     media_purchase_order: "",
     total_order_amount: 0,
@@ -212,7 +214,9 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
         const numberOfDays = calculateNumberOfDays(startDate, endDate);
         const actualAmount =  numberOfDays * selectedBillboard.pricePerDay
        
-        const campaignDuration = `${startDate}-${endDate}`;
+        const campaignDuration = numberOfDays;
+        const campaignStartDate = startDate;
+        const campaignEndDate = endDate;
 
         setFormData((prev) => ({
           ...prev,
@@ -220,9 +224,15 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
           start_date: startDate,
           end_date: endDate,
         }));
-        setDuration(campaignDuration);
+        // setDuration(campaignDuration);
 
-        // setOrderDetails((prev) => ({...prev, campaign_duration:campaignDuration }))
+        setOrderDetails((prev) => ({...prev, 
+          campaign_duration: campaignDuration,
+
+          campaign_start_date: campaignStartDate,
+          campaign_end_date: campaignEndDate,
+      
+        }));
 
       }
     }
@@ -365,7 +375,6 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
          // Prepare the payload
     const payload = {
       ...orderDetails,
-      campaign_duration: duration,
       billboards,
       total_order_amount : billboards.reduce((acc, item) => acc + item.actual_amount, 0),
     };
@@ -381,13 +390,14 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     setOrderDetails({
       client_id: "",
       campaign_name: "",
-      campaign_duration: "",
+      campaign_duration: 0,
+      campaign_start_date: "", 
+      campaign_end_date: "", 
       payment_option: "",
       media_purchase_order: "",
       total_order_amount: 0,
       discount_order_amount: 0,
       description: "",
-
     });
 
     // onClose();

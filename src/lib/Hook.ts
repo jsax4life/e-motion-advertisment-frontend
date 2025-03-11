@@ -1,5 +1,13 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
+
+
+interface StateData {
+  name: string;
+  lgas: string[];
+}
+
+
 
 function useTimeout(callback: () => void, delay: number) {
   const callbackRef = useRef(callback);
@@ -41,6 +49,38 @@ export function useDebounce(callback: () => void, delay: number, dependencies: a
   useEffect(reset, [...dependencies, reset]);
   useEffect(clear, [clear]);
 }
+
+
+
+
+export const useFetchStates = () => {
+  const [states, setStates] = useState<StateData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const response = await fetch("https://nigerian-states-and-lga.vercel.app/");
+        if (!response.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        const data: StateData[] = await response.json();
+        setStates(data);
+      } catch (error) {
+        setError((error as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStates();
+  }, []);
+
+  return { states, loading, error };
+};
+
+// export default useFetchStates;
 
 
 

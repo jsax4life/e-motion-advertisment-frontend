@@ -375,9 +375,9 @@ export default function Main() {
       <Notification id="success-notification-content" className="flex  ">
         <Lucide icon="CheckCircle" className="text-success" />
         <div className="ml-4 mr-4">
-          <div className="font-medium">Billboard Added!</div>
+          <div className="font-medium">Campaign Added!</div>
           <div className="mt-1 text-slate-500">
-            Successfully added new billboard
+            Successfully added new Campaign
           </div>
         </div>
       </Notification>

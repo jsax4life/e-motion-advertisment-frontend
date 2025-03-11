@@ -185,7 +185,7 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
 
           
 
-            {/* Billboard Code */}
+          
              
              <div className="col-span-12">
               <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="internalCode ">Company Name</FormLabel>

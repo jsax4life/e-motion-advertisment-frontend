@@ -60,7 +60,7 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     // pricePerMonth: yup.string().required("Price Per Month is required"),
     status : yup.string().required("Status is required"),
     activeStatus: yup.string().required("Active Status is required"),
-    boardOrientation: yup.string().required("Board Orientation is required"),
+    orientation: yup.string().required("Board Orientation is required"),
       
   });
 
@@ -93,7 +93,7 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     status: "Active",
     activeStatus: "Vacant",
     images: [] as File[],
-    boardOrientation: "Landscape",
+    orientation: "Landscape",
   });
 
   const handleChange = (
@@ -550,12 +550,12 @@ if (name === "billboardType") {
 
                 {/* board orientation */}
                 <div className="col-span-12">
-                    <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="boardOrientation">Board Orientation</FormLabel>
+                    <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="orientation">Board Orientation</FormLabel>
                     <FormSelect
-                    // name="boardOrientation"
+                    // name="orientation"
                     formSelectSize="lg"
 
-                    {...register("boardOrientation", {
+                    {...register("orientation", {
                       onChange: (e) => {
                         handleChange(e);
                       },})}
@@ -564,7 +564,7 @@ if (name === "billboardType") {
                     <option value="landscape">Landscape</option>
                     <option value="portrait">Portrait</option>
                     </FormSelect>  
-                    {errors.boardOrientation && ( <p className="text-red-500">{errors.boardOrientation.message?.toString()}</p>)}
+                    {errors.orientation && ( <p className="text-red-500">{errors.orientation.message?.toString()}</p>)}
                 </div>
 
                 <div className="flex space-x-2 lg:text-lg text-sm">

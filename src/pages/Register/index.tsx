@@ -2,7 +2,7 @@ import DarkModeSwitcher from "../../components/DarkModeSwitcher";
 import MainColorSwitcher from "../../components/MainColorSwitcher";
 import logoUrl from "../../assets/images/logo.svg";
 import illustrationUrl from "../../assets/images/illustration.svg";
-import lag from "../../assets/images/lag.jpg";
+import billboard from "../../assets/images/billboard.png";
 
 import { FormInput, FormCheck } from "../../base-components/Form";
 import Button from "../../base-components/Button";
@@ -22,7 +22,7 @@ function Main() {
             {/* BEGIN: Register Info */}
             <div
               className="hidden min-h-screen xl:flex "
-              style={{ backgroundImage: `url(${lag})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+              style={{ backgroundImage: `url(${billboard})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
             >
               <div className="flex-col flex-grow p-10">
                 <a href="" className="flex items-center pt-5 -intro-x">

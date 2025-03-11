@@ -8,12 +8,15 @@ import "./assets/css/app.css";
 import UserContextProvider from "./stores/UserContext";
 import BillboardDataContextProvider from "./stores/BillboardDataContext";
 import CampaignContextProvider from "./stores/CampaignDataContext";
+import ClientContextProvider from "./stores/ClientDataContext";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <UserContextProvider>
     <CampaignContextProvider>
-   <BillboardDataContextProvider>
+      <ClientContextProvider>
 
+
+   <BillboardDataContextProvider>
  <BrowserRouter>
     <Provider store={store}>
       <Router />
@@ -21,6 +24,9 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <ScrollToTop />
   </BrowserRouter>
   </BillboardDataContextProvider>
+      </ClientContextProvider>
+
+
   </CampaignContextProvider>
   </UserContextProvider>
   

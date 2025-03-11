@@ -27,6 +27,7 @@ import SurveyResponse from "../pages/Surevy/ViewResponse"
 import AdminRolePrivilegesTable from "../pages/Admins/AdminRoleManagement";
 import AddNewAdmiin from "../pages/Admins/AddAdmin";
 import CampaignDetails from "../pages/Campaigns/Orders/CampaignDetails";
+import ClientDetails from "../pages/Clients/ClientDetails";
 
 
 function Router() {
@@ -84,6 +85,7 @@ function Router() {
             path: "/clients",
             element: <Client />,
           },
+          { path: "/client-details/:id", element: <ClientDetails />},
 
           {
             path: "/orders",
