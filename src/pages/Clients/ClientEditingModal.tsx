@@ -464,7 +464,7 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
               </div>
               {/* dimension */}
 
-              {/* specifications */}
+              {/* state & lga*/}
 
               <div className=" col-span-12 flex space-x-4">
                 <div className=" w-1/2 relative intro-y">

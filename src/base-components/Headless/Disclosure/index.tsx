@@ -46,7 +46,9 @@ function Disclosure({
   return (
     <HeadlessDisclosure
       as="div"
-      defaultOpen={group.selectedIndex === key}
+      // defaultOpen={group.selectedIndex === key}
+
+      defaultOpen={false}
       className={twMerge([
         "py-4 first:-mt-4 last:-mb-4",
         "[&:not(:last-child)]:border-b [&:not(:last-child)]:border-slate-200/60 [&:not(:last-child)]:dark:border-darkmode-400",

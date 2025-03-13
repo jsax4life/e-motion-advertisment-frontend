@@ -36,6 +36,7 @@ export default function CampaignDetails() {
   const { campaigns, campaignDispatch } = useContext(PullCampaignContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isStatusModalOpen, setStatusModalOpen] = useState(false);
+  const {  billboardDispatch } = useContext(PullBillboardContext);
 
 const {id} = useParams<{id: any}>();
 
@@ -58,18 +59,19 @@ const {id} = useParams<{id: any}>();
     setLoading(true);
 
     API(
-      "put",
-      `billboards/${campaign?.id}`,
+      "patch",
+      `campaign-orders/${campaign?.id}`,
 
       data,
       function (reponse: any) {
         console.log(reponse);
-        setCampaign((prev: any) => [ reponse.data, ...prev]);
+        setCampaign((prev: any) => ({
+          ...prev,  
+          ...reponse.data,
+          billboards: reponse.data.billboards, 
+        }));
         setLoading(false);
         setIsModalOpen(false);
-
-
-        setLoading(false);
         const successEl = document
         .querySelectorAll("#success-notification-content")[0]
         .cloneNode(true) as HTMLElement;
@@ -84,6 +86,23 @@ const {id} = useParams<{id: any}>();
         position: "right",
         stopOnFocus: true,
       }).showToast();
+
+      
+      
+      API(
+        "get",
+        `billboard-data`,
+        {},
+        // {lga: 'Alimosho'},
+        function (data: any) {
+          billboardDispatch({ type: "STORE_BILLBOARD_DATA", billboard: data.registered_billboards });
+        },
+        function (error: any) {
+          console.error("Error fetching recent searches:", error);
+        },
+        user?.token && user.token
+      );
+
         // console.log(responseData);
       },
 
@@ -231,7 +250,7 @@ const {id} = useParams<{id: any}>();
            onClick={() => setIsModalOpen(true)}
            className="mr-2 flex  justify-center items-center font-medium shadow-sm rounded-lg px-4 py-2 text-customColor border-customColor text-sm"
           >
-            Edit 
+            Modify 
           </Button>
 
           <Button className="mr-2 shadow-sm  border-slate-300 py-1.5">
@@ -241,7 +260,7 @@ const {id} = useParams<{id: any}>();
 {isModalOpen && (
           <EditOrderModal
         isOpen={isModalOpen}
-        campaign={campaign}
+        orderToEdit={campaign}
         isLoading={loading}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleUpdateBillboard}

@@ -4,9 +4,10 @@ import { FormSelect } from "../../../base-components/Form";
 import Lucide from "../../../base-components/Lucide";
 import { Menu, Tab } from "../../../base-components/Headless";
 import Table from "../../../base-components/Table";
-import { formatCurrency, formatDate } from "../../../utils/utils";
+import { formatCurrency} from "../../../utils/utils";
 import ApprrovalProcess from "./ApprovalProcess";
 import ContactDetails from "./ContactDetails";
+import { formatDate } from "../../../utils/helper";
 
 interface Campaign {
   id: string;
@@ -23,6 +24,8 @@ interface Campaign {
   total_order_amount: number;
   discount_order_amount: number;
   description: string;
+  campaign_start_date: string;
+  campaign_end_date: string;
   
 }
 
@@ -47,18 +50,18 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
 
         <div className="grid grid-cols-2 gap-4 uppercase ">
           <div className="col-span-1 ">
-            <div className=" md:text-[12px] text-slate-500 font-bold mb-1 ">
+            <div className=" md:text-[12px] text-stone-400 font-bold mb-1 ">
               client
             </div>
-            <div className="  lg:text-[16px] font-bold  text-slate-800">
+            <div className="  lg:text-[16px] font-bold  text-stone-800">
               {campaign?.client?.company_name}
             </div>
           </div>
           <div className="col-span-1  ">
-            <div className=" lg:text-[12px] text-slate-500 font-bold mb-1">
+            <div className=" lg:text-[12px] text-stone-400 font-bold mb-1">
               campaign name
             </div>
-            <div className=" font-bold lg:text-[16px] text-slate-800">
+            <div className=" font-bold lg:text-[16px] text-stone-600">
               {campaign?.campaign_name}
             </div>
           </div>
@@ -68,27 +71,41 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
 
         <div className="grid grid-cols-2 gap-4 uppercase ">
           <div className="col-span-1 ">
-            <div className=" md:text-[12px] text-slate-400 font-bold mb-1 ">
+            <div className=" md:text-[12px] text-stone-400 font-bold mb-1 ">
               campaign duration
             </div>
-            <div className=" font-bold  lg:text-[16px] text-slate-800">
-            {campaign?.campaign_duration}
+            <div className=" font-bold  lg:text-[16px] text-stone-800">
+            {formatDate(campaign?.campaign_end_date, 'DD-MM-YYYY')} - {formatDate(campaign?.campaign_start_date, 'DD-MM-YYYY')}
             </div>
           </div>
           <div className="col-span-1  ">
-            <div className=" md:text-[12px] text-slate-500 font-bold mb-1">
+            <div className=" md:text-[12px] text-stone-400 font-bold mb-1">
             payment option
             </div>
-            <div className=" font-bold  lg:text-[16px] text-slate-800">
+            <div className=" font-bold  lg:text-[16px] text-stone-600">
             {campaign?.payment_option}
             </div>
           </div>
+          
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 uppercase ">
+        
+          <div className="col-span-1  ">
+            <div className=" md:text-[12px] text-stone-400 font-bold mb-1">
+            number of days left
+            </div>
+            <div className=" font-bold  lg:text-[16px] text-stone-600">
+            {campaign?.campaign_duration}
+            </div>
+          </div>
+          
         </div>
 
         <div className="grid grid-cols-2 gap-4 uppercase border-y lg:py-8 ">
           {/* <div className="col-span-1 ">
                     <div className="text-sm md:text-[12px] text-slate-400 font-bold mb-1 ">Billboard Name</div>
-                    <div className="text-lg font-bold  text-slate-800">{billboard?.billboardName}</div>
+                    <div className="text-lg font-bold  text-stone-600">{billboard?.billboardName}</div>
                   </div> */}
           <div className="col-span-2 mb-4">
             <div className=" md:text-[12px] text-slate-500 font-bold mb-1">
@@ -138,9 +155,9 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
               }
             </div>
             <div className="bg-orange-100 text-orange-500 p-0.5">
-              {billboard.slot
-                ? `Slot ${billboard.slot}`
-                : `Face ${billboard.face} `}
+              {billboard.billboard_type === "digital"
+                ? `Slot ${billboard.slotOrFace}`
+                : `Face ${billboard.slotOrFace} `}
             </div>
           </div>
           <div className="text-xs  text-black mb-2 lowercase truncate">
@@ -151,7 +168,7 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
         </div>
 
         <div className="flex lg:w-full w-1/3 justify-end items-center lg:space-x-4">
-          <div className="lg:text-lg text-xs text-slate-400 font-semibold ">
+          <div className="lg:text-sm text-xs text-slate-400 font-semibold ">
             
           {/* <div className="text-slate-500 lg:text-sm text-xs">
               campaign cost
@@ -199,7 +216,7 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
             <div className=" text-sm text-slate-600 font-bold lg:mb-4">
               Amount:  <span className="text-xl ml-4 text-slate-400">&#x20A6;{formatCurrency(campaign?.total_order_amount)}</span>
             </div>
-            <div className=" font-bold  text-sm text-slate-800 capitalize">
+            <div className=" font-bold  text-sm text-stone-600 capitalize">
               Amount after discount <span className="text-xl ml-4">&#x20A6;{formatCurrency(campaign?.discount_order_amount)}</span>
             </div>
           </div>
@@ -216,7 +233,7 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
           approval process
         </div>
 
-          <ApprrovalProcess statusLog = {campaign.status_logs}/>
+          <ApprrovalProcess statusLog = {campaign?.status_logs}/>
          
       </div>
 

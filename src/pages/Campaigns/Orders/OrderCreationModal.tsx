@@ -17,6 +17,7 @@ import Litepicker from "../../../base-components/Litepicker";
 import API from "../../../utils/API";
 import { UserContext } from "../../../stores/UserContext";
 import { formatCurrency } from "../../../utils/utils";
+import { useFetchStates } from "../../../lib/Hook";
 
 interface BillboardCreationModalProps {
   isOpen: boolean;
@@ -46,15 +47,7 @@ interface BillboardOrder {
   price: number;
 }
 
-// !formData.client_id ||
-// !formData.billboard_id ||
-// !formData.campaign_name ||
-// !formData.start_date ||
-// !formData.end_date ||
-// !formData.payment_option ||
-// !formData.media_purchase_order ||
-// !formData.actual_amount ||
-// !formData.campaign_duration
+
 
 interface AvailableBillboard {
   id: string;
@@ -62,8 +55,9 @@ interface AvailableBillboard {
   internalCode: string;
   billboardName: string;
   billboardType: "static" | "digital" | "bespoke";
-  numberOfSlots: number;
-  numberOfFaces: number;
+  // numberOfSlots: number;
+  // numberOfFaces: number;
+  numberOfSlotsOrFaces: number;
   pricePerDay: number;
   state: string;
   lga: string;
@@ -92,41 +86,14 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
 }) => {
   const [sendButtonRef] = useState(React.createRef<HTMLButtonElement>());
 
-  const [states, setStates] = useState<StateData[]>([]);
   const [duration, setDuration] = useState<string>("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const { user } = useContext(UserContext);
-  const [loading, setLoading] = useState(true);
   const [selectedBillboard, setSelectedBillboard] = useState<AvailableBillboard>();
   // const [duration, setDuration] = useState<string>("")
   const [orders, setOrders] = useState<any[]>([]);
-
-
-  // const [clients, setClients] = useState<Client[]>([]);
-  // const [billboards, setBillboards] = useState<Billboard[]>([]);
-
-  // Fetch clients and billboards on page mount
-  // useEffect(() => {
-  //   // Mock API calls
-  //   const fetchClients = async () => {
-  //     const response = await fetch("/api/clients");
-  //     const data = await response.json();
-  //     setClients(data);
-  //   };
-
-  //   const fetchBillboards = async () => {
-  //     const response = await fetch("/api/billboards");
-  //     const data = await response.json();
-  //     setBillboards(data);
-  //   };
-
-  //   fetchClients();
-  //   fetchBillboards();
-  // }, []);
-
-  // console.log(startDate);
-  // console.log(endDate);
+ 
 
   const validationSchema = yup.object().shape({
     // company_name: yup.string().required("Company Name is required"),
@@ -160,8 +127,9 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     billboard_id: "",
     billboard_type: "",
     orientation: "",
-    slot: "",
-    face: "",
+    slotOrFace: "",
+    // slot: "",
+    // face: "",
     start_date: "",
     end_date: "",
     actual_amount: 0,
@@ -189,21 +157,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
   const [usedSlotsFaces, setUsedSlotsFaces] = useState<Record<string, string[]>>({});
 
 
-  // Fetch states and LGAs from API
-  useEffect(() => {
-    const fetchStates = async () => {
-      try {
-        const response = await fetch(
-          "https://nigerian-states-and-lga.vercel.app/"
-        );
-        const data: StateData[] = await response.json();
-        setStates(data);
-      } catch (error) {
-        console.error("Failed to fetch states and LGAs:", error);
-      }
-    };
-    fetchStates();
-  }, []);
+ 
 
   useEffect(() => {
     if (startDate && endDate && formData.billboard_id) {
@@ -236,7 +190,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
 
       }
     }
-  }, [startDate, endDate, formData.billboard_id, billboards]);
+  }, [startDate, endDate, formData.billboard_id, availableBillboards]);
 
   // Handle form field changes
   const handleChange = (
@@ -248,6 +202,8 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
 
   };
+
+
   
    // Handle order-level field changes
    const handleOrderDetailsChange = (
@@ -281,7 +237,8 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
       !formData.billboard_type ||
       !formData.orientation ||
       !formData.start_date ||
-      !formData.end_date 
+      !formData.end_date  ||
+      !formData.slotOrFace
       
     ) {
       alert("Please fill all required fields.");
@@ -297,8 +254,9 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
       billboard_id: "",
       billboard_type: "",
       orientation: "",
-      slot: "",
-      face: "",
+      slotOrFace: "",
+      // slot: "",
+      // face: "",
       start_date: "",
       end_date: "",
       billboard_price_per_day: 0,
@@ -310,6 +268,17 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     //   ...prev,
     //   [formData.billboard_id]: [...(prev[formData.billboard_id] || []), formData.slotOrFace],
     // }));
+
+      // Update the used slots and faces
+    setUsedSlotsFaces((prev) => {
+      const updated = { ...prev };
+      if (formData.billboard_type === "digital") {
+        updated[formData.billboard_id] = [...(updated[formData.billboard_id] || []), formData.slotOrFace];
+      } else {
+        updated[formData.billboard_id] = [...(updated[formData.billboard_id] || []), formData.slotOrFace];
+      }
+      return updated;
+    });
 
     // Clear the selected billboard
     setSelectedBillboard(undefined);
@@ -468,8 +437,8 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                     >
                       {billboard.billboardName} (
                       {billboard.billboardType === "digital"
-                        ? `${billboard?.available_slots?.length} of ${billboard?.numberOfSlots} slots available`
-                        : `${billboard?.available_faces.length} of ${billboard?.numberOfFaces} faces available`}
+                        ? `${billboard?.available_slots?.length} of ${billboard?.numberOfSlotsOrFaces} slots available`
+                        : `${billboard?.available_faces.length} of ${billboard?.numberOfSlotsOrFaces} faces available`}
                       )
                     </option>
                   ))}
@@ -531,7 +500,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
               </div>)}
 
                {/* Billboard price  */}
-            <div className="col-span-12">
+      {formData.billboard_price_per_day > 0 && (      <div className="col-span-12">
               <FormLabel  className="font-medium lg:text-[16px] text-black">Billboard Price/Day</FormLabel>
               <FormInput
               formInputSize="lg"
@@ -541,7 +510,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                 readOnly
                 className="w-full p-2 border rounded bg-gray-100 cursor-not-allowed"
               />
-            </div>
+            </div>)}
 
                 {/* Slot or Face Selection */}
               {formData?.billboard_type && (
@@ -557,16 +526,10 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
 
                     <FormSelect
                       formSelectSize="lg"
-                      name={`${
-                        formData?.billboard_type === "digital"
-                          ? "slot"
-                          : "face"
-                      }`}
-                      value={`${
-                        formData?.billboard_type === "digital"
-                          ? formData.slot
-                          : formData.face
-                      }`}
+                      name="slotOrFace"
+                    
+                      value={
+                        formData?.slotOrFace}
                       onChange={handleChange}
                       // {...register("slot_or_face")}
                       className="w-full "
@@ -575,7 +538,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                         --Select--
                         {/* {selectedBillboard.billboardType === "digital" ? "Slot" : "Face"} */}
                       </option>
-                      {selectedBillboard?.billboardType === "digital"
+                      {/* {selectedBillboard?.billboardType === "digital"
                         ? selectedBillboard?.available_slots.map((slot) => (
                             <option key={slot} value={slot}>
                               Slot {slot}
@@ -585,7 +548,19 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                             <option key={face} value={face}>
                               Face {face}
                             </option>
-                          )) || []}
+                          )) || []} */}
+                            {formData.billboard_type === "digital"
+    ? selectedBillboard?.available_slots
+        .filter(slot => !usedSlotsFaces[selectedBillboard?.id]?.includes(slot.toString())) // Filter used slots
+        .map(slot => (
+          <option key={slot} value={slot}>Slot {slot}</option>
+        ))
+    : selectedBillboard?.available_faces
+        .filter(face => !usedSlotsFaces[selectedBillboard?.id]?.includes(face.toString())) // Filter used faces
+        .map(face => (
+          <option key={face} value={face}>Face {face}</option>
+        ))
+  }
                     </FormSelect>
                 </div>
               )}  
@@ -677,9 +652,9 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
               }
             </div>
             <div className="bg-orange-100 text-orange-500 p-0.5">
-              {billboard.slot
-                ? `Slot ${billboard.slot}`
-                : `Face ${billboard.face} `}
+              {billboard.billboard_type === "digital"
+                ? `Slot ${billboard.slotOrFace}`
+                : `Face ${billboard.slotOrFace} `}
             </div>
           </div>
         </div>
@@ -695,12 +670,17 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
           <button
             onClick={() => {
               setBillboards((prev) => prev.filter((_, i) => i !== index));
-              setUsedSlotsFaces((prev) => ({
-                ...prev,
-                [billboard.billboardId]: prev[billboard.billboardId]?.filter(
-                  (slotOrFace) => slotOrFace !== billboard.slotOrFace
-                ),
-              }));
+
+              setUsedSlotsFaces((prev) => {
+                const billboardId = billboard.billboard_id; // Correct key reference
+                const updatedSlotsFaces = prev[billboardId]
+                  ?.filter((slotOrFace) => slotOrFace !== String(billboard.slot || billboard.face)) || [];
+          
+                return {
+                  ...prev,
+                  [billboardId]: updatedSlotsFaces.length > 0 ? updatedSlotsFaces : undefined, // Remove key if empty
+                };
+              });
             }}
             className="  hover:bg-white text-customColor hover:text-white rounded-lg w-5 h-5 flex items-center justify-center"
           >
@@ -862,7 +842,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                   Description
                 </FormLabel>
                 <FormTextarea
-                  formTextareaSize="lg"
+                  // formTextareaSize="lg"
                   id="description"
                   name="description"
                   onChange={handleOrderDetailsChange}
@@ -873,70 +853,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
 
     <div className="border-b border-slate-200 my-2"></div>
 
-{billboards.length > 0 && (
-  <div className="col-span-12 flex flex-col gap-y-2">
-    <h3 className="text-lg font-semibold ">Order Summary</h3>
-    {/* {billboards.map((billboard, index) => (
-      <div
-        key={index}
-        className="flex items-center lg:space-x-8 space-x-2  text-xs lg:text-sm p-2 lg:p-4 bg-primary text-customColor rounded-2xl "
-      >
-        <div className="w-full ">
-          <div className="text-sm md:text-[16px] text-black font-semibold mb-2">
-            {
-              availableBillboards.find((b) => b.id == billboard.billboard_id)
-                ?.billboardName
-            }
-          </div>
-          <div className="flex space-x-2 text-xs capitalize ">
-            <div className="bg-violet-200 text-violet-600 p-0.5">
-              {
-                availableBillboards.find((b) => b.id == billboard.billboard_id)
-                  ?.orientation
-              }
-            </div>
-            <div className="bg-blue-100 text-blue-600 p-0.5">
-              {
-                availableBillboards.find((b) => b.id == billboard.billboard_id)
-                  ?.billboardType
-              }
-            </div>
-            <div className="bg-orange-100 text-orange-500 p-0.5">
-              {billboard.slot
-                ? `Slot ${billboard.slot}`
-                : `Face ${billboard.face} `}
-            </div>
-          </div>
-        </div>
 
-        <div className="flex lg:w-full w-1/3 justify-end items-center space-x-2">
-          <div className="lg:text-lg text-xs text-customColor font-semibold">
-            &#x20A6;{formatCurrency(formData.actual_amount)}{" "}
-            <span className="text-slate-500 lg:text-sm text-xs">
-              campaign cost
-            </span>{" "}
-          </div>
-          <button
-            onClick={() => {
-              setBillboards((prev) => prev.filter((_, i) => i !== index));
-              setUsedSlotsFaces((prev) => ({
-                ...prev,
-                [billboard.billboardId]: prev[billboard.billboardId]?.filter(
-                  (slotOrFace) => slotOrFace !== billboard.slotOrFace
-                ),
-              }));
-            }}
-            className="  hover:bg-white text-customColor hover:text-white rounded-lg w-5 h-5 flex items-center justify-center"
-          >
-            <Lucide icon="X" className="text-red-600" />
-          </button>
-        </div>
-
-
-      </div>
-    ))} */}
-  </div>
-)}
 
 
               <div className="col-span-12">
@@ -967,17 +884,17 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                 </FormLabel>
                 <FormInput
                   formInputSize="lg"
-                  id="discount_amount"
-                  type="text"
-                  name="discount_amount"
-                  onChange={handleChange}
+                  id="discount_order_amount"
+                  type="number"
+                  name="discount_order_amount"
+                  onChange={handleOrderDetailsChange}
                   value={`${orderDetails.discount_order_amount}`}
                   placeholder="Type here"
                   // {...register("discount_amount")}
                 />
-                {errors.discount_amount && (
+                {errors.discount_order_amount && (
                   <p className="text-red-500">
-                    {errors.discount_amount.message?.toString()}
+                    {errors.discount_order_amount.message?.toString()}
                   </p>
                 )}
               </div>
@@ -1026,26 +943,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
           </Dialog.Description>
 
           <Dialog.Footer className="text-right">
-            {/* <Button
-              type="button"
-              variant="outline-secondary"
-              onClick={onClose}
-              className="w-20 mr-1 border-customColor text-customColor"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              type="button"
-              className="lg:w-25 bg-customColor"
-              ref={sendButtonRef}
-              onClick={handleSubmit((data) => {
-                onSubmit(data);
-                onClose();
-              })}
-            >
-              Apply Filter
-            </Button> */}
+         
           </Dialog.Footer>
         </Dialog.Panel>
       </Dialog>

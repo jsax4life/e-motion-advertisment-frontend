@@ -34,8 +34,7 @@ interface AvailableBillboard {
   internalCode: string,
   billboardName: string;
   billboardType: "static" | "digital" | "bespoke";
-  numberOfSlots: number;
-  numberOfFaces: number;
+  numberOfSlotsOrFaces: number;
   available_faces: number[];
   available_slots: number[];
   pricePerDay: number;

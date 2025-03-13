@@ -10,6 +10,7 @@ import ImageUploadSection from "./ImageUpoadSection";
 import Lucide from "../../base-components/Lucide";
 import LoadingIcon from "../../base-components/LoadingIcon";
 import { formatCurrency } from "../../utils/utils";
+import { useFetchStates } from "../../lib/Hook";
 
 
 interface BillboardCreationModalProps {
@@ -59,7 +60,8 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
   const [sendButtonRef] = useState(React.createRef<HTMLButtonElement>());
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [updatedFields, setUpdatedFields] = useState({});
-
+  const { states, loading, error } = useFetchStates();
+  const [lgas, setLGA] = useState<string[]>([]);
 
   const [formData, setFormData] = useState<any>(billboard);
 
@@ -89,6 +91,7 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
     formState: { errors },
     setValue,
     watch,
+
   } = useForm({
     mode: "onChange",
     resolver: yupResolver(validationSchema),
@@ -133,6 +136,12 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
 
 
  
+const handleStateChange = (stateName: string) => {
+  const selectedState = states.find((state) => state.name === stateName);
+  setLGA(selectedState?.lgas || []);
+  setValue("state", stateName, { shouldValidate: true });
+  setValue("lga", "", { shouldValidate: true }); // Reset LGA selection
+};
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -291,36 +300,8 @@ if (name === "billboardType") {
               )}
             </div>
 
-              <div className="col-span-12">
-                <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="billboardName">Billboard Name</FormLabel>
-                <FormInput
-                formInputSize="lg"
-                defaultValue={billboard?.billboardName}
-                  id="billboardName"
-                  type="text"
-                  placeholder="Type here"
-                  {...register("billboardName")}
-                />
-                              {errors.billboardName && ( <p className="text-red-500">{errors.billboardName.message?.toString()}</p>)}
-
-              </div>
-
-              
-
-
-              <div className="col-span-12">
-                <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="state">State</FormLabel>
-                <FormInput
-                formInputSize="lg"
-                 defaultValue={billboard?.state}
-                  id="state"
-                  type="text"
-                  placeholder="Type here"
-                  {...register("state")}
-                />
-
-                {errors.state && ( <p className="text-red-500">{errors.state.message?.toString()}</p>)}
-              </div>
+           
+          
 
 
               <div className="col-span-12">
@@ -336,6 +317,97 @@ if (name === "billboardType") {
                 {errors.lga && ( <p className="text-red-500">{errors.lga.message?.toString()}</p>)}
               </div>
 
+              <div className=" col-span-12 flex space-x-4">
+                <div className=" w-1/2 relative intro-y">
+                  <FormLabel
+                    className="font-medium lg:text-[16px] text-black"
+                    htmlFor="state"
+                  >
+                    State
+                  </FormLabel>
+
+                  <FormSelect
+                    id="state"
+                    formSelectSize="lg"
+                    defaultValue={billboard?.state}
+                    onChange={(e) => {
+                      setValue("lga", e.target.value, {
+                        shouldValidate: true,
+                      })
+                      handleStateChange(e.target.value)
+
+                    }
+                    }
+                    // className="bg-gray-50 px-2.5 pb-1 pt-5  text-sm   peer"
+                  >
+                    <option value="" disabled>
+                      --Select--
+                    </option>
+                    {states.map((state) => (
+                      <option key={state.name} value={state.name}>
+                        {state.name}
+                      </option>
+                    ))}
+                  </FormSelect>
+
+                  {errors?.state && (
+                    <p className="text-red-500">
+                      {errors.state.message?.toString()}
+                    </p>
+                  )}
+                </div>
+
+                {/* LGA of Origin */}
+                <div className="w-1/2 relative intro-y">
+                  <FormLabel
+                    className="hidden md:block font-medium lg:text-[16px] text-black"
+                    htmlFor="lga"
+                  >
+                    Local Government Area
+                  </FormLabel>
+                  <FormLabel
+                    className="md:hidden font-medium lg:text-[16px] text-black"
+                    htmlFor="lga"
+                  >
+                    LGA
+                  </FormLabel>
+
+                  <FormSelect
+                    id="lga"
+                    formSelectSize="lg"
+                    defaultValue={billboard?.lga}
+
+                    {...register("lga", { 
+                      onChange: (e) => {
+                        handleChange(e);
+                      },
+                    })}
+                    
+                    onChange={(e) =>
+                      setValue("lga", e.target.value, {
+                        shouldValidate: true,
+                      })
+                    }
+                  >
+                    <option value="" disabled>
+                      --Select LGA--
+                    </option>
+                    {lgas.map((lga) => (
+                      <option key={lga} value={lga}>
+                        {lga}
+                      </option>
+                    ))}
+                  </FormSelect>
+
+                  {errors?.lga && (
+                    <p className="text-red-500">
+                      {errors.lga.message?.toString()}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+
               <div className="col-span-12">
                 <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="address">Addresss</FormLabel>
                 <FormInput
@@ -348,6 +420,9 @@ if (name === "billboardType") {
                 />
                 {errors.address && ( <p className="text-red-500">{errors.address.message?.toString()}</p>)}
               </div>
+
+
+              
 
               <div className="space-y-2">
                 <FormLabel className="font-medium lg:text-[16px] text-black">

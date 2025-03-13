@@ -34,12 +34,16 @@ interface DisplaySectionProps {
   orderList: Order[];
 }
 
+
+
 const DisplaySection: React.FC<DisplaySectionProps> = ({
   loading,
   orderList,
 }) => {
 
   const navigate = useNavigate();
+
+  console.log(orderList);
 
   if (loading) {
     return <div>Loading...</div>;

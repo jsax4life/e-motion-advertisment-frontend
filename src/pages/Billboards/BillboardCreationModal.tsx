@@ -10,6 +10,7 @@ import ImageUploadSection from "./ImageUpoadSection";
 import Lucide from "../../base-components/Lucide";
 import LoadingIcon from "../../base-components/LoadingIcon";
 import { formatCurrency } from "../../utils/utils";
+import { useFetchStates } from "../../lib/Hook";
 
 
 interface BillboardCreationModalProps {
@@ -27,6 +28,8 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
 }) => {
   const [sendButtonRef] = useState(React.createRef<HTMLButtonElement>());
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
+  const { states, loading, error } = useFetchStates();
+  const [lgas, setLGA] = useState<string[]>([]);
 
 const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     return Promise.all(
@@ -54,7 +57,7 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     lng: yup.string().required("Longitude is required"),
     // height: yup.string().required("Height is required"),
     // width: yup.string().required("Width is required"),
-    // numberOfSlots: yup.string().required("Number of Slots is required"),
+    numberOfSlotsOrFaces: yup.string().required("Number of placement is required"),
     // numberOfFaces: yup.string().required("Number of Faces is required"),
     pricePerDay: yup.string().required("Price Per Day is required"),
     // pricePerMonth: yup.string().required("Price Per Month is required"),
@@ -86,8 +89,9 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     height: "",
     width: "",
     billboardType: "Static",
-    numberOfSlots: "",
-    numberOfFaces: "",
+    numberOfSlotsOrFaces: "",
+    // numberOfSlots: "",
+    // numberOfFaces: "",
     pricePerDay: "",
     pricePerMonth: "",
     status: "Active",
@@ -120,15 +124,21 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
       }));
     }
 
+    if (name === "billboardType") {
+      if (value === "static" || value === "bespoke" || value === "digital") {
+        setValue("numberOfSlotsOrFaces", ""); // Reset numberOfSlots
+      }
+      
+    }
 // Handle logic for resetting dependent fields
-if (name === "billboardType") {
-  if (value === "static" || value === "bespoke") {
-    setValue("numberOfSlots", ""); // Reset numberOfSlots
-  }
-  if (value === "digital" || value === "bespoke") {
-    setValue("numberOfFaces", ""); // Reset numberOfFaces
-  }
-}
+// if (name === "billboardType") {
+//   if (value === "static" || value === "bespoke") {
+//     setValue("numberOfSlotsOrFaces", ""); // Reset numberOfSlots
+//   }
+//   if (value === "digital" || value === "bespoke") {
+//     setValue("numberOfSlotsOrFaces", ""); // Reset numberOfFaces
+//   }
+// }
 
   };
 
@@ -142,6 +152,15 @@ if (name === "billboardType") {
         // setFormData((prev) => ({ ...prev, serialNumber: newSerialNumber }));
       }
     }, [isOpen]);
+
+
+  const handleStateChange = (stateName: string) => {
+    const selectedState = states.find((state) => state.name === stateName);
+    setLGA(selectedState?.lgas || []);
+    setValue("state", stateName, { shouldValidate: true });
+    setValue("lga", "", { shouldValidate: true }); // Reset LGA selection
+  };
+
 
       // Function to generate a serial number
   const generateSerialNumber = () => {
@@ -265,7 +284,7 @@ if (name === "billboardType") {
               
 
 
-              <div className="col-span-12">
+              {/* <div className="col-span-12">
                 <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="state">State</FormLabel>
                 <FormInput
                 formInputSize="lg"
@@ -276,10 +295,10 @@ if (name === "billboardType") {
                 />
 
                 {errors.state && ( <p className="text-red-500">{errors.state.message?.toString()}</p>)}
-              </div>
+              </div> */}
 
 
-              <div className="col-span-12">
+              {/* <div className="col-span-12">
                 <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="lga">Local Government Area</FormLabel>
                 <FormInput
                 formInputSize="lg"
@@ -289,12 +308,95 @@ if (name === "billboardType") {
                   {...register("lga")}
                 />
                 {errors.lga && ( <p className="text-red-500">{errors.lga.message?.toString()}</p>)}
+              </div> */}
+
+
+
+              <div className=" col-span-12 flex space-x-4">
+                <div className=" w-1/2 relative intro-y">
+                  <FormLabel
+                    className="font-medium lg:text-[16px] text-black"
+                    htmlFor="state"
+                  >
+                    State
+                  </FormLabel>
+
+                  <FormSelect
+                    id="state"
+                    formSelectSize="lg"
+                    {...register("state", {
+                      onChange: (e) => {
+                        handleChange(e);
+                        handleStateChange(e.target.value)
+                      },                    
+                    })}
+                    // className="bg-gray-50 px-2.5 pb-1 pt-5  text-sm   peer"
+                  >
+                    <option value="" disabled>
+                      --Select--
+                    </option>
+                    {states.map((state) => (
+                      <option key={state.name} value={state.name}>
+                        {state.name}
+                      </option>
+                    ))}
+                  </FormSelect>
+
+                  {errors?.state && (
+                    <p className="text-red-500">
+                      {errors.state.message?.toString()}
+                    </p>
+                  )}
+                </div>
+
+                {/* LGA of Origin */}
+                <div className="w-1/2 relative intro-y">
+                  <FormLabel
+                    className="hidden md:block font-medium lg:text-[16px] text-black"
+                    htmlFor="lga"
+                  >
+                    Local Government Area
+                  </FormLabel>
+                  <FormLabel
+                    className="md:hidden font-medium lg:text-[16px] text-black"
+                    htmlFor="lga"
+                  >
+                    LGA
+                  </FormLabel>
+
+                  <FormSelect
+                    id="lga"
+                    formSelectSize="lg"
+
+                          
+                    onChange={(e) =>
+                      setValue("lga", e.target.value, {
+                        shouldValidate: true,
+                      })
+                    }
+                  >
+                    <option value="" disabled>
+                      --Select LGA--
+                    </option>
+                    {lgas.map((lga) => (
+                      <option key={lga} value={lga}>
+                        {lga}
+                      </option>
+                    ))}
+                  </FormSelect>
+
+                  {errors?.lga && (
+                    <p className="text-red-500">
+                      {errors.lga.message?.toString()}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="col-span-12">
                 <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="address">Addresss</FormLabel>
                 <FormInput
-                formInputSize="lg"
+                // formInputSize="lg"
                   id="address"
                   type="address"
                   placeholder="Type here"
@@ -423,40 +525,45 @@ if (name === "billboardType") {
 
               {/* Number of Slots for Digital FormSelection only*/}
 
-              {formData.billboardType === "digital" && (
+              {(formData.billboardType === "digital" || formData.billboardType === "static") && (
                 <div className="col-span-12">
-                  <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="numberOfSlots">Number of Slots</FormLabel>
+                  <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="numberOfSlotsOrFaces">{formData.billboardType === "digital" ? "Number of Slots" : "Number of Faces"}</FormLabel>
                   <FormSelect
                     formSelectSize="lg"
 
                     // name="numberOfSlots"
-                    value={formData.numberOfSlots}
-                    {...register("numberOfSlots", {
+                    value={formData.numberOfSlotsOrFaces}
+                    {...register("numberOfSlotsOrFaces", {
                       onChange: (e) => {
                         handleChange(e);
                       },})}
                     className="w-full p-2 border rounded"
                   >
-                    {[...Array(8)].map((_, i) => (
+                    {formData.billboardType === "digital" ? ([...Array(8)].map((_, i) => (
                       <option key={i + 1} value={i + 1}>
                         Slot {i + 1}
                       </option>
-                    ))}
+                    ))) : ( [...Array(4)].map((_, i) => (
+                      <option key={i + 1} value={i + 1}>
+                        Face {i + 1}
+                      </option>
+                    ))) }
+                   
                   </FormSelect>
                 </div>
               )}
 
               {/* Number of Faces for Static selection only*/}
 
-              {formData.billboardType === "static" && (
+              {/* {formData.billboardType === "static" && (
                 <div className="col-span-12">
                   <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="numberOfFaces">Number of Faces</FormLabel>
                   <FormSelect
                     formSelectSize="lg"
 
                     // name="numberOfFaces"
-                    value={formData.numberOfFaces}
-                    {...register("numberOfFaces", {
+                    value={formData.numberOfSlotsOrFaces}
+                    {...register("numberOfSlotsOrFaces", {
                       onChange: (e) => {
                         handleChange(e);
                       },})}
@@ -469,7 +576,7 @@ if (name === "billboardType") {
                     ))}
                   </FormSelect>
                 </div>
-              )}
+              )} */}
 
               {/* Price Per Day */}
               <div className="col-span-12">
