@@ -53,7 +53,7 @@ const {id} = useParams<{id: any}>();
 
   const navigate = useNavigate();
 
-  const handleUpdateBillboard = (data: any) => {
+  const handleUpdateOrder = (data: any) => {
     console.log(data);
     // setIsModalOpen(false);
     setLoading(true);
@@ -263,7 +263,7 @@ const {id} = useParams<{id: any}>();
         orderToEdit={campaign}
         isLoading={loading}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleUpdateBillboard}
+        onSubmit={handleUpdateOrder}
       />)}
 
 

@@ -35,6 +35,7 @@ import Notification from "../../base-components/Notification";
 import Toastify from "toastify-js";
 import { PullBillboardContext } from "../../stores/BillboardDataContext";
 import ChangeStatusModal from "./ChangeStatusModal";
+import { formatCurrency } from "../../utils/utils";
 
 const lagosLGAs = [
   "Agege",
@@ -619,7 +620,7 @@ const handleChangeStatusClick = (billboard: any) => {
                         BILLBOARD NAME
                       </Table.Th>
                       <Table.Th className="   whitespace-nowrap">
-                        PRICE PER DAY
+                        PRICE PER MONTH
                       </Table.Th>
                       <Table.Th className="   whitespace-nowrap">
                         BILLBOARD NUMBER
@@ -696,7 +697,7 @@ const handleChangeStatusClick = (billboard: any) => {
                           <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                             <>
                               <div className=" whitespace-nowrap">
-                              &#x20A6;{billboard?.pricePerDay}
+                              &#x20A6;{formatCurrency(billboard?.pricePerMonth)}
                               </div>
                             </>
                           </Table.Td>

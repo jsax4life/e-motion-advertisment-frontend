@@ -88,6 +88,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
 
   const [duration, setDuration] = useState<string>("");
   const [startDate, setStartDate] = useState<string>("");
+  const [dateRange, setDateRange] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const { user } = useContext(UserContext);
   const [selectedBillboard, setSelectedBillboard] = useState<AvailableBillboard>();
@@ -157,38 +158,55 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
   const [usedSlotsFaces, setUsedSlotsFaces] = useState<Record<string, string[]>>({});
 
 
- 
+  useEffect(() => {
+    // Split the date range when it updates
+    if (dateRange) {
+      const [start, end] = dateRange.split(" - ");
+      setStartDate(start);
+      setEndDate(end);
+    }
+  }, [dateRange]);
 
   useEffect(() => {
-    if (startDate && endDate && formData.billboard_id) {
-      const selectedBillboard = availableBillboards.find(
-        (b) => b.id == formData.billboard_id
-      );
-      if (selectedBillboard) {
-        const numberOfDays = calculateNumberOfDays(startDate, endDate);
-        const actualAmount =  numberOfDays * selectedBillboard.pricePerDay
-       
-        const campaignDuration = numberOfDays;
-        const campaignStartDate = startDate;
-        const campaignEndDate = endDate;
+    if (startDate && endDate ) {
+    
 
-        setFormData((prev) => ({
-          ...prev,
-          actual_amount: actualAmount,
-          start_date: startDate,
-          end_date: endDate,
-        }));
-        // setDuration(campaignDuration);
+      const numberOfDays = calculateNumberOfDays(startDate, endDate);
 
-        setOrderDetails((prev) => ({...prev, 
-          campaign_duration: campaignDuration,
+      const campaignDuration = numberOfDays;
+      const campaignStartDate = startDate;
+      const campaignEndDate = endDate;
 
-          campaign_start_date: campaignStartDate,
-          campaign_end_date: campaignEndDate,
-      
-        }));
+      setOrderDetails((prev) => ({...prev, 
+        campaign_duration: campaignDuration,
 
+        campaign_start_date: campaignStartDate,
+        campaign_end_date: campaignEndDate,
+    
+      }));
+
+      if(formData.billboard_id){
+        const selectedBillboard = availableBillboards.find(
+          (b) => b.id == formData.billboard_id
+        );
+
+        if (selectedBillboard) {
+          // const numberOfDays = calculateNumberOfDays(startDate, endDate);
+          const actualAmount =  numberOfDays * selectedBillboard.pricePerDay
+         
+          setFormData((prev) => ({
+            ...prev,
+            actual_amount: actualAmount,
+            start_date: startDate,
+            end_date: endDate,
+          }));
+          // setDuration(campaignDuration);       
+  
+        }
       }
+
+
+   
     }
   }, [startDate, endDate, formData.billboard_id, availableBillboards]);
 
@@ -202,6 +220,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
 
   };
+
 
 
   
@@ -304,7 +323,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     }
   };
 
-
+ console.log(orderDetails?.campaign_duration)
   
 
   // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -335,6 +354,9 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
         !orderDetails.campaign_name ||
         !orderDetails.payment_option ||
         !orderDetails.media_purchase_order ||
+        !orderDetails.campaign_start_date ||
+        !orderDetails.campaign_end_date ||
+        !orderDetails.campaign_duration ||
         billboards.length === 0
       ) {
         alert("No orders to create.");
@@ -399,6 +421,64 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
             >
 
               {/* Billboard selection Section */}
+
+              <div className="col-span-12   ">
+                <div className="col-span-12  flex justify-center items-center lg:space-x-8 space-x-2">
+                  <div className="w-full relative">
+                    <FormLabel
+                      className="text-xs font-medium lg:text-[16px] text-black"
+                      htmlFor="duration"
+                    >
+                      Campaign Duration
+                    </FormLabel>
+
+                    <Litepicker
+                      id="campaign-duration"
+                      // value={`${orderToEdit?.campaign_start_date} - ${orderToEdit?.campaign_end_date}`}
+                      // onChange={setDaterange}
+                      value={dateRange}
+                      onChange={setDateRange}
+                      options={{
+                        autoApply: true,
+                        singleMode: false,
+                        numberOfColumns: 2,
+                        numberOfMonths: 2,
+                        showWeekNumbers: true,
+                        dropdowns: {
+                          minYear: 2021,
+                          maxYear: null,
+                          months: true,
+                          years: true,
+                        },
+                      }}
+                      className="block py-3 pl-8 mx-auto"
+                    />
+                    <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+                      <Lucide icon="Calendar" className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className=" w-full relative ">
+                    <FormLabel
+                      className="font-medium text-xs lg:text-[16px] text-black"
+                      htmlFor="duration"
+                    >
+                      Number of Days
+                    </FormLabel>
+                    <FormInput
+                      formInputSize="lg"
+                      type="text"
+                      name="numberOfDays"
+                      value={ `${orderDetails.campaign_duration} Days`}
+                      readOnly
+                      className="w-full text-sm pl-10 border rounded bg-gray-100 cursor-not-allowed"
+                    />
+
+                    <div className="absolute flex items-center justify-center w-8  h-8 left-0 bottom-1  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+                      <Lucide icon="Calendar" className="w-4 h-4" />
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* select billboard */}
               <div className="col-span-12">
@@ -567,7 +647,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
 
 
               {/* campaign dates */}
-              <div className="col-span-12   ">
+              {/* <div className="col-span-12   ">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
                   htmlFor="duration"
@@ -618,7 +698,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
 
               <div className="border-b border-slate-200 "></div>

@@ -203,26 +203,7 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
           </Dialog.Description>
 
           <Dialog.Footer className="text-right">
-            {/* <Button
-              type="button"
-              variant="outline-secondary"
-              onClick={onClose}
-              className="w-20 mr-1 border-customColor text-customColor"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              type="button"
-              className="lg:w-25 bg-customColor"
-              ref={sendButtonRef}
-              onClick={handleSubmit((data) => {
-                onSubmit(data);
-                onClose();
-              })}
-            >
-              Apply Filter
-            </Button> */}
+        
           </Dialog.Footer>
         </Dialog.Panel>
       </Dialog>

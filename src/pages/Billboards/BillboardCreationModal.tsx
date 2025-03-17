@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Dialog } from "../../base-components/Headless";
-import { FormInput, FormLabel, FormSelect } from "../../base-components/Form";
+import {
+  FormInput,
+  FormLabel,
+  FormSelect,
+  FormTextarea,
+} from "../../base-components/Form";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -11,7 +16,6 @@ import Lucide from "../../base-components/Lucide";
 import LoadingIcon from "../../base-components/LoadingIcon";
 import { formatCurrency } from "../../utils/utils";
 import { useFetchStates } from "../../lib/Hook";
-
 
 interface BillboardCreationModalProps {
   isOpen: boolean;
@@ -31,7 +35,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
   const { states, loading, error } = useFetchStates();
   const [lgas, setLGA] = useState<string[]>([]);
 
-const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
+  const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     return Promise.all(
       files.map((file) => {
         return new Promise<string>((resolve, reject) => {
@@ -44,8 +48,7 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     );
   };
 
-
-//   console.log(uploadedImages);
+  //   console.log(uploadedImages);
 
   const validationSchema = yup.object().shape({
     internalCode: yup.string().required("Billboard Code is required"),
@@ -57,14 +60,15 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     lng: yup.string().required("Longitude is required"),
     // height: yup.string().required("Height is required"),
     // width: yup.string().required("Width is required"),
-    numberOfSlotsOrFaces: yup.string().required("Number of placement is required"),
+    numberOfSlotsOrFaces: yup
+      .string()
+      .required("Number of placement is required"),
     // numberOfFaces: yup.string().required("Number of Faces is required"),
-    pricePerDay: yup.string().required("Price Per Day is required"),
-    // pricePerMonth: yup.string().required("Price Per Month is required"),
-    status : yup.string().required("Status is required"),
+    // pricePerDay: yup.string().required("Price Per Day is required"),
+    pricePerMonth: yup.string().required("Price Per Month is required"),
+    status: yup.string().required("Status is required"),
     activeStatus: yup.string().required("Active Status is required"),
     orientation: yup.string().required("Board Orientation is required"),
-      
   });
 
   const {
@@ -107,15 +111,14 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
 
     setValue(name, value); // Ensure React Hook Form tracks this change
 
-
-    if (name === "pricePerDay") {
-      const pricePerDay = parseFloat(value);
-      const pricePerMonth = pricePerDay * 30; // Assuming 30 days in a month
+    if (name === "pricePerMonth") {
+      const pricePerMonth = parseFloat(value);
+      const pricePerDay = pricePerMonth / 30; // Assuming 30 days in a month
 
       setFormData((prevFormData) => ({
         ...prevFormData,
         [name]: value,
-        pricePerMonth: pricePerMonth.toFixed(2), // Round to 2 decimal places
+        pricePerDay: pricePerDay.toFixed(2), // Round to 2 decimal places
       }));
     } else {
       setFormData((prevFormData) => ({
@@ -128,31 +131,26 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
       if (value === "static" || value === "bespoke" || value === "digital") {
         setValue("numberOfSlotsOrFaces", ""); // Reset numberOfSlots
       }
-      
     }
-// Handle logic for resetting dependent fields
-// if (name === "billboardType") {
-//   if (value === "static" || value === "bespoke") {
-//     setValue("numberOfSlotsOrFaces", ""); // Reset numberOfSlots
-//   }
-//   if (value === "digital" || value === "bespoke") {
-//     setValue("numberOfSlotsOrFaces", ""); // Reset numberOfFaces
-//   }
-// }
-
+    // Handle logic for resetting dependent fields
+    // if (name === "billboardType") {
+    //   if (value === "static" || value === "bespoke") {
+    //     setValue("numberOfSlotsOrFaces", ""); // Reset numberOfSlots
+    //   }
+    //   if (value === "digital" || value === "bespoke") {
+    //     setValue("numberOfSlotsOrFaces", ""); // Reset numberOfFaces
+    //   }
+    // }
   };
 
-  
-
-    // Generate a serial number when the modal is opened
-    useEffect(() => {
-      if (isOpen) {
-        const newSerialNumber = generateSerialNumber(); // Generate a new serial number
-        setValue("serialNumber", newSerialNumber); // Set the serial number in the form
-        // setFormData((prev) => ({ ...prev, serialNumber: newSerialNumber }));
-      }
-    }, [isOpen]);
-
+  // Generate a serial number when the modal is opened
+  useEffect(() => {
+    if (isOpen) {
+      const newSerialNumber = generateSerialNumber(); // Generate a new serial number
+      setValue("serialNumber", newSerialNumber); // Set the serial number in the form
+      // setFormData((prev) => ({ ...prev, serialNumber: newSerialNumber }));
+    }
+  }, [isOpen]);
 
   const handleStateChange = (stateName: string) => {
     const selectedState = states.find((state) => state.name === stateName);
@@ -161,33 +159,31 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     setValue("lga", "", { shouldValidate: true }); // Reset LGA selection
   };
 
-
-      // Function to generate a serial number
+  // Function to generate a serial number
   const generateSerialNumber = () => {
     // return uuidv4();
 
-   //using timestamp-based serial number
+    //using timestamp-based serial number
     return `SN-${Date.now()}`;
-
   };
 
-  const handleAddBillboard = async  (data: any) => {
+console.log(formData);
+
+  const handleAddBillboard = async (data: any) => {
     const base64Images = await convertImagesToBase64(uploadedImages);
 
-       // Prepare the payload
-       const payload = {
-        // Other form fields...
-        ...data,
-        // serialNumber: "6768702",
-        images: base64Images, // Include Base64 images
-      };
-  
+    // Prepare the payload
+    const payload = {
+      // Other form fields...
+      ...data,
+      // serialNumber: "6768702",
+      images: base64Images, // Include Base64 images
+    };
 
     console.log(payload);
     onSubmit(payload);
     // onClose();s
   };
-
 
   if (!isOpen) return null;
 
@@ -208,10 +204,12 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
           </Dialog.Title>
 
           <Dialog.Description className="grid grid-cols-12  gap-y-3 max-h-[90vh] overflow-y-auto ">
-            <form onSubmit={ handleSubmit(handleAddBillboard)} className="col-span-12 rounded-lg w-full max-w-2xl  md:p-4 space-y-8 ">
-
-            {/* image */}
-            {/* <div className="col-span-12">
+            <form
+              onSubmit={handleSubmit(handleAddBillboard)}
+              className="col-span-12 rounded-lg w-full max-w-2xl  md:p-4 space-y-8 "
+            >
+              {/* image */}
+              {/* <div className="col-span-12">
               <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="images">Images</FormLabel>
               <input
                 type="file"
@@ -224,65 +222,71 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
               />
             </div> */}
 
-
-
-<ImageUploadSection
-        uploadedImages={uploadedImages}
-        setUploadedImages={setUploadedImages}
-      />
-
-           
-<div className="col-span-12 ">
-              <FormLabel htmlFor="billboardNumber" className="font-medium lg:text-[16px] text-black">Billboard Number</FormLabel>
-              <FormInput
-              formInputSize="lg"
-
-
-                            {...register("serialNumber")}
-
-                            readOnly 
-
-                id="serialNumber"
-                type="text"
-                placeholder="6768787"
-                
+              <ImageUploadSection
+                uploadedImages={uploadedImages}
+                setUploadedImages={setUploadedImages}
               />
-             
-            </div>
 
-            {/* Billboard Code */}
-             
-             <div className="col-span-12">
-              <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="internalCode ">Billboard Internal Code</FormLabel>
-              <FormInput
-              formInputSize="lg"
-                id="internalCode"
-                type="text"
-                placeholder="Type here"
-                {...register("internalCode")}
-              />
-              {errors.internalCode && (
-                <p className="text-red-500">
-                  {errors.internalCode.message?.toString()}
-                </p>
-              )}
-            </div>
+              <div className="col-span-12 ">
+                <FormLabel
+                  htmlFor="billboardNumber"
+                  className="font-medium lg:text-[16px] text-black"
+                >
+                  Billboard Number
+                </FormLabel>
+                <FormInput
+                  formInputSize="lg"
+                  {...register("serialNumber")}
+                  readOnly
+                  id="serialNumber"
+                  type="text"
+                  placeholder="6768787"
+                />
+              </div>
+
+              {/* Billboard Code */}
 
               <div className="col-span-12">
-                <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="billboardName">Billboard Name</FormLabel>
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="internalCode "
+                >
+                  Billboard Internal Code
+                </FormLabel>
                 <FormInput
-                formInputSize="lg"
+                  formInputSize="lg"
+                  id="internalCode"
+                  type="text"
+                  placeholder="Type here"
+                  {...register("internalCode")}
+                />
+                {errors.internalCode && (
+                  <p className="text-red-500">
+                    {errors.internalCode.message?.toString()}
+                  </p>
+                )}
+              </div>
+
+              <div className="col-span-12">
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="billboardName"
+                >
+                  Billboard Name
+                </FormLabel>
+                <FormInput
+                  formInputSize="lg"
                   id="billboardName"
                   type="text"
                   placeholder="Type here"
                   {...register("billboardName")}
                 />
-                              {errors.billboardName && ( <p className="text-red-500">{errors.billboardName.message?.toString()}</p>)}
-
+                {errors.billboardName && (
+                  <p className="text-red-500">
+                    {errors.billboardName.message?.toString()}
+                  </p>
+                )}
               </div>
-
-              
-
 
               {/* <div className="col-span-12">
                 <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="state">State</FormLabel>
@@ -297,7 +301,6 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
                 {errors.state && ( <p className="text-red-500">{errors.state.message?.toString()}</p>)}
               </div> */}
 
-
               {/* <div className="col-span-12">
                 <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="lga">Local Government Area</FormLabel>
                 <FormInput
@@ -309,8 +312,6 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
                 />
                 {errors.lga && ( <p className="text-red-500">{errors.lga.message?.toString()}</p>)}
               </div> */}
-
-
 
               <div className=" col-span-12 flex space-x-4">
                 <div className=" w-1/2 relative intro-y">
@@ -327,8 +328,8 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
                     {...register("state", {
                       onChange: (e) => {
                         handleChange(e);
-                        handleStateChange(e.target.value)
-                      },                    
+                        handleStateChange(e.target.value);
+                      },
                     })}
                     // className="bg-gray-50 px-2.5 pb-1 pt-5  text-sm   peer"
                   >
@@ -367,8 +368,6 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
                   <FormSelect
                     id="lga"
                     formSelectSize="lg"
-
-                          
                     onChange={(e) =>
                       setValue("lga", e.target.value, {
                         shouldValidate: true,
@@ -394,15 +393,23 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
               </div>
 
               <div className="col-span-12">
-                <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="address">Addresss</FormLabel>
-                <FormInput
-                // formInputSize="lg"
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="address"
+                >
+                  Address
+                </FormLabel>
+                <FormTextarea
+                  formTextareaSize="lg"
                   id="address"
-                  type="address"
                   placeholder="Type here"
                   {...register("address")}
                 />
-                {errors.address && ( <p className="text-red-500">{errors.address.message?.toString()}</p>)}
+                {errors.address && (
+                  <p className="text-red-500">
+                    {errors.address.message?.toString()}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -411,17 +418,16 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
                 </FormLabel>
                 <div className="flex space-x-2">
                   <FormInput
-                  formInputSize="lg"
+                    formInputSize="lg"
                     type="text"
                     // name="lat"
                     // value={formData.geolocation.lat}
                     {...register("lat")}
                     className="w-1/2"
                     placeholder="Latitude"
-                    
                   />
                   <FormInput
-                  formInputSize="lg"
+                    formInputSize="lg"
                     type="text"
                     // name="lng"
                     // value={formData.geolocation.lng}
@@ -443,112 +449,148 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
                 { errors.lng  && ( <p className="text-red-500">{errors.lng.message?.toString()} </p>)} */}
               </div>
 
-                {/* dimension */}
+              {/* dimension */}
 
-                <div className="col-span-12">
-                    <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="dimension">Dimension</FormLabel>
-                    <FormSelect
-                    formSelectSize="lg"
-                   
-                   {...register("dimension", {
+              <div className="col-span-12">
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="dimension"
+                >
+                  Dimension
+                </FormLabel>
+                <FormSelect
+                  formSelectSize="lg"
+                  {...register("dimension", {
                     onChange: (e) => {
                       handleChange(e);
                     },
                   })}
-                    className="w-full p-2 border rounded"
-                    >
-                                          <option value="" disabled selected>--select--</option>
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="" disabled selected>
+                    --select--
+                  </option>
 
-                    <option value="Standard">Standard</option>
-                    <option value="Non-Standard">Non-Standard</option>
-                    <option value="Custom">Custom</option>
-                    </FormSelect>
-                    {errors.dimension && ( <p className="text-red-500">{errors.dimension.message?.toString()}</p>)}
-                </div>
-                    
+                  <option value="Standard">Standard</option>
+                  <option value="Non-Standard">Non-Standard</option>
+                  <option value="Custom">Custom</option>
+                </FormSelect>
+                {errors.dimension && (
+                  <p className="text-red-500">
+                    {errors.dimension.message?.toString()}
+                  </p>
+                )}
+              </div>
 
               {/* specifications */}
 
-{formData.dimension === "Custom" && (
-     <div className="col-span-12 flex space-x-2">
-       <div className="w-1/2 ">
-       <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="width">Width(Ft)</FormLabel>
-       <FormInput
-       formInputSize="lg"
-         id="width"
-         type="text"
-         placeholder="Width"
-         {...register("width")}
-         className="p-2 border rounded"
-       />
-     </div>
+              {formData.dimension === "Custom" && (
+                <div className="col-span-12 flex space-x-2">
+                  <div className="w-1/2 ">
+                    <FormLabel
+                      className="font-medium lg:text-[16px] text-black"
+                      htmlFor="width"
+                    >
+                      Width(Mt)
+                    </FormLabel>
+                    <FormInput
+                      formInputSize="lg"
+                      id="width"
+                      type="text"
+                      placeholder="Width"
+                      {...register("width")}
+                      className="p-2 border rounded"
+                    />
+                  </div>
 
-     <div className="w-1/2 ">
-       <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="height">Height(Ft)</FormLabel>
-       <FormInput
-       formInputSize="lg"
-         id="height"
-         type="text"
-         placeholder="Height"
-         {...register("height")}
-         className=" p-2 border rounded"
-       />
-     </div>
-
-    
-   </div>
-)}
-             
+                  <div className="w-1/2 ">
+                    <FormLabel
+                      className="font-medium lg:text-[16px] text-black"
+                      htmlFor="height"
+                    >
+                      Height(Mt)
+                    </FormLabel>
+                    <FormInput
+                      formInputSize="lg"
+                      id="height"
+                      type="text"
+                      placeholder="Height"
+                      {...register("height")}
+                      className=" p-2 border rounded"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Billboard Type */}
 
               <div className="col-span-12">
-                <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="billboardType">Billboard Type</FormLabel>
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="billboardType"
+                >
+                  Billboard Type
+                </FormLabel>
                 <FormSelect
                   id="billboardType"
                   formSelectSize="lg"
-
                   {...register("billboardType", {
                     onChange: (e) => {
                       handleChange(e);
-                    },})}
+                    },
+                  })}
                   className="w-full p-2 border rounded"
                 >
-                                    <option disabled  selected value="">--Select--</option>
+                  <option disabled selected value="">
+                    --Select--
+                  </option>
 
                   <option value="static">Static</option>
                   <option value="digital">Digital</option>
                   <option value="bespoke">Bespoke (Innovative)</option>
                 </FormSelect>
-                {errors.billboardType && ( <p className="text-red-500">{errors.billboardType.message?.toString()}</p>)}
+                {errors.billboardType && (
+                  <p className="text-red-500">
+                    {errors.billboardType.message?.toString()}
+                  </p>
+                )}
               </div>
 
               {/* Number of Slots for Digital FormSelection only*/}
 
-              {(formData.billboardType === "digital" || formData.billboardType === "static") && (
+              {(formData.billboardType === "digital" ||
+                formData.billboardType === "static") && (
                 <div className="col-span-12">
-                  <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="numberOfSlotsOrFaces">{formData.billboardType === "digital" ? "Number of Slots" : "Number of Faces"}</FormLabel>
+                  <FormLabel
+                    className="font-medium lg:text-[16px] text-black"
+                    htmlFor="numberOfSlotsOrFaces"
+                  >
+                    {formData.billboardType === "digital"
+                      ? "Number of Slots"
+                      : "Number of Faces"}
+                  </FormLabel>
                   <FormSelect
                     formSelectSize="lg"
-
                     // name="numberOfSlots"
                     value={formData.numberOfSlotsOrFaces}
                     {...register("numberOfSlotsOrFaces", {
                       onChange: (e) => {
                         handleChange(e);
-                      },})}
+                      },
+                    })}
                     className="w-full p-2 border rounded"
                   >
-                    {formData.billboardType === "digital" ? ([...Array(8)].map((_, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        Slot {i + 1}
-                      </option>
-                    ))) : ( [...Array(4)].map((_, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        Face {i + 1}
-                      </option>
-                    ))) }
-                   
+                    {formData.billboardType === "digital"
+                      ? [...Array(8)].map((_, i) => (
+                          <option key={i + 1} value={i + 1}>
+                            Slot {i + 1}
+                          </option>
+                        ))
+                      : [...Array(4)].map((_, i) => (
+                          <option key={i + 1} value={i + 1}>
+                            Face {i + 1}
+                          </option>
+                        ))}
                   </FormSelect>
                 </div>
               )}
@@ -578,142 +620,184 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
                 </div>
               )} */}
 
-              {/* Price Per Day */}
+               {/* Price Per Month */}
               <div className="col-span-12">
-                <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="pricePerDay">Amount (Per Day)</FormLabel>
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="pricePerMonth"
+                >
+                  Amount (Per Month)
+                </FormLabel>
                 <FormInput
-                formInputSize="lg"
-                  // name="pricePerDay"
-                  type="number"
-                  value={formData.pricePerDay}
-                  {...register("pricePerDay", {
-                    onChange: (e) => {
-                      handleChange(e);
-                    },})}
+                  formInputSize="lg"
                   
-                  className="w-full p-2 border rounded"
-                />
-                {errors.pricePerDay && ( <p className="text-red-500">{errors.pricePerDay.message?.toString()}</p>)}
-              </div>
+                  type="number"
+                  value={formData.pricePerMonth}
 
-              {/* Price Per Month */}
-              <div className="col-span-12">
-                <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="pricePerMonth">Amount (Per Month)</FormLabel>
-                <FormInput
-                formInputSize="lg"
-                disabled
-                  type="text"
-                  value={formatCurrency(Number(formData.pricePerMonth))}
                   {...register("pricePerMonth", {
                     onChange: (e) => {
                       handleChange(e);
-                    },})}
+                    },
+                  })}
                   className="w-full p-2 border rounded"
                 />
               </div>
 
+              {/* Price Per Day */}
+              <div className="col-span-12">
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="pricePerDay"
+                >
+                  Amount (Per Day)
+                </FormLabel>
+                <FormInput
+                  formInputSize="lg"
+                  // name="pricePerDay"
+                  type="text"
+                  disabled
+                  value={`₦${formatCurrency(Number(formData?.pricePerDay))}`}
+
+                  {...register("pricePerDay", {
+                    onChange: (e) => {
+                      handleChange(e);
+                    },
+                  })}
+                  className="w-full p-2 border rounded"
+                />
+                {errors.pricePerDay && (
+                  <p className="text-red-500">
+                    {errors.pricePerDay.message?.toString()}
+                  </p>
+                )}
+              </div>
+
+             
+
               {/* status */}
-                <div className="col-span-12">
-                    <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="status">Status</FormLabel>
-                    <FormSelect
-                    formSelectSize="lg"
+              <div className="col-span-12">
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="status"
+                >
+                  Status
+                </FormLabel>
+                <FormSelect
+                  formSelectSize="lg"
+                  // name="status"
+                  value={formData.status}
+                  {...register("status", {
+                    onChange: (e) => {
+                      handleChange(e);
+                    },
+                  })}
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="under_maintenance">Under Maintenance</option>
+                </FormSelect>
+                {errors.status && (
+                  <p className="text-red-500">
+                    {errors.status.message?.toString()}
+                  </p>
+                )}
+              </div>
 
-                    // name="status"
-                    value={formData.status}
-                    {...register("status", {
-                      onChange: (e) => {
-                        handleChange(e);
-                      },})}
-                    
-                    className="w-full p-2 border rounded"
-                    >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="under_maintenance">Under Maintenance</option>
-                    </FormSelect>
-                    {errors.status && ( <p className="text-red-500">{errors.status.message?.toString()}</p>)}
-                </div>
+              {/* active status */}
+              <div className="col-span-12">
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="activeStatus"
+                >
+                  Active Status
+                </FormLabel>
+                <FormSelect
+                  formSelectSize="lg"
+                  // name="activeStatus"
+                  value={formData.activeStatus}
+                  {...register("activeStatus", {
+                    onChange: (e) => {
+                      handleChange(e);
+                    },
+                  })}
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="vacant">Vacant</option>
+                  <option value="occupied">Occupied</option>
+                </FormSelect>
+                {errors.activeStatus && (
+                  <p className="text-red-500">
+                    {errors.activeStatus.message?.toString()}
+                  </p>
+                )}
+              </div>
 
-                {/* active status */}
-                <div className="col-span-12">
-                    <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="activeStatus">Active Status</FormLabel>
-                    <FormSelect
-                                        formSelectSize="lg"
+              {/* board orientation */}
+              <div className="col-span-12">
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="orientation"
+                >
+                  Board Orientation
+                </FormLabel>
+                <FormSelect
+                  // name="orientation"
+                  formSelectSize="lg"
+                  {...register("orientation", {
+                    onChange: (e) => {
+                      handleChange(e);
+                    },
+                  })}
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="landscape">Landscape</option>
+                  <option value="portrait">Portrait</option>
+                </FormSelect>
+                {errors.orientation && (
+                  <p className="text-red-500">
+                    {errors.orientation.message?.toString()}
+                  </p>
+                )}
+              </div>
 
-                    // name="activeStatus"
-                    value={formData.activeStatus}
-                   
-                    {...register("activeStatus", {
-                      onChange: (e) => {
-                        handleChange(e);
-                      },})}
-                    className="w-full p-2 border rounded"
-                    >
-                    <option value="vacant">Vacant</option>
-                    <option value="occupied">Occupied</option>
-                    </FormSelect>
-                    {errors.activeStatus && ( <p className="text-red-500">{errors.activeStatus.message?.toString()}</p>)}
-                </div>
-
-                {/* board orientation */}
-                <div className="col-span-12">
-                    <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="orientation">Board Orientation</FormLabel>
-                    <FormSelect
-                    // name="orientation"
-                    formSelectSize="lg"
-
-                    {...register("orientation", {
-                      onChange: (e) => {
-                        handleChange(e);
-                      },})}
-                    className="w-full p-2 border rounded"
-                    >
-                    <option value="landscape">Landscape</option>
-                    <option value="portrait">Portrait</option>
-                    </FormSelect>  
-                    {errors.orientation && ( <p className="text-red-500">{errors.orientation.message?.toString()}</p>)}
-                </div>
-
-                <div className="flex space-x-2 lg:text-lg text-sm">
+              <div className="flex space-x-2 lg:text-lg text-sm">
                 <Button
-              type="button"
-              variant="outline-secondary"
-              onClick={onClose}
-              className="w-auto  border-red-500 text-red-500"
-            >
-              <Lucide icon="X" className="w-4 h-4 mr-1 " />
-              <div  className=""> Cancel</div>
-            </Button>
-            <Button
-              disabled={isLoading}
-              variant="primary"
-              type="submit"
-              className="w-auto bg-customColor"
-              ref={sendButtonRef}
-              // onClick={handleSubmit((data) => {
-              //   onSubmit(data);
-              //   onClose();
-              // })}
-            >
-                            <Lucide icon="Plus" className="w-4 h-4 mr-1 " />
+                  type="button"
+                  variant="outline-secondary"
+                  onClick={onClose}
+                  className="w-auto  border-red-500 text-red-500"
+                >
+                  <Lucide icon="X" className="w-4 h-4 mr-1 " />
+                  <div className=""> Cancel</div>
+                </Button>
+                <Button
+                  disabled={isLoading}
+                  variant="primary"
+                  type="submit"
+                  className="w-auto bg-customColor"
+                  ref={sendButtonRef}
+                  // onClick={handleSubmit((data) => {
+                  //   onSubmit(data);
+                  //   onClose();
+                  // })}
+                >
+                  <Lucide icon="Plus" className="w-4 h-4 mr-1 " />
 
-              
-              {isLoading ? (
-                          <div className="flex items-center space-x-2 justify-end">
-                            <LoadingIcon
-                              icon="spinning-circles"
-                              className="w-6 h-6"
-                            />
-                            <div className=" text-xs text-center">Creating...</div>
-                          </div>
-                        ) : (
-                          "Create"
-                        )}
-            </Button>
-                </div>
-
+                  {isLoading ? (
+                    <div className="flex items-center space-x-2 justify-end">
+                      <LoadingIcon
+                        icon="spinning-circles"
+                        className="w-6 h-6"
+                      />
+                      <div className=" text-xs text-center">Creating...</div>
+                    </div>
+                  ) : (
+                    "Create"
+                  )}
+                </Button>
+              </div>
             </form>
-        
           </Dialog.Description>
 
           <Dialog.Footer className="text-right">
