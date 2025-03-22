@@ -4,22 +4,22 @@ import { useContext, useEffect } from "react";
 import _, { set } from "lodash";
 import clsx from "clsx";
 import { useState, useRef } from "react";
-import Button from "../../../base-components/Button";
-import { FormInput } from "../../../base-components/Form";
-import Lucide from "../../../base-components/Lucide";
-import { Tab } from "../../../base-components/Headless";
+import Button from "../../../../base-components/Button";
+import { FormInput } from "../../../../base-components/Form";
+import Lucide from "../../../../base-components/Lucide";
+import { Tab } from "../../../../base-components/Headless";
 
-import { UserContext } from "../../../stores/UserContext";
-import { PullCampaignContext } from "../../../stores/CampaignDataContext";
-import API from "../../../utils/API";
+import { UserContext } from "../../../../stores/UserContext";
+import { PullCampaignContext } from "../../../../stores/CampaignDataContext";
+import API from "../../../../utils/API";
 import { Link, useNavigate } from "react-router-dom";
-import LoadingIcon from "../../../base-components/LoadingIcon";
+import LoadingIcon from "../../../../base-components/LoadingIcon";
 
-import Breadcrumb from "../../../base-components/Breadcrumb";
-import OrderCreationModal from "./OrderCreationModal";
-import Notification from "../../../base-components/Notification";
+import Breadcrumb from "../../../../base-components/Breadcrumb";
+import OrderCreationModal from "../OrderCreationModal";
+import Notification from "../../../../base-components/Notification";
 import Toastify from "toastify-js";
-import DisplaySection from "./DisplaySection";
+import DisplayTable from "./DisplayTable";
 
 
 
@@ -53,7 +53,7 @@ interface AvailableBillboard {
     orientation: string,
 }
 
-export default function Main() {
+export default function DeliveredCampaign() {
   const { user } = useContext(UserContext);
   const { campaignDispatch} = useContext(PullCampaignContext)
 
@@ -63,7 +63,7 @@ export default function Main() {
 
   const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false);
   const deleteButtonRef = useRef(null);
-  const [dateRange, setDateRange] = useState<string>("");
+  const [dateRange, setDateRasnge] = useState<string>("");
 
   const [selectedLGA, setSelectedLGA] = useState<string>("");
   const [selectedUser, setSelectedUser] = useState<string>("");
@@ -87,8 +87,8 @@ export default function Main() {
   useEffect(() => {
     if (user?.token) {
       fetchOrderData();
-      fetchClients();
-      fetchBillboards();
+      // fetchClients();
+      // fetchBillboards();
     }
   }, [user?.token]);
 
@@ -109,7 +109,7 @@ export default function Main() {
 
     API(
       "get",
-      `campaign-orders`,
+      `delivered-campaign-orders`,
       params,
       // {lga: 'Alimosho'},
       function (orderData: any) {
@@ -126,48 +126,48 @@ export default function Main() {
     );
   };
 
-  const fetchClients = () => {
+  // const fetchClients = () => {
 
-    setLoading(true);
+  //   setLoading(true);
 
-    API(
-      "get",
-      `clients-data`,
-      {},
-      function (data: any) {
-        setClients(data?.registered_clients);
-        setLoading(false);
-        console.log(data);
-      },
+  //   API(
+  //     "get",
+  //     `clients-data`,
+  //     {},
+  //     function (data: any) {
+  //       setClients(data?.registered_clients);
+  //       setLoading(false);
+  //       console.log(data);
+  //     },
 
-      function (error: any) {
-        console.error("Error fetching recent searches:", error);
-        setLoading(false);
-      },
-      user?.token && user.token
-    );
-  };
+  //     function (error: any) {
+  //       console.error("Error fetching recent searches:", error);
+  //       setLoading(false);
+  //     },
+  //     user?.token && user.token
+  //   );
+  // };
 
-  const fetchBillboards = () => {
+  // const fetchBillboards = () => {
 
-    setLoading(true);
+  //   setLoading(true);
 
 
-    API(
-      "get",
-      `billboard-data`,
-      {},
-      function (data: any) {
-        setBillboards(data?.registered_billboards);
-        setLoading(false);
-      },
-      function (error: any) {
-        console.error("Error fetching recent searches:", error);
-        setLoading(false);
-      },
-      user?.token && user.token
-    );
-  };
+  //   API(
+  //     "get",
+  //     `billboard-data`,
+  //     {},
+  //     function (data: any) {
+  //       setBillboards(data?.registered_billboards);
+  //       setLoading(false);
+  //     },
+  //     function (error: any) {
+  //       console.error("Error fetching recent searches:", error);
+  //       setLoading(false);
+  //     },
+  //     user?.token && user.token
+  //   );
+  // };
 
   const handleAddOrder = (data: any) => {
     console.log(data);
@@ -239,7 +239,7 @@ export default function Main() {
           </div> */}
           <div className=" hidden mr-auto md:block">
             <h2 className="mr-5 text-3xl font-bold truncate">
-              Campaign Orders
+              Delivered Campaigns
             </h2>
             <Breadcrumb
               light={false}
@@ -250,16 +250,16 @@ export default function Main() {
             >
               <Breadcrumb.Link to="/">Application</Breadcrumb.Link>
               <Breadcrumb.Link to="/" active={true}>
-                Campaingn Oders
+                Campaingn 
               </Breadcrumb.Link>
             </Breadcrumb>
           </div>
 
           <Button
             onClick={() => setIsModalOpen(true)}
-            className="mr-2 flex  justify-center items-center font-semibold shadow-sm bg-customColor rounded-lg px-4 py-2 text-white text-sm lg:text-[14px]"
+            className="mr-2 flex  justify-center items-center font-semibold shadow-sm  border-customColor rounded-lg px-4 py-2 text-customColor text-sm lg:text-[14px]"
           >
-            <Lucide icon="Plus" className="w-5 h-5 mr-2  " /> New Campaign
+            <Lucide icon="Plus" className="w-5 h-5 mr-2  " /> This  Month
           </Button>
 
           <Button className="mr-2 shadow-sm  border-slate-300 py-1.5">
@@ -291,20 +291,25 @@ export default function Main() {
               <Tab fullWidth={false}>
                 <Tab.Button className="flex items-center  cursor-pointer">
                   {/* <Lucide icon="Shield" className="w-4 h-4 mr-2" /> */}
-                  Pending
+                  Running
                 </Tab.Button>
               </Tab>
               <Tab fullWidth={false}>
                 <Tab.Button className="flex items-center  cursor-pointer">
                   {/* <Lucide icon="Shield" className="w-4 h-4 mr-2" /> */}
-                  Approved
+                  End
                 </Tab.Button>
               </Tab>
-             
+              <Tab fullWidth={false}>
+                <Tab.Button className="flex items-center  cursor-pointer">
+                  {/* <Lucide icon="Shield" className="w-4 h-4 mr-2" /> */}
+                  Frozen
+                </Tab.Button>
+              </Tab>
               <Tab fullWidth={false}>
                 <Tab.Button className="flex items-center  cursor-pointer">
                   {/* <Lucide icon="Lock" className="w-4 h-4 mr-2" />  */}
-                  Delivered
+                  Finished
                 </Tab.Button>
               </Tab>
             </Tab.List>
@@ -333,23 +338,30 @@ export default function Main() {
               </div>
             )}
 
-            <Tab.Panel>
-              <DisplaySection loading={loading} orderList={orderList} />
-            </Tab.Panel>
+             {/* All Campaigns */}
+    <Tab.Panel>
+      <DisplayTable loading={loading} orderList={orderList} />
+    </Tab.Panel>
 
-            <Tab.Panel>
-              <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "pending")} />
+    {/* Running Campaigns */}
+    <Tab.Panel>
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "running")} />
+    </Tab.Panel>
 
-            </Tab.Panel>
+    {/* Ended Campaigns */}
+    <Tab.Panel>
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "end")} />
+    </Tab.Panel>
 
-            <Tab.Panel>
-            <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "approved")} />
-            </Tab.Panel>
+    {/* Frozen Campaigns */}
+    <Tab.Panel>
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "frozen")} />
+    </Tab.Panel>
 
-            <Tab.Panel>
-            <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "delivered")} />
-            </Tab.Panel>
-
+    {/* Finished Campaigns */}
+    <Tab.Panel>
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "finished")} />
+    </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
 
