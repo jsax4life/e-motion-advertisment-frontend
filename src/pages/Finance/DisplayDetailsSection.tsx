@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
-import Pagination from "../../../base-components/Pagination";
-import { FormSelect } from "../../../base-components/Form";
-import Lucide from "../../../base-components/Lucide";
-import { Menu, Tab } from "../../../base-components/Headless";
-import Table from "../../../base-components/Table";
-import { formatCurrency} from "../../../utils/utils";
+import Pagination from "../../base-components/Pagination";
+import { FormSelect } from "../../base-components/Form";
+import Lucide from "../../base-components/Lucide";
+import { Menu, Tab } from "../../base-components/Headless";
+import Table from "../../base-components/Table";
+import { formatCurrency} from "../../utils/utils";
 import ApprrovalProcess from "./ApprovalProcess";
-import ContactDetails from "./ContactDetails";
-import { formatDate } from "../../../utils/helper";
+// import ContactDetails from "./ContactDetails";
+import { formatDate } from "../../utils/helper";
 
 interface Campaign {
   id: string;
@@ -27,6 +27,8 @@ interface Campaign {
   description: string;
   campaign_start_date: string;
   campaign_end_date: string;
+  campaign_freeze_date: string;
+  campaign_unfreeze_date: string;
   
 }
 
@@ -41,6 +43,7 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
 }) => {
 
   const [daysLeft, setDaysLeft] = React.useState(0);
+  const [weeksLeft, setWeeksLeft] = React.useState(0);
 
   // useEffect to calculate the number of days left
   useEffect(() => { 
@@ -52,8 +55,16 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
     setDaysLeft(days);
   } , [campaign?.campaign_start_date, campaign?.campaign_end_date]) 
 
-
-
+  // useEffcet to calculate weeks remaining 
+  
+  useEffect(() => { 
+    const startDate = new Date(campaign?.campaign_start_date);
+    const endDate = new Date(campaign?.campaign_end_date);
+    const today = new Date();
+    const diff = endDate.getTime() - today.getTime();
+    const weeks = Math.ceil(diff / (1000 * 60 * 60 * 24 * 7));
+    setWeeksLeft(weeks);
+  } , [campaign?.campaign_start_date, campaign?.campaign_end_date])
 
   if (loading) {
     return <div>Loading...</div>;
@@ -95,6 +106,8 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
             {formatDate(campaign?.campaign_start_date, 'DD-MM-YYYY')} - {formatDate(campaign?.campaign_end_date, 'DD-MM-YYYY')}
             </div>
           </div>
+          
+
           <div className="col-span-1  ">
             <div className=" md:text-[12px] text-stone-400 font-bold mb-1">
             number of days left
@@ -103,7 +116,6 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
             {daysLeft} days
             </div>
           </div>
-       
           
         </div>
 
@@ -117,7 +129,6 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
             {campaign?.payment_option}
             </div>
           </div>
-
           <div className="col-span-1  ">
             <div className=" md:text-[12px] text-stone-400 font-bold mb-1">
             payment status
@@ -126,6 +137,42 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
 
               <div className={`rounded-full ${campaign?.payment_status ==='paid' ? 'bg-green-500' : campaign?.payment_status ==='pending' ?  'bg-orange-500' : 'bg-red-500'}  w-2 h-2`}></div>
            <div> {campaign?.payment_status}</div>
+            </div>
+          </div>
+          
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 uppercase ">
+        
+        <div className="col-span-1  ">
+            <div className=" md:text-[12px] text-stone-400 font-bold mb-1">
+            payment period
+            </div>
+            <div className=" font-bold  lg:text-[16px] text-stone-600">
+            {weeksLeft} weeks
+            </div>
+          </div>
+       
+          
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 uppercase ">
+        
+        <div className="col-span-1  ">
+            <div className=" md:text-[12px] text-stone-400 font-bold mb-1">
+            freeze date
+            </div>
+            <div className=" font-bold  lg:text-[16px] text-stone-600">
+            {campaign?.campaign_freeze_date}
+            </div>
+          </div>
+          <div className="col-span-1  ">
+            <div className=" md:text-[12px] text-stone-400 font-bold mb-1">
+            unfreeze date
+            </div>
+            <div className=" flex justify-start items-center space-x-2 font-bold  lg:text-[16px] text-stone-600">
+
+           <div> {campaign?.campaign_freeze_date}</div>
             </div>
           </div>
           
@@ -270,7 +317,7 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
         <div className="border-b border-slate-200 pb-4 text-lg font-bold text-black ">
           contact details
         </div>
-            <ContactDetails campaign={campaign}/> 
+            {/* <ContactDetails campaign={campaign}/>  */}
       </div>
 
       <div className=" p-5  flex flex-col gap-y-4 rounded-2xl  bg-white col-span-12 lg:col-span-4 overflow-auto intro-y 2xl:overflow-visible capitalize">

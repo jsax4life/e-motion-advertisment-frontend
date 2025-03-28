@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Dialog } from "../../../../base-components/Headless";
+import { Dialog } from "../../base-components/Headless";
 import {
   FormLabel,
   FormSelect,
   FormTextarea,
-} from "../../../../base-components/Form";
+} from "../../base-components/Form";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import Button from "../../../../base-components/Button";
-import Lucide from "../../../../base-components/Lucide";
-import LoadingIcon from "../../../../base-components/LoadingIcon";
+import Button from "../../base-components/Button";
+import Lucide from "../../base-components/Lucide";
+import LoadingIcon from "../../base-components/LoadingIcon";
 
 interface BillboardCreationModalProps {
   isOpen: boolean;
@@ -35,7 +35,7 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
   const [formData, setFormData] = useState<any>();
 
   const validationSchema = yup.object().shape({
-    status: yup.string().required("Status Code is required"),
+    payment_status: yup.string().required("Payment Status is required"),
     remarks: yup.string().required("Comment is required"),
   });
 
@@ -100,10 +100,10 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
               </div>
               <div className="text-2xl">
                 <h2 className="mr-auto text-xl text-slate-800 font-bold">
-                  Status Change
+                  Payment Status Change
                 </h2>
                 <p className=" text-sm text-slate-500">
-                  Choose a state to update
+                  Choose a status to update
                 </p>
               </div>
             </div>
@@ -117,30 +117,31 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
               <div className="col-span-12">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
-                  htmlFor="status"
+                  htmlFor="payment_status"
                 >
-                  Status
+                 Payment Status
                 </FormLabel>
                 <FormSelect
                   formSelectSize="lg"
                   // name="status"
-                  defaultValue={campaign.status}
-                  {...register("status", {
+                  defaultValue={campaign.payment_status}
+                  {...register("payment_status", {
                     onChange: (e) => {
                       handleChange(e);
                     },
                   })}
                   className="w-full p-2 border rounded-lg py-3.5"
                 >
-                  <option value="end">End</option>
-                  <option value="frozen">Frozen</option>
+                  <option value="pending">Pending</option>
+                  <option value="paid">Paid</option>
+
                   {/* <option value="paid">Paid</option>
                   <option value="delivered">Delivered</option> */}
 
                 </FormSelect>
-                {errors.status && (
+                {errors.payment_status && (
                   <p className="text-red-500">
-                    {errors.status.message?.toString()}
+                    {errors.payment_status.message?.toString()}
                   </p>
                 )}
               </div>

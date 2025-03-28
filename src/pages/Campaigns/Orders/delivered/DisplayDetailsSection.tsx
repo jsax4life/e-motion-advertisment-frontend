@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Pagination from "../../../../base-components/Pagination";
 import { FormSelect } from "../../../../base-components/Form";
 import Lucide from "../../../../base-components/Lucide";
@@ -18,7 +18,8 @@ interface Campaign {
   client: any;
   campaign_name: string;
   campaign_duration: string;
-  status: ['pending', 'approved', 'paiid', 'delivered']
+  status: ['pending', 'approved', 'paiid', 'delivered'];
+  payment_status: string;
   payment_option: string;
   media_purchase_order:string;
   total_order_amount: number;
@@ -26,6 +27,8 @@ interface Campaign {
   description: string;
   campaign_start_date: string;
   campaign_end_date: string;
+  campaign_freeze_date: string;
+  campaign_unfreeze_date: string;
   
 }
 
@@ -38,6 +41,31 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
   loading,
   campaign,
 }) => {
+
+  const [daysLeft, setDaysLeft] = React.useState(0);
+  const [weeksLeft, setWeeksLeft] = React.useState(0);
+
+  // useEffect to calculate the number of days left
+  useEffect(() => { 
+    const startDate = new Date(campaign?.campaign_start_date);
+    const endDate = new Date(campaign?.campaign_end_date);
+    const today = new Date();
+    const diff = endDate.getTime() - today.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    setDaysLeft(days);
+  } , [campaign?.campaign_start_date, campaign?.campaign_end_date]) 
+
+  // useEffcet to calculate weeks remaining 
+  
+  useEffect(() => { 
+    const startDate = new Date(campaign?.campaign_start_date);
+    const endDate = new Date(campaign?.campaign_end_date);
+    const today = new Date();
+    const diff = endDate.getTime() - today.getTime();
+    const weeks = Math.ceil(diff / (1000 * 60 * 60 * 24 * 7));
+    setWeeksLeft(weeks);
+  } , [campaign?.campaign_start_date, campaign?.campaign_end_date])
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -75,15 +103,17 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
               campaign duration
             </div>
             <div className=" font-bold  lg:text-[16px] text-stone-800">
-            {formatDate(campaign?.campaign_end_date, 'DD-MM-YYYY')} - {formatDate(campaign?.campaign_start_date, 'DD-MM-YYYY')}
+            {formatDate(campaign?.campaign_start_date, 'DD-MM-YYYY')} - {formatDate(campaign?.campaign_end_date, 'DD-MM-YYYY')}
             </div>
           </div>
+          
+
           <div className="col-span-1  ">
             <div className=" md:text-[12px] text-stone-400 font-bold mb-1">
-            payment option
+            number of days left
             </div>
             <div className=" font-bold  lg:text-[16px] text-stone-600">
-            {campaign?.payment_option}
+            {daysLeft} days
             </div>
           </div>
           
@@ -91,12 +121,58 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
 
         <div className="grid grid-cols-2 gap-4 uppercase ">
         
-          <div className="col-span-1  ">
+        <div className="col-span-1  ">
             <div className=" md:text-[12px] text-stone-400 font-bold mb-1">
-            number of days left
+            payment option
             </div>
             <div className=" font-bold  lg:text-[16px] text-stone-600">
-            {campaign?.campaign_duration}
+            {campaign?.payment_option}
+            </div>
+          </div>
+          <div className="col-span-1  ">
+            <div className=" md:text-[12px] text-stone-400 font-bold mb-1">
+            payment status
+            </div>
+            <div className=" flex justify-start items-center space-x-2 font-bold  lg:text-[16px] text-stone-600">
+
+              <div className={`rounded-full ${campaign?.payment_status ==='paid' ? 'bg-green-500' : campaign?.payment_status ==='pending' ?  'bg-orange-500' : 'bg-red-500'}  w-2 h-2`}></div>
+           <div> {campaign?.payment_status}</div>
+            </div>
+          </div>
+          
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 uppercase ">
+        
+        <div className="col-span-1  ">
+            <div className=" md:text-[12px] text-stone-400 font-bold mb-1">
+            payment period
+            </div>
+            <div className=" font-bold  lg:text-[16px] text-stone-600">
+            {weeksLeft} weeks
+            </div>
+          </div>
+       
+          
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 uppercase ">
+        
+        <div className="col-span-1  ">
+            <div className=" md:text-[12px] text-stone-400 font-bold mb-1">
+            freeze date
+            </div>
+            <div className=" font-bold  lg:text-[16px] text-stone-600">
+            {campaign?.campaign_freeze_date}
+            </div>
+          </div>
+          <div className="col-span-1  ">
+            <div className=" md:text-[12px] text-stone-400 font-bold mb-1">
+            unfreeze date
+            </div>
+            <div className=" flex justify-start items-center space-x-2 font-bold  lg:text-[16px] text-stone-600">
+
+           <div> {campaign?.campaign_freeze_date}</div>
             </div>
           </div>
           

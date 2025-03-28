@@ -45,7 +45,7 @@ const initialState: SideMenuState = {
         {
           icon: "Book",
           pathname: "/running-campaigns",
-          title: "Running",
+          title: "Delivered",
         },
       ],
     },
@@ -57,13 +57,20 @@ const initialState: SideMenuState = {
 
     },
 
+
     {
       icon: "Tv2",
       pathname: "/billboards",
       title: "Billboards",
 
     },
- 
+    {
+      icon: "DollarSign",
+      pathname: "/finance",
+      title: "Finance",
+
+    },
+
 
  
 

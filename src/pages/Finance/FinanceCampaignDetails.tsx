@@ -5,29 +5,29 @@ import { Fragment, Key, useContext, useEffect } from "react";
 import _, { set } from "lodash";
 import clsx from "clsx";
 import { useState, useRef } from "react";
-import Button from "../../../../base-components/Button";
+import Button from "../../base-components/Button";
 
-import Lucide from "../../../../base-components/Lucide";
-import {  Tab } from "../../../../base-components/Headless";
+import Lucide from "../../base-components/Lucide";
+import {  Tab } from "../../base-components/Headless";
 
-import Tippy from "../../../../base-components/Tippy";
-import { UserContext } from "../../../../stores/UserContext";
-import API from "../../../../utils/API";
+import Tippy from "../../base-components/Tippy";
+import { UserContext } from "../../stores/UserContext";
+import API from "../../utils/API";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import LoadingIcon from "../../../../base-components/LoadingIcon";
-import Breadcrumb from "../../../../base-components/Breadcrumb";
-import Notification from "../../../../base-components/Notification";
+import LoadingIcon from "../../base-components/LoadingIcon";
+import Breadcrumb from "../../base-components/Breadcrumb";
+import Notification from "../../base-components/Notification";
 import Toastify from "toastify-js";
-import { PullBillboardContext } from "../../../../stores/BillboardDataContext";
-import { formatDate } from "../../../../utils/utils";
+import { PullBillboardContext } from "../../stores/BillboardDataContext";
+import { formatDate } from "../../utils/utils";
 // import EditOrderModal from "./EditOrderModal";
 import DisplayDetailsSection from "./DisplayDetailsSection";
-import { PullCampaignContext } from "../../../../stores/CampaignDataContext";
+import { PullCampaignContext } from "../../stores/CampaignDataContext";
 import ChangeStatusModal from "./ChangeStatusModal";
 import toast from "react-hot-toast";
 
 
-export default function DeliveredCampaignDetails() {
+export default function FinanceCampaignDetails() {
   const { user } = useContext(UserContext);
 
   const [openModal, setOpenModal] = useState(false);
@@ -132,14 +132,14 @@ const {id} = useParams<{id: any}>();
   };
 
 
-  const handleUpdateCampaignStatus = (data: any) => {
+  const handleUpdateCampaignPaymentStatus = (data: any) => {
     console.log(data);
     // setIsModalOpen(false);
     setLoading(true);
 
     API(
       "patch",
-      `campaign-orders/${campaign?.id}/status`,
+      `campaign-orders/${campaign?.id}/payment-status`,
 
       data,
       function (reponse: any) {
@@ -272,7 +272,7 @@ const {id} = useParams<{id: any}>();
         campaign={campaign}
         isLoading={loading}
         onClose={() => setStatusModalOpen(false)}
-        onSubmit={handleUpdateCampaignStatus}
+        onSubmit={handleUpdateCampaignPaymentStatus}
       />
 
         </div>

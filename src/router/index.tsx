@@ -29,6 +29,8 @@ import AddNewAdmiin from "../pages/Admins/AddAdmin";
 import CampaignDetails from "../pages/Campaigns/Orders/CampaignDetails";
 import DeliveredCampaignDetails from "../pages/Campaigns/Orders/delivered/DeliveredCampaignDetails"
 import DeliveredCampaign from "../pages/Campaigns/Orders/delivered/DeliveredCampaign";
+import AllCampaigns from "../pages/Finance/AllCampaigns";
+import FinanceCampaignDetails from "../pages/Finance/FinanceCampaignDetails";
 import ClientDetails from "../pages/Clients/ClientDetails";
 
 
@@ -97,11 +99,12 @@ function Router() {
           { path: "/details/:id", element: <BillboardDetails />},
           { path: "/campaign-details/:id", element: <CampaignDetails />},
           { path: "/delivered-campaign-details/:id", element: <DeliveredCampaignDetails />},
+          { path: "/finance-campaign-details/:id", element: <FinanceCampaignDetails />},
 
           
           { path: "/running-campaigns", element: <DeliveredCampaign />},
 
-          
+          {path: "/finance", element: <AllCampaigns/>},
   
           { path: "/update-profile/:id", element: <UpdateVehicleProfile />},
   

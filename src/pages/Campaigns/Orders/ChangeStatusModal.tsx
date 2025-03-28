@@ -134,7 +134,7 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
                 >
                   <option value="pending">Pending</option>
                   <option value="approved">Approved</option>
-                  <option value="paid">Paid</option>
+                  {/* <option value="paid">Paid</option> */}
                   <option value="delivered">Delivered</option>
 
                 </FormSelect>
