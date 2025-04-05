@@ -5,25 +5,30 @@ import { Fragment, Key, useContext, useEffect } from "react";
 import _, { set } from "lodash";
 import clsx from "clsx";
 import { useState, useRef } from "react";
-import Button from "../../../../base-components/Button";
+import Button from "../../base-components/Button";
 
-import Lucide from "../../../../base-components/Lucide";
-import {  Tab } from "../../../../base-components/Headless";
+import Lucide from "../../base-components/Lucide";
+import {  Tab } from "../../base-components/Headless";
 
-import Tippy from "../../../../base-components/Tippy";
-import { UserContext } from "../../../../stores/UserContext";
-import API from "../../../../utils/API";
+import Tippy from "../../base-components/Tippy";
+import { UserContext } from "../../stores/UserContext";
+import API from "../../utils/API";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import LoadingIcon from "../../../../base-components/LoadingIcon";
-import Breadcrumb from "../../../../base-components/Breadcrumb";
-import Notification from "../../../../base-components/Notification";
+import LoadingIcon from "../../base-components/LoadingIcon";
+import Breadcrumb from "../../base-components/Breadcrumb";
+import Notification from "../../base-components/Notification";
 import Toastify from "toastify-js";
-import { PullBillboardContext } from "../../../../stores/BillboardDataContext";
-import { formatDate } from "../../../../utils/utils";
+import { PullBillboardContext } from "../../stores/BillboardDataContext";
+import { formatDate } from "../../utils/utils";
 // import EditOrderModal from "./EditOrderModal";
-import DisplayDetailsSection from "./DisplayDetailsSection";
-import { PullCampaignContext } from "../../../../stores/CampaignDataContext";
-import ChangeStatusModal from "./ChangeStatusModal";
+import DisplayDetailsSection from "./DisplayDetailSection";
+import { PullCampaignContext } from "../../stores/CampaignDataContext";
+import  ChangeOrderStatusModal from "../../pages/Campaigns/Orders/ChangeStatusModal";
+import  EditOrderModal from "../../pages/Campaigns/Orders/EditOrderModal";
+
+import  ChangeDeliveryStatusModal from "../../pages/Campaigns/Orders/delivered/ChangeStatusModal"
+import ChangeFinanceStatusModal from "../../pages/Finance/ChangeStatusModal";
+
 import toast from "react-hot-toast";
 
 
@@ -34,7 +39,7 @@ export default function DeliveredCampaignDetails({ section }: { section: string 
 
   const [campaign, setCampaign] = useState<any>();
   const { campaigns, campaignDispatch } = useContext(PullCampaignContext);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [isStatusModalOpen, setStatusModalOpen] = useState(false);
   const {  billboardDispatch } = useContext(PullBillboardContext);
 
@@ -70,7 +75,7 @@ const location = useLocation();
           billboards: reponse.data.billboards, 
         }));
         setLoading(false);
-        setIsModalOpen(false);
+        setEditModalOpen(false);
         const successEl = document
         .querySelectorAll("#success-notification-content")[0]
         .cloneNode(true) as HTMLElement;
@@ -139,6 +144,41 @@ const location = useLocation();
     API(
       "patch",
       `campaign-orders/${campaign?.id}/status`,
+
+      data,
+      function (reponse: any) {
+        console.log(reponse);
+        setLoading(false);
+        setStatusModalOpen(false);
+
+
+        setLoading(false);
+        toast.success("Status updated successfully");
+      },
+
+      function (error: any) {
+        console.error("Error fetching recent searches:", error);
+        setLoading(false);
+
+
+        setErrorMessage(error);
+        toast.error(error)
+     
+      },
+      user?.token && user.token
+    );
+    // Call your API to add a new billboard here
+  };
+
+  
+  const handleUpdateCampaignPaymentStatus = (data: any) => {
+    // console.log(data);
+    // setIsModalOpen(false);
+    setLoading(true);
+
+    API(
+      "patch",
+      `campaign-orders/${campaign?.id}/payment-status`,
 
       data,
       function (reponse: any) {
@@ -251,6 +291,15 @@ const location = useLocation();
           >
             Modify 
           </Button> */}
+          {section === "order" && (
+              <Button
+           
+              onClick={() => setEditModalOpen(true)}
+              className="mr-2 flex  justify-center items-center font-medium shadow-sm rounded-lg px-4 py-2 text-customColor border-customColor text-sm"
+             >
+               Modify 
+             </Button>
+          )}
 
           <Button className="mr-2 shadow-sm  border-slate-300 py-1.5">
             <Lucide icon="Download" className="w-5 h-5 mr-2" /> Export as Excel
@@ -267,14 +316,49 @@ const location = useLocation();
         onSubmit={handleUpdateOrder}
       />)} */}
 
-
-<ChangeStatusModal
+{section === "delivery" && (
+<ChangeDeliveryStatusModal
         isOpen={isStatusModalOpen}
         campaign={campaign}
         isLoading={loading}
         onClose={() => setStatusModalOpen(false)}
         onSubmit={handleUpdateCampaignStatus}
       />
+)}
+
+{section === "order" && (
+   <>
+        <EditOrderModal
+      isOpen={isEditModalOpen}
+      orderToEdit={campaign}
+      isLoading={loading}
+      onClose={() => setEditModalOpen(false)}
+      onSubmit={handleUpdateOrder}
+    />
+
+<ChangeOrderStatusModal
+      isOpen={isStatusModalOpen}
+      campaign={campaign}
+      isLoading={loading}
+      onClose={() => setStatusModalOpen(false)}
+      onSubmit={handleUpdateCampaignStatus}
+    />
+    </>
+
+
+    
+
+)}
+
+{section === "finance" && (
+    <ChangeFinanceStatusModal
+        isOpen={isStatusModalOpen}
+        campaign={campaign}
+        isLoading={loading}
+        onClose={() => setStatusModalOpen(false)}
+        onSubmit={handleUpdateCampaignPaymentStatus}
+      />
+)}
 
         </div>
 
@@ -296,7 +380,7 @@ const location = useLocation();
               <Tab fullWidth={false}>
                 <Tab.Button className="flex items-center  cursor-pointer">
                   {/* <Lucide icon="Shield" className="w-4 h-4 mr-2" /> */}
-                  Logs
+                  Log & Comments
                 </Tab.Button>
               </Tab>
     

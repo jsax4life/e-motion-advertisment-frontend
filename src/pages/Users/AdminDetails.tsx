@@ -1,45 +1,50 @@
 /* This example requires Tailwind CSS v2.0+ */
 import { Fragment, Key, useContext, useEffect } from "react";
-
+// import { Disclosure, Menu, Transition } from '@headlessui/react'
+// import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
 
 import _, { set } from "lodash";
 import clsx from "clsx";
 import { useState, useRef } from "react";
-import Button from "../../../../base-components/Button";
+import Button from "../../base-components/Button";
 
-import Lucide from "../../../../base-components/Lucide";
-import {  Tab } from "../../../../base-components/Headless";
+import Lucide from "../../base-components/Lucide";
+import { Dialog, Menu, Tab } from "../../base-components/Headless";
+import Table from "../../base-components/Table";
 
-import Tippy from "../../../../base-components/Tippy";
-import { UserContext } from "../../../../stores/UserContext";
-import API from "../../../../utils/API";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import LoadingIcon from "../../../../base-components/LoadingIcon";
-import Breadcrumb from "../../../../base-components/Breadcrumb";
-import Notification from "../../../../base-components/Notification";
+import Litepicker from "../../base-components/Litepicker";
+import Tippy from "../../base-components/Tippy";
+import { UserContext } from "../../stores/UserContext";
+import API from "../../utils/API";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import LoadingIcon from "../../base-components/LoadingIcon";
+import FilterChips from "../../components/FilterChips";
+import FilterModal from "../Dashboard/filterModal";
+import Breadcrumb from "../../base-components/Breadcrumb";
+import Notification from "../../base-components/Notification";
 import Toastify from "toastify-js";
-import { PullBillboardContext } from "../../../../stores/BillboardDataContext";
-import { formatDate } from "../../../../utils/utils";
-// import EditOrderModal from "./EditOrderModal";
-import DisplayDetailsSection from "./DisplayDetailsSection";
-import { PullCampaignContext } from "../../../../stores/CampaignDataContext";
-import ChangeStatusModal from "./ChangeStatusModal";
-import toast from "react-hot-toast";
+import { PullBillboardContext } from "../../stores/BillboardDataContext";
+import DisplaySection from "./DisplaySection";
+import { formatDate } from "../../utils/utils";
+import AdminEditingModal from "./AdminEditingModal";
 
 
-export default function DeliveredCampaignDetails({ section }: { section: string }) {
+const usersStatus = [
+  "Inactive",
+  "Active",
+]
+
+export default function Main() {
   const { user } = useContext(UserContext);
 
   const [openModal, setOpenModal] = useState(false);
 
-  const [campaign, setCampaign] = useState<any>();
-  const { campaigns, campaignDispatch } = useContext(PullCampaignContext);
+  const [client, setUser] = useState<any>();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isStatusModalOpen, setStatusModalOpen] = useState(false);
-  const {  billboardDispatch } = useContext(PullBillboardContext);
 
 const {id} = useParams<{id: any}>();
-const location = useLocation(); 
+const [adminDetails, setAdminDetails] = useState<any>(null);
+
 
   const [error, setError] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -47,30 +52,35 @@ const location = useLocation();
   const [activeFilter, setActiveFilter] = useState<
     "State" | "Status" | "Orientation" | "Type"
   >("State");
+  const cancelButtonRef = useRef(null);
+  const isInitialMount = useRef(true);
+  const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false);
+  const deleteButtonRef = useRef(null);
+  const [active, setActive] = useState<any>();
+const [message, setMessage] = useState("");
 
   // console.log(vehicleList)
 
   const navigate = useNavigate();
 
-  const handleUpdateOrder = (data: any) => {
+  const handleUpdateClient = (data: any) => {
     console.log(data);
     // setIsModalOpen(false);
     setLoading(true);
 
     API(
-      "patch",
-      `campaign-orders/${campaign?.id}`,
+      "put",
+      `update-admin/${id}`,
 
       data,
       function (reponse: any) {
         console.log(reponse);
-        setCampaign((prev: any) => ({
-          ...prev,  
-          ...reponse.data,
-          billboards: reponse.data.billboards, 
-        }));
+        setUser(reponse?.data);
         setLoading(false);
         setIsModalOpen(false);
+
+
+        setLoading(false);
         const successEl = document
         .querySelectorAll("#success-notification-content")[0]
         .cloneNode(true) as HTMLElement;
@@ -85,23 +95,6 @@ const location = useLocation();
         position: "right",
         stopOnFocus: true,
       }).showToast();
-
-      
-      
-      API(
-        "get",
-        `billboard-data`,
-        {},
-        // {lga: 'Alimosho'},
-        function (data: any) {
-          billboardDispatch({ type: "STORE_BILLBOARD_DATA", billboard: data.registered_billboards });
-        },
-        function (error: any) {
-          console.error("Error fetching recent searches:", error);
-        },
-        user?.token && user.token
-      );
-
         // console.log(responseData);
       },
 
@@ -131,80 +124,102 @@ const location = useLocation();
   };
 
 
-  const handleUpdateCampaignStatus = (data: any) => {
-    console.log(data);
-    // setIsModalOpen(false);
-    setLoading(true);
-
-    API(
-      "patch",
-      `campaign-orders/${campaign?.id}/status`,
-
-      data,
-      function (reponse: any) {
-        console.log(reponse);
-        setLoading(false);
-        setStatusModalOpen(false);
-
-
-        setLoading(false);
-        toast.success("Status updated successfully");
-      },
-
-      function (error: any) {
-        console.error("Error fetching recent searches:", error);
-        setLoading(false);
-
-
-        setErrorMessage(error);
-        toast.error(error)
-     
-      },
-      user?.token && user.token
-    );
-    // Call your API to add a new billboard here
-  };
-
+  
 
   useEffect(() => {
     if (user?.token) {
-      fetchCampaignData();
+        fetchAdminData();
     }
   }, [user?.token]);
 
-  const fetchCampaignData = () => {
-    if(!id) {
-        setError("Billboard ID not found");
-    }
 
-    setLoading(true);
+  // const user_activity_logs: any[] =[];
 
-    const campaignId = parseInt(id);
-    if (campaigns && campaigns.length > 0) {
-      const campaign = campaigns.find((b: { id: number; }) => b.id === campaignId);
-      if (campaign) {
-        setCampaign(campaign);
+  const isNull = 'Unavailable';
+
+  const fetchAdminData = () => {
+
         setLoading(false);
-        return;
-      }
 
-    }
+    const userListFromLocalStorage = localStorage.getItem('adminList');
+let adminList = userListFromLocalStorage ? JSON.parse(userListFromLocalStorage) : [];
 
+console.log(adminList)
+// Assuming you are looking for the user with id 2
+const adminId = Number(id);
+const admin = adminList.find((u: any) => u.id === adminId);
 
-    API('get', `billboards/${campaignId}`, {}, 
-    (response: { data: any; }) => {
-        setCampaign(response?.data);
+if (admin) {
+       setAdminDetails(admin);
         setLoading(false);
-        campaignDispatch({ type: 'STORE_CAMPAIGN_DATA', campaign: response.data });
-    }
-    , (error: any) => {
-        setLoading(false);
-        setError("Failed to fetch billboard");
-    }, user?.token);
+
+        setActive(admin?.status)
+  console.log("Admin found:", admin);
+} else {
+  setLoading(false);
+
+  console.log("Admin not found");
+}
+
+    setError("");
+
+    // const userListFromLocalStorage = localStorage.getItem('userList');
+    // const userList = userListFromLocalStorage ? JSON.parse(userListFromLocalStorage) : [];
+    // API(
+    //   "get",
+
+    //   `users/${id}/profile`, 
+    //   {},
+
+    //   function (userData: any) {
+    //     console.log(userData?.data.user)
+    //     setadminDetails(userData?.data?.user);
+    //     setLoading(false);
+
+    //     setActive(userData?.data?.user?.status)
+    //   },
+    //   function (error: any) {
+
+    //     console.error("Error fetching recent searches:", error);
+    //     setLoading(false);
+    //   },
+    //   user?.token && user.token
+    // );
   };
 
+  const deleteUser = () => {
 
-// console.log(campaign)
+    setMessage("");
+    setError("");
+    
+
+    API(
+      "delete",
+
+      `delete-admin/${id}`, 
+      {},
+
+      // {lga: 'Alimosho'},
+      function (response: any) {
+        setActive(false);
+        setMessage(response?.message)
+        setDeleteConfirmationModal(false)
+
+        console.log(response)
+        setLoading(false);
+      },
+      function (error: any) {
+        setDeleteConfirmationModal(false)
+
+        console.error("Error fetching recent searches:", error);
+        setLoading(false);
+      },
+      user?.token && user.token
+    );
+  };
+ 
+
+// console.log(billboard)
  
   return (
     <>
@@ -218,9 +233,9 @@ const location = useLocation();
           </div> */}
           <div className=" hidden mr-auto md:block capitalize">
             <div className="flex justify-center items-center">
-            <h2 className="mr-5 text-3xl font-bold truncate ">{campaign?.campaign_name}</h2>
-            <div className="w-2 h-2 border rounded-full bg-green-400 mr-2"></div>
-            <div className="font-normal text-sm"> {campaign?.status}</div>
+            <h2 className="mr-5 text-3xl font-bold truncate ">{adminDetails?.firstName} {adminDetails?.lastName}</h2>
+            {/* <div className="w-2 h-2 border rounded-full bg-green-400 mr-2"></div> */}
+            <div className="font-normal text-sm"> {usersStatus[adminDetails?.active]}</div>
             </div>
             <Breadcrumb
               light={false}
@@ -231,57 +246,40 @@ const location = useLocation();
             >
               <Breadcrumb.Link to="/">Application</Breadcrumb.Link>
               <Breadcrumb.Link to="/" active={true}>
-                Billboard
+                Users
               </Breadcrumb.Link>
             </Breadcrumb>
           </div>
 
           <Button
            
-           onClick={() =>     setStatusModalOpen(true) }
+           onClick={() => setIsModalOpen(true)}
            className="mr-2 flex  justify-center items-center font-medium shadow-sm bg-customColor rounded-lg px-4 py-2 text-white text-sm"
           >
-            <Lucide icon="Plus" className="w-5 h-5 mr-2 " />  Status Update
+            <Lucide icon="Plus" className="w-5 h-5 mr-2 " /> Edit 
           </Button>
-
-         {/* <Button
-           
-           onClick={() => setIsModalOpen(true)}
-           className="mr-2 flex  justify-center items-center font-medium shadow-sm rounded-lg px-4 py-2 text-customColor border-customColor text-sm"
-          >
-            Modify 
-          </Button> */}
 
           <Button className="mr-2 shadow-sm  border-slate-300 py-1.5">
             <Lucide icon="Download" className="w-5 h-5 mr-2" /> Export as Excel
           </Button>
 
-      
 
-{/* {isModalOpen && (
-          <EditOrderModal
+          <AdminEditingModal
         isOpen={isModalOpen}
-        orderToEdit={campaign}
+        admin={adminDetails}
         isLoading={loading}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleUpdateOrder}
-      />)} */}
-
-
-<ChangeStatusModal
-        isOpen={isStatusModalOpen}
-        campaign={campaign}
-        isLoading={loading}
-        onClose={() => setStatusModalOpen(false)}
-        onSubmit={handleUpdateCampaignStatus}
+        onSubmit={handleUpdateClient}
       />
+
+      
 
         </div>
 
 
     
 
-        <Tab.Group className="col-span-12">
+        <Tab.Group className="lg:col-span-8  col-span-12">
           <div className="  space-x-4 justify-between items-center flex  intro-y   pt-5 lg:pt-2  intro-y ">
             <Tab.List
               variant="link-tabs"
@@ -293,10 +291,11 @@ const location = useLocation();
                   Details
                 </Tab.Button>
               </Tab>
+         
               <Tab fullWidth={false}>
                 <Tab.Button className="flex items-center  cursor-pointer">
                   {/* <Lucide icon="Shield" className="w-4 h-4 mr-2" /> */}
-                  Logs
+                  Log & Comments
                 </Tab.Button>
               </Tab>
     
@@ -316,27 +315,23 @@ const location = useLocation();
             )}
 
             <Tab.Panel>
-              <DisplayDetailsSection loading={loading} campaign={campaign} />
+              <DisplaySection loading={loading} admin={adminDetails} />
             </Tab.Panel>
 
-           
+     
 
             <Tab.Panel>
              
-<div className="grid grid-cols-12 gap-x-4 text-slate-600  ">
-      <div className=" col-span-12 flex flex-col lg:p-5 p-2 gap-y-4 rounded-2xl  bg-white lg:col-span-8 overflow-auto intro-y 2xl:overflow-visible">
+      <div className=" col-span-12  flex flex-col lg:p-5 p-2 gap-y-4 rounded-2xl  bg-white lg:col-span-8 overflow-auto intro-y 2xl:overflow-visible ">
         {/* <div className="text-xl font-medium text-slate-600">Billboard Details</div> */}
 
-        {campaign?.activity_logs?.map((log: any, logKey: Key) => {
+        {client?.client_activity_logs?.map((log: any, logKey: Key) => {
 //   const newValues = typeof log?.new_values === "string" ? JSON.parse(log.new_values) : log?.new_values;
 
             return (<div className="">
 
                     <div className="text-customColor text-sm font-bold" key={logKey}>
-                            {log?.admin.firstName} {log?.admin.lastName} {log?.type}  {campaign?.campaign_name}
-                    </div>
-                    <div className="text-black text-sm">
-                            {log?.remarks}
+                            {log?.admin.firstName} {log?.admin.lastName} {log?.action}  {client?.company_name}
                     </div>
                     <div className="text-slate-500 text-sm">
                             {formatDate(log?.created_at)}
@@ -347,19 +342,18 @@ const location = useLocation();
             }
                     
         )}
-
-
      
        
 
     
-      </div>
       </div>
             </Tab.Panel>
 
          
           </Tab.Panels>
         </Tab.Group>
+
+   
 
       </div>
 
@@ -369,9 +363,9 @@ const location = useLocation();
             >
               <Lucide icon="CheckCircle" className="text-success" />
               <div className="ml-4 mr-4">
-                <div className="font-medium">Billboard Added!</div>
+                <div className="font-medium">Client Updated!</div>
                 <div className="mt-1 text-slate-500">
-                Successfully  added new billboard
+                Successfully  updated client
                 </div>
               </div>
             </Notification>

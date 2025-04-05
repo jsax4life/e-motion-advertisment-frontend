@@ -50,7 +50,7 @@ interface Campaign {
   billboards: any[];
 }
 
-const BillboardEditingModal: React.FC<OrderCreationModalProps> = ({
+const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
   isOpen,
   isLoading,
   orderToEdit,
@@ -236,7 +236,7 @@ const BillboardEditingModal: React.FC<OrderCreationModalProps> = ({
     // }
   };
 
-  // console.log(orderToEdit);
+  console.log(orderToEdit);
 
   // Get available slots/faces for the selected billboard
   const availableSlotsFaces = (
@@ -272,6 +272,7 @@ const BillboardEditingModal: React.FC<OrderCreationModalProps> = ({
   };
 
   console.log(orderDetails);
+  console.log(availableBillboards);
 
   // console.log(availableSlotsFaces( formData.billboard_id,
   //   formData.billboard_type));
@@ -1075,4 +1076,4 @@ const BillboardEditingModal: React.FC<OrderCreationModalProps> = ({
   );
 };
 
-export default BillboardEditingModal;
+export default OrderEditingModal;

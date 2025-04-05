@@ -1,255 +1,136 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment, Key, useContext, useEffect, useCallback } from 'react'
 // import { Disclosure, Menu, Transition } from '@headlessui/react'
 // import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
+import { Fragment, Key, useContext, useEffect, useCallback } from 'react'
 
-import _ from "lodash";
+import _, { set } from "lodash";
+import clsx from "clsx";
 import { useState, useRef } from "react";
 import Button from "../../base-components/Button";
 import Pagination from "../../base-components/Pagination";
-import { FormCheck, FormInput, FormLabel, FormSelect } from "../../base-components/Form";
+import {
+  FormCheck,
+  FormInput,
+  FormLabel,
+  FormSelect,
+} from "../../base-components/Form";
 import Lucide from "../../base-components/Lucide";
 import { Dialog, Menu } from "../../base-components/Headless";
-import Table from "../../base-components/Table";
-
 import { Transition } from "@headlessui/react";
-import Tippy from '../../base-components/Tippy';
-import { UserContext } from '../../stores/UserContext';
-import API from '../../utils/API';
-import { Link, useNavigate } from 'react-router-dom';
-import LoadingIcon from '../../base-components/LoadingIcon';
-import FilterChips from '../../components/FilterChips';
-import FilterModal from './filterModal';
-import profile from "../../assets/images/profile.png"
+
+import Litepicker from "../../base-components/Litepicker";
+import Tippy from "../../base-components/Tippy";
+import { UserContext } from "../../stores/UserContext";
+import API from "../../utils/API";
+import { Link, useNavigate } from "react-router-dom";
+import LoadingIcon from "../../base-components/LoadingIcon";
+import FilterChips from "../../components/FilterChips";
+import FilterModal from "./filterModal";
+import Breadcrumb from "../../base-components/Breadcrumb";
+import AdminCreationModal from "./AdminCreationModal";
+import Notification from "../../base-components/Notification";
+import Toastify from "toastify-js";
+import DisplaySection from "./DisplaySection";
+import DisplayTable from "./DisplayTable";
+import { PullClientContext } from "../../stores/ClientDataContext";
+import profile from "../../assets/images/profile.png";
 import { debounce } from '../../utils/debounce';
 
 
-type FilterType = {
-  lga: string;
-  role: string;
-  date?: string; // Make date optional
-  status: string;
-  startDate?: string;
-  endDate?: string;
-};
-
-interface SearchResult {
-
-  users: Array<any>;
-}
-
-
-
-const lagosLGAs = [
-    "Agege", "Ajeromi-Ifelodun", "Alimosho", "Amuwo-Odofin", "Apapa",
-    "Badagry", "Epe", "Eti-Osa", "Ibeju-Lekki", "Ifako-Ijaiye",
-    "Ikeja", "Ikorodu", "Kosofe", "Lagos Island", "Lagos Mainland",
-    "Mushin", "Ojo", "Oshodi-Isolo", "Shomolu", "Surulere"
-  ];
-
-  const roles = [
+const roles = [
     "Registration Officer",
     "Attachment Officer",
     "Operation Officer",
 
   ];
 
-  const usersStatus = [
-    "Inactive",
-    "Active",
-  ]
+const lagosParks = [
+  "Agege Park",
+  "Alimosho Park",
+  "Apapa Park",
+  "Badagry Park",
+  "Epe Park",
+];
 
-  const tagStyle = [
-    "bg-orange-100 text-orange-600",
-    "bg-green-100 text-green-600",
-  ];
+const tagStyle = [
+  "bg-orange-100 text-orange-600",
+  "bg-green-100 text-green-600",
+];
+
+type FilterType = {
+    lga: string;
+    role: string;
+    date?: string; // Make date optional
+    status: string;
+    startDate?: string;
+    endDate?: string;
+  };
+
+  interface SearchResult {
+
+    users: Array<any>;
+  }
+  
 
 export default function Main() {
+  const { user } = useContext(UserContext);
+  const { clients, clientDispatch } = useContext(PullClientContext);
 
-    const { user } = useContext(UserContext);
+  const [openModal, setOpenModal] = useState(false);
 
-    const [openModal, setOpenModal] = useState(false);
+  const [clientList, setClientList] = useState<any[]>([]);
 
-    const [userList, setUserList] = useState<any[]>([]);
+  const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false);
+  const deleteButtonRef = useRef(null);
+  const [dateRange, setDateRange] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [userList, setUserList] = useState<any[]>([]);
 
-    const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false);
-    const deleteButtonRef = useRef(null);
-    const [dateRange, setDateRange] = useState<string>('');
-    const [startDate, setStartDate] = useState<string>("");
-    const [endDate, setEndDate] = useState<string>("");
+  const [selectedLGA, setSelectedLGA] = useState<string>('');
+  const [selectedRole, setSelectedRole] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
 
-    const [selectedLGA, setSelectedLGA] = useState<string>('');
-    const [selectedRole, setSelectedRole] = useState<string>('');
-    const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedUser, setSelectedUser] = useState<string>("");
 
-    const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [activeFilter, setActiveFilter] = useState<"Role"| "LGA" | "Date" | "Status">(
-      "LGA"
-    );
+  const [kpiData, setKpiData] = useState(null);
+  const [selectedPark, setSelectedPark] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const [filterState, setFilterState] = useState<FilterType>({
-      lga: selectedLGA,
-      role: selectedRole,
-      date: dateRange,
-      status: selectedStatus,
-      startDate: startDate,
-      endDate: endDate,
-    });
+  const [error, setError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [datepickerModalPreview, setDatepickerModalPreview] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<"Role"| "LGA" | "Date" | "Status">(
+    "LGA"
+  );
 
-    const [searchDropdown, setSearchDropdown] = useState(false);
+  const [filterState, setFilterState] = useState<FilterType>({
+    lga: selectedLGA,
+    role: selectedRole,
+    date: dateRange,
+    status: selectedStatus,
+    startDate: startDate,
+    endDate: endDate,
+  });
+
+  const [searchDropdown, setSearchDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
 useEffect(() => {
   // Load recent searches from local storage when the component mounts
-  const storedRecentSearches = localStorage.getItem('recentSearches');
+  const storedRecentSearches = localStorage.getItem('userRecentSearches');
   if (storedRecentSearches) {
     setRecentSearches(JSON.parse(storedRecentSearches));
   }
 }, []);
 
-// console.log(vehicleList)
 
-const navigate = useNavigate();
-
-
-useEffect(() => {
-  
-
-            fetchDashboardData();
-    
-  }, [dateRange, selectedLGA, filterState ]);
-
-    // useEffect(() => {
-    //     if (user?.token) {
-    //       fetchDashboardData();
-    //     }
-    //   }, [user?.token ]);
-    
-   
-     
-
-    
-      const fetchDashboardData = () => {
-        const [startDate, endDate] = dateRange?.split(' - ') || [null, null];
-    
-        setError("");
-        setLoading(true);
-      
-
-        console.log(filterState)
-    
-        API(
-          "get",
-          `all-users`,
-          
-          // {},
-          filterState,
-          // {lga: 'Alimosho'},
-          function (allUserData: any) {
-            console.log(allUserData?.data)
-            setUserList(allUserData?.data);
-            setLoading(false);
-          },
-          function (error: any) {
-            console.error("Error fetching recent searches:", error);
-            setLoading(false);
-          },
-          user?.token && user.token
-        );
-      };
-    
+  const cancelButtonRef = useRef(null);
+  const isInitialMount = useRef(true);
 
 
-          // Function to handle removing filters
-    const handleRemoveFilter = (filter: string) => {
-      const newFilters = { ...filterState };
-
-      if (filter === 'LGA') {
-        setSelectedLGA('');
-        newFilters.lga = '';
-      } else if (filter === 'Role') {
-        setSelectedRole('');
-        newFilters.role = '';
-
-      } else if (filter === 'Date') {
-        setDateRange('');
-        newFilters.startDate = '';
-        newFilters.endDate = '';
-
-      }else if (filter === 'Status') {
-        setSelectedStatus('');
-        newFilters.status = '';
-      }
-  
-      // Update the filter state
-      setFilterState(newFilters);
-    };
-  
-
-
-
-  // Function to handle filter changes
-const handleFilterChange = (filter: string, value: string) => {
-console.log(filter)
-  
-
-  // const newFilters: FilterType = {
-  //   lga: selectedLGA,
-  //   role: selectedRole,
-  //   date: dateRange,
-  //   status: selectedStatus,
-  //   startDate: startDate,
-  //   endDate: endDate,
-  // };
-  const newFilters = { ...filterState };
-
-
-
-  if (filter === 'LGA') {
-    setSelectedLGA(value);
-    newFilters.lga = value;
-  } else if (filter === 'Role') {
-    setSelectedRole(value);  
-    newFilters.role = value;
-  } else if (filter === 'Date') {
-    setDateRange(value);
-    const [start, end] = value.split(' - ').map((date) => date.trim());
-    newFilters.startDate = start;
-    newFilters.endDate = end;
-    delete newFilters.date;
-  } else if (filter === 'Status') {
-    setSelectedStatus(value);
-    newFilters.status = value;
-  }
-
-  // Update the filter state
-  setFilterState(newFilters);
-
-  // Transform the date range into start and end dates
-  // if (newFilters.date) {
-  //   const [startDate, endDate] = newFilters.date.split(' - ').map(date => date.trim()) || [null, null];
-  //   newFilters.startDate = startDate;
-  //   newFilters.endDate = endDate;
-  //   delete newFilters.date; 
-
-  // }
-
- 
-
-  // Call any logic to update data based on the new filters
-  // console.log('Transformed Filters:', newFilters);
-
-  // Update your data or perform actions here
-};
-
-  
-
-
-
-
-// search
 
 const [query, setQuery] = useState('');
 const [results, setResults] = useState<SearchResult>({
@@ -286,6 +167,7 @@ const performSearch = async (searchQuery: string) => {
     },
     user?.token && user.token
   );
+  
 };
 
 // Use useCallback to memoize the debounced function
@@ -330,7 +212,7 @@ const updateRecentSearches = (newSearch: string) => {
   setRecentSearches(updatedSearches);
 
   // Save updated recent searches to local storage
-  localStorage.setItem('recentSearches', JSON.stringify(updatedSearches));
+  localStorage.setItem('userRecentSearches', JSON.stringify(updatedSearches));
 };
 
 
@@ -350,17 +232,192 @@ const hideSearchDropdown = () => {
   setSearchDropdown(false);
 };
 
+  // console.log(vehicleList)
 
+  const navigate = useNavigate();
 
+ 
+  useEffect(() => {
+    if (user?.token) {
+        fetchUserData();
+    }
+  }, [user?.token]);
+
+  const fetchUserData = () => {
+
+    setError("");
+    setLoading(true);
   
+
+    console.log(filterState)
+
+
+    API(
+        "get",
+        `all-admins`,
+        
+        // {},
+        filterState,
+        // {lga: 'Alimosho'},
+        function (allAdmiinData: any) {
+          console.log(allAdmiinData?.data)
+          setUserList(allAdmiinData?.data);
+           // Store the user list in local storage
+    localStorage.setItem('adminList', JSON.stringify(allAdmiinData?.data));
+
+          setLoading(false);
+        },
+        function (error: any) {
+          console.error("Error fetching recent searches:", error);
+          setLoading(false);
+        },
+        user?.token && user.token
+      );
+  };
+
+  const handleAddAdmin = (data: any) => {
+    console.log(data);
+    // setIsModalOpen(false);
+    setLoading(true);
+
+    API(
+      "post",
+      `register`,
+
+      {...data},
+      function (reponse: any) {
+        console.log(reponse);
+        setUserList((prev) => [reponse.data, ...prev]);
+        setLoading(false);
+        setIsModalOpen(false);
+
+
+        setLoading(false);
+        const successEl = document
+        .querySelectorAll("#success-notification-content")[0]
+        .cloneNode(true) as HTMLElement;
+  
+      successEl.classList.remove("hidden");
+      Toastify({
+        node: successEl,
+        duration: 8000,
+        newWindow: true,
+        close: true,
+        gravity: "top",
+        position: "right",
+        stopOnFocus: true,
+      }).showToast();
+        // console.log(responseData);
+      },
+
+      function (error: any) {
+        console.error("Error fetching recent searches:", error);
+        setLoading(false);
+
+
+        setErrorMessage(error);
+        const failedEl = document
+        .querySelectorAll("#failed-notification-content")[0]
+        .cloneNode(true) as HTMLElement;
+      failedEl.classList.remove("hidden");
+      Toastify({
+        node: failedEl,
+        duration: 8000,
+        newWindow: true,
+        close: true,
+        gravity: "top",
+        position: "right",
+        stopOnFocus: true,
+      }).showToast();
+      },
+      user?.token && user.token
+    );
+    // Call your API to add a new billboard here
+  };
+
+ 
+          // Function to handle removing filters
+          const handleRemoveFilter = (filter: string) => {
+            const newFilters = { ...filterState };
+      
+          if (filter === 'Role') {
+              setSelectedRole('');
+              newFilters.role = '';
+      
+            } else if (filter === 'Date') {
+              setDateRange('');
+              newFilters.startDate = '';
+              newFilters.endDate = '';
+      
+            }else if (filter === 'Status') {
+              setSelectedStatus('');
+              newFilters.status = '';
+            }
+        
+            // Update the filter state
+            setFilterState(newFilters);
+          };
+        
+      
+      
+      
+        // Function to handle filter changes
+      const handleFilterChange = (filter: string, value: string) => {
+      console.log(filter)
+        
+      
+        // const newFilters: FilterType = {
+        //   lga: selectedLGA,
+        //   role: selectedRole,
+        //   date: dateRange,
+        //   status: selectedStatus,
+        //   startDate: startDate,
+        //   endDate: endDate,
+        // };
+        const newFilters = { ...filterState };
+      
+      
+      
+      if (filter === 'Role') {
+          setSelectedRole(value);  
+          newFilters.role = value;
+        } else if (filter === 'Date') {
+          setDateRange(value);
+          const [start, end] = value.split(' - ').map((date) => date.trim());
+          newFilters.startDate = start;
+          newFilters.endDate = end;
+          delete newFilters.date;
+        } else if (filter === 'Status') {
+          setSelectedStatus(value);
+          newFilters.status = value;
+        }
+      
+        // Update the filter state
+        setFilterState(newFilters);
+      
+        // Transform the date range into start and end dates
+        // if (newFilters.date) {
+        //   const [startDate, endDate] = newFilters.date.split(' - ').map(date => date.trim()) || [null, null];
+        //   newFilters.startDate = startDate;
+        //   newFilters.endDate = endDate;
+        //   delete newFilters.date; 
+      
+        // }
+      
+       
+      
+        // Call any logic to update data based on the new filters
+        // console.log('Transformed Filters:', newFilters);
+      
+        // Update your data or perform actions here
+      };
+      
   return (
     <>
-   
-   <FilterModal
+       <FilterModal
         open={openModal}
         setOpen={setOpenModal}
         handleFilterChange={handleFilterChange}
-        lagosLGAs={lagosLGAs}
         roles={roles}
         selectedLGA={selectedLGA}
         setSelectedLGA={setSelectedLGA}
@@ -375,39 +432,74 @@ const hideSearchDropdown = () => {
         selectedStatus={selectedStatus}
         setSelectedStatus={setSelectedStatus}
       />
-  
-    <div className="max-w-7xl mx-auto pb-12 lg:pb-0  lg:px-0 lg:mx-0 ">
-      <div className="bg-white   px-5 py-6 sm:px-6">
-
-        {/* Content Section */}
-        <div className="flex justify-start items-center">
-          <div className='mr-auto'>
+      <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 lg:mt-0 intro-y   py-8  ">
+        <div className="col-span-12 justify-start items-start flex  intro-y sm:flex">
+          {/* <div className='mr-auto'>
             <h2 className="text-lg font-medium text-black intro-y ">Users</h2>
             <p className="mt-4 text-xs text-black intro-y">View, Edit and Delete users</p>
+          </div> */}
+          <div className=" hidden mr-auto md:block">
+            <h2 className="mr-5 text-3xl font-bold truncate">User Management</h2>
+            <Breadcrumb
+              light={false}
+              className={clsx([
+                "h-[45px]  text-xs md:border-l border-white/[0.08] dark:border-white/[0.08] mr-auto -intro-x",
+                // props.layout != "top-menu" && "md:pl-6",
+              ])}
+            >
+              <Breadcrumb.Link to="/">Application</Breadcrumb.Link>
+              <Breadcrumb.Link to="/" active={true}>
+                User Management
+              </Breadcrumb.Link>
+            </Breadcrumb>
           </div>
-          <Link to='/add-user'  className="mr-2 flex font-medium shadow-sm bg-customColor rounded-lg px-4 py-2 text-white">
-            <Lucide icon="Plus" className="w-4 h-4 mr-2" /> Add New User
-          </Link>
-          <Button variant="secondary" className="mr-2 shadow-sm">
-            <Lucide icon="Download" className="w-4 h-4 mr-2" /> Export As Excel
+
+          <Button
+           
+           onClick={() => setIsModalOpen(true)}
+           className="mr-2 flex  justify-center items-center font-medium shadow-sm bg-customColor rounded-lg px-4 py-2 text-white text-sm"
+          >
+            <Lucide icon="Plus" className="w-5 h-5 mr-2 " /> New User
           </Button>
+
+          <Button className="mr-2 shadow-sm  border-slate-300 py-1.5">
+            <Lucide icon="Download" className="w-5 h-5 mr-2" /> Export as Excel
+          </Button>
+
+        <AdminCreationModal
+        isOpen={isModalOpen}
+        isLoading={loading}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleAddAdmin}
+      />
         </div>
 
-        <div className="grid grid-cols-12 gap-6 mt-5">
-        <div className="col-span-12 intro-y text-black mb-8 bg-white p-2 lg:px-0">
-          <div className="flex flex-col lg:flex-row w-full gap-y-2 text-primary items-center space-x-3">
+        <div className="col-span-12 justify-start items-center flex  intro-y sm:flex ">
+         
+         
+         
+         
+         
+         
+          {/* <div className="relative lg:w-1/3 w-full text-slate-500 mr-6">
+            <FormInput
+              type="text"
+              className="border-transparent w-full text-black border-slate-100  pl-12 shadow-none rounded-xl bg-white pr-8 transition-[width] duration-300 ease-in-out focus:border-transparent focus:w-96 dark:bg-darkmode-400/70 h-14"
+              placeholder="Search database..."
+            />
+            <Lucide
+              icon="Search"
+              className="absolute inset-y-0 left-4 w-6 h-6 my-auto mr-3 text-slate-300 dark:text-slate-500"
+              />
+          </div> */}
+          
 
 
-
-
-       
-{/* search */}
-
-            <div className="relative lg:w-1/4 w-full text-slate-500">
+          <div className="relative lg:w-1/3 w-full text-slate-500 mr-6">
               <FormInput
               
                 type="text"
-                className="pr-10 box border-1 border-slate-200"
+                className="border-transparent w-full text-black border-slate-100  pl-12 shadow-none rounded-xl bg-white pr-8 transition-[width] duration-300 ease-in-out focus:border-transparent focus:w-96 dark:bg-darkmode-400/70 h-14"
                 placeholder="Search database..."
                 onFocus={showSearchDropdown}
                 onBlur={hideSearchDropdown}
@@ -415,8 +507,8 @@ const hideSearchDropdown = () => {
                 onChange={handleSearch}
               />
               <Lucide
-                icon="Search"
-                className="absolute inset-y-0 right-0 w-4 h-4 my-auto mr-3"
+              icon="Search"
+              className="absolute inset-y-0 left-4 w-6 h-6 my-auto mr-3 text-slate-300 dark:text-slate-500"
               />
 
 
@@ -457,7 +549,7 @@ const hideSearchDropdown = () => {
         >
           <div className="w-8 h-8 image-fit">
             <img
-              alt="Midone Tailwind HTML Admin Template"
+              alt="user"
               className="rounded-full"
               src={user?.profile_picture_url? user?.profile_picture_url : profile}
             />
@@ -511,26 +603,15 @@ const hideSearchDropdown = () => {
 
             </div>
 
+          
 
+        
 
-
-
-
-
-
-
-
-
-
-            
-
-
-            <Menu className="text-xs ml-2">
-    <Menu.Button as={Button} className="bg-customColor text-secondary" >
-    <Lucide icon="Filter" className="w-4 h-4 mr-2" />
-
-        Filter
-        <Lucide icon="ChevronDown" className="w-4 h-4 ml-2" />
+          <Menu className="text-xs mr-2 border rounded-lg border-customColor">
+            <Menu.Button as={Button} className=" text-customColor text-[16px]">
+            <Lucide icon="Filter" className="w-4 h-4 mr-2 " />
+              Filter
+              <Lucide icon="ChevronDown" className="w-6 h-6 ml-2 " />
     </Menu.Button>
     <Menu.Items className="w-40 text-xs">
     <Menu.Header className="">Filter Categories</Menu.Header>
@@ -586,194 +667,188 @@ onClick={() => { setOpenModal(true); setActiveFilter("LGA"); }}
 </Menu>
         
 <FilterChips
-          lagosLGAs={lagosLGAs}
-          selectedLGA={selectedLGA}
           selectedRole={selectedRole}
           selectedStatus={selectedStatus}
-          selectedPark=''
+          
           selectedUser=''
           dateRange={dateRange}
           onRemoveFilter={handleRemoveFilter}
         />
-            
-          </div>
+
+ 
         </div>
 
-          {/* Data List or Loading Indicator */}
-          {loading ? (
-            <div className="col-span-12 flex items-center justify-center h-full">
-              <div className="flex flex-col items-center justify-center w-full">
-                <LoadingIcon icon="bars" className="w-8 h-8" />
-                <div className="mt-2 text-xs text-center">Loading data</div>
+
+        <div className="col-span-12 border rounded-2xl  bg-white   px-5  sm:px-6 intro-y">
+
+         
+
+          <div className="grid grid-cols-12 gap-6 ">
+            <div className="col-span-12 intro-y text-black  bg-white  lg:px-0">
+              <div className="flex flex-col lg:flex-row w-full gap-y-2 text-primary items-center space-x-3">
+                {datepickerModalPreview && (
+                  <Dialog
+                    open={datepickerModalPreview}
+                    onClose={() => {
+                      setDatepickerModalPreview(false);
+                    }}
+                    initialFocus={cancelButtonRef}
+                    className="flex place-self-center lg:items-center lg:justify-center  "
+                  >
+                    <Dialog.Panel
+                      className=""
+                    >
+                      {/* BEGIN: Modal Header */}
+                      <Dialog.Title>
+                        <div className="flex justify-center items-center">
+                          <div className="bg-customColor/20 fill-customColor text-customColor mr-2 rounded-lg p-1.5">
+                            <Lucide icon="Calendar" className="w-6 h-6 " />
+                          </div>
+                          <div className="">
+                            <h2 className="mr-auto text-slate-600 font-bold">
+                              Date Range
+                            </h2>
+                            <p className="text-xs">
+                              Choose a date range to filter
+                            </p>
+                          </div>
+                        </div>
+                      </Dialog.Title>
+                      {/* END: Modal Header */}
+                      {/* BEGIN: Modal Body */}
+                      <Dialog.Description className="grid grid-cols-12 gap-x gap-y-6">
+                        <div className="col-span-12 relative">
+                          <FormLabel htmlFor="modal-datepicker-1">
+                            Start Date
+                          </FormLabel>
+                          <Litepicker
+                            id="modal-datepicker-1"
+                            value={startDate}
+                            onChange={setStartDate}
+                            options={{
+                              autoApply: false,
+                              showWeekNumbers: true,
+                              dropdowns: {
+                                minYear: 1990,
+                                maxYear: null,
+                                months: true,
+                                years: true,
+                              },
+                            }}
+                          />
+                          <div className="absolute flex items-center justify-center w-8  h-8 right-0 bottom-1  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+                            <Lucide icon="Calendar" className="w-4 h-4" />
+                          </div>
+                        </div>
+                        <div className="col-span-12 relative ">
+                          <FormLabel htmlFor="modal-datepicker-2">
+                            End Date
+                          </FormLabel>
+                          <Litepicker
+                            id="modal-datepicker-2"
+                            value={endDate}
+                            onChange={setEndDate}
+                            options={{
+                              autoApply: false,
+                              showWeekNumbers: true,
+                              dropdowns: {
+                                minYear: 1990,
+                                maxYear: null,
+                                months: true,
+                                years: true,
+                              },
+                            }}
+                          />
+
+                          <div className="absolute flex items-center justify-center w-8  h-8 right-0 bottom-1  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+                            <Lucide icon="Calendar" className="w-4 h-4" />
+                          </div>
+                        </div>
+                      </Dialog.Description>
+                      {/* END: Modal Body */}
+                      {/* BEGIN: Modal Footer */}
+                      <Dialog.Footer className="text-right">
+                        <Button
+                          variant="outline-secondary"
+                          type="button"
+                          onClick={() => {
+                            setDatepickerModalPreview(false);
+                          }}
+                          className="w-20 mr-1"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          // variant="primary"
+                          type="button"
+                          className="w-autos bg-customColor text-secondary"
+                          ref={cancelButtonRef}
+                          onClick={() => {
+                            setDateRange(`${startDate}-${endDate}`);
+                            // const dateString = date.toString(); // Convert date object to string
+                            // handleAddFilter('Date', dateString);
+                            handleFilterChange(
+                              "Date",
+                              `${startDate} - ${endDate}`
+                            );
+                            setDatepickerModalPreview(false);
+                          }}
+                        >
+                          Apply Filter
+                        </Button>
+                      </Dialog.Footer>
+                      {/* END: Modal Footer */}
+                    </Dialog.Panel>
+                  </Dialog>
+                )}
+
+          
               </div>
             </div>
-          ) : (
-            <div className="col-span-12 overflow-auto intro-y 2xl:overflow-visible">
-              {/* Your table or data list */}
-              {/* Render your vehicleList here */}
 
+            {/* Data List or Loading Indicator */}
+         <DisplayTable userList={userList} loading={loading} />
 
+          
 
-              <Table className="border-spacing-y-[2px] border-separate -mt-2">
-            <Table.Thead className='bg-customColor/5 lg:h-11'>
-              <Table.Tr>
-                
-                <Table.Th className="border-b-0 whitespace-nowrap">
-                  S/N
-                </Table.Th>
-                <Table.Th className="border-b-0 whitespace-nowrap">
-                  USER'S NAME
-                </Table.Th>
-                <Table.Th className="border-b-0 whitespace-nowrap">
-                  ROLE
-                </Table.Th>
-               
-                <Table.Th className="border-b-0 whitespace-nowrap">
-                    LGA                
-                </Table.Th>
-                <Table.Th className="text-center border-b-0 whitespace-nowrap">
-                    STATUS                
-                </Table.Th>
-              
-                <Table.Th className="text-center border-b-0 whitespace-nowrap">
-                  ACTION
-                </Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody
-            // className='overflow-y-scroll h-10'
+            {/* Delete Confirmation Modal */}
+            <Dialog
+              open={deleteConfirmationModal}
+              onClose={() => setDeleteConfirmationModal(false)}
+              initialFocus={deleteButtonRef}
             >
-          
-          {
-              userList.map((user: any, userKey: any | null | undefined) => (
-                <Table.Tr key={userKey} className="intro-x text-slate-600">
-                 
-                  <Table.Td className=" first:rounded-l-md last:rounded-r-md w-10  bg-white  dark:bg-darkmode-600 border-slate-200 border-b ">
-                    <div
-                      className=" whitespace-nowrap"
-                    >
-                      {userKey + 1}
-                    </div>
-                  </Table.Td>
-
-                  <Table.Td className="first:rounded-l-md last:rounded-r-md  bg-white border-b-0 dark:bg-darkmode-600  border-slate-200 border-b">
-                    <div className="flex items-center" onClick={() => navigate(`/profile/${user?.id}`)}>
-                      <div className="w-9 h-9 image-fit zoom-in">
-                        <Tippy
-                          as="img"
-                          
-                          alt="Profile"
-                          className="border-white rounded-lg shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]"
-                          src={profile}
-                          content={`Uploaded at ${user?.created_at}`}
-                        />
-                      </div>
-                      <div className="ml-4">
-                        <a href="" className="font-medium whitespace-nowrap">
-                          {user?.name}
-                        </a>
-                        {/* <div className="text-slate-500 text-xs whitespace-nowrap mt-0.5">
-                          {vehicle?.rider?.phone}
-                        </div> */}
-                      </div>
-                    </div>
-                  </Table.Td>
-
-
-                  <Table.Td className="first:rounded-l-md last:rounded-r-md w-40 bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
-                    <span  className="font-medium whitespace-nowrap ">
-{user?.role === 'registration_officer'? 'Registration Officer' : user?.role === 'attachment_officer'? 'Attachment Officer'  : user?.role === 'operation_officer'? 'Operation Officer' : '------'}
-                    </span>
-                    
-                  
-                  </Table.Td>
-                  
-           
-                  <Table.Td className="first:rounded-l-md last:rounded-r-md w-40  bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
-                    <div className="pr-16">{user?.lga ? user?.lga : '------'}</div>
-                  </Table.Td>
-
-                  <Table.Td className="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
-                    <span
-                      className=
- {`items-center px-2 lg:py-1 rounded-full text-xs font-medium capitalize ${
-    tagStyle[user?.status]
-  }`}
-                         
-                    >
-                            {usersStatus[user?.status]}
-                    </span>
-                  </Table.Td>
-
-                  <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white border-b-1 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b] py-0 relative before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400">
-                    <div className="flex items-center justify-center">
-                      <button
-                        className="flex items-center  text-customColor whitespace-nowrap"
-                        onClick={() => navigate(`/user-profile/${user?.id}`)}
-
-                      >
-                        {/* <Lucide icon="CheckSquare" className="w-4 h-4 mr-1" />{" "} */}
-                        View Profile
-                      </button>
-                   
-                    </div>
-                  </Table.Td>
-                </Table.Tr>
-              ))}
-          
-
-            </Table.Tbody>
-          </Table>
-
-
-
-            </div>
-          )}
-
-          {/* Pagination */}
-          <div className="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap">
-            {/* Pagination component */}
-            <Pagination className="w-full sm:w-auto sm:mr-auto">
-            <Pagination.Link>
-              <Lucide icon="ChevronsLeft" className="w-4 h-4" />
-            </Pagination.Link>
-            <Pagination.Link>
-              <Lucide icon="ChevronLeft" className="w-4 h-4" />
-            </Pagination.Link>
-            <Pagination.Link>...</Pagination.Link>
-            <Pagination.Link>1</Pagination.Link>
-            <Pagination.Link active>2</Pagination.Link>
-            <Pagination.Link>3</Pagination.Link>
-            <Pagination.Link>...</Pagination.Link>
-            <Pagination.Link>
-              <Lucide icon="ChevronRight" className="w-4 h-4" />
-            </Pagination.Link>
-            <Pagination.Link>
-              <Lucide icon="ChevronsRight" className="w-4 h-4" />
-            </Pagination.Link>
-          </Pagination>
-          <FormSelect className="w-20 mt-3 !box sm:mt-0">
-            <option>10</option>
-            <option>25</option>
-            <option>35</option>
-            <option>50</option>
-          </FormSelect>
+              {/* Dialog content */}
+            </Dialog>
           </div>
-
-          {/* Delete Confirmation Modal */}
-          <Dialog
-            open={deleteConfirmationModal}
-            onClose={() => setDeleteConfirmationModal(false)}
-            initialFocus={deleteButtonRef}
-          >
-            {/* Dialog content */}
-          </Dialog>
         </div>
       </div>
-    </div>
 
-
-
+      <Notification
+              id="success-notification-content"
+              className="flex  "
+            >
+              <Lucide icon="CheckCircle" className="text-success" />
+              <div className="ml-4 mr-4">
+                <div className="font-medium">Admin Added!</div>
+                <div className="mt-1 text-slate-500">
+                Successfully  added new Admin
+                </div>
+              </div>
+            </Notification>
+            {/* END: Success Notification Content */}
+            {/* BEGIN: Failed Notification Content */}
+            <Notification
+              id="failed-notification-content"
+              className="flex"
+            >
+              <Lucide icon="XCircle" className="text-danger" />
+              <div className="ml-4 mr-4">
+                <div className="font-medium">Failed to Create!</div>
+                <div className="mt-1 text-slate-500">
+                  {errorMessage}
+                </div>
+              </div>
+            </Notification>
     </>
-  )
+  );
 }

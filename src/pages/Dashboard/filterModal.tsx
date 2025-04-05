@@ -15,8 +15,7 @@ interface FilterModalProps {
   open: boolean;
   setOpen: (isOpen: boolean) => void;
   handleFilterChange: (type: string, value: string) => void;
-  lagosLGAs: string[];
-  carParks: any[];
+
   users: any[];
   selectedLGA: string;
   setSelectedLGA: (lga: string) => void;
@@ -36,8 +35,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
   open,
   setOpen,
   handleFilterChange,
-  lagosLGAs,
-  carParks,
+ 
   users,
   selectedLGA,
   setSelectedLGA,
@@ -143,51 +141,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
         </Dialog.Title>
 
         <Dialog.Description className="grid grid-cols-12 gap-4 gap-y-3">
-          {activeFilter === "State" ? (
-            <div className="col-span-12 ">
-              <FormLabel htmlFor="lga">Select LGA</FormLabel>
-              <FormSelect
-                id="lga"
-                className=""
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setTempSelectedLGA(value); // Store the selected value temporarily
-                }}
-                value={tempSelectedLGA}
-              >
-                <option value="" disabled>
-                  All LGA
-                </option>
-                {lagosLGAs.map((lga, index) => (
-                  <option key={index} value={lga}>
-                    {lga}
-                  </option>
-                ))}
-              </FormSelect>
-            </div>
-          ) : activeFilter === "Status" ? (
-            <div className="col-span-12 ">
-              <FormLabel htmlFor="carPark">Select Car Park</FormLabel>
-              <FormSelect
-                id="carPark"
-                className=""
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setTempSelectedCarPark(value); // Store the selected value temporarily
-                }}
-                value={tempSelectedCarPark}
-              >
-                <option value="" disabled>
-                  All Car Parks
-                </option>
-                {carParks.map((carPark, index) => (
-                  <option key={index} value={carPark?.desc}>
-                    {carPark?.desc}
-                  </option>
-                ))}
-              </FormSelect>
-            </div>
-          ) : activeFilter === "Type" ? (
+          {activeFilter === "Type" ? (
             <div className="col-span-12 ">
               <FormLabel htmlFor="lga">Select User</FormLabel>
               <FormSelect

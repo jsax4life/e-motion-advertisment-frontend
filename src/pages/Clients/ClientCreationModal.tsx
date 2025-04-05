@@ -216,9 +216,7 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
 
               </div>
 
-              
-
-
+            
               <div className="col-span-12">
                 <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="company_phone">Company Phone Number (Optional)</FormLabel>
                 <FormInput
@@ -282,15 +280,14 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
               </div>
 
               <div className="col-span-12 relative">
-                <FormLabel className="lg:text-[16px]" htmlFor="modal-datepicker-1">Date of Birth</FormLabel>
+                <FormLabel className="lg:text-[16px]" htmlFor="dob">Date of Birth</FormLabel>
                 <Litepicker
-                  id="modal-datepicker-1"
+                  id="dob"
                   value={dateOfBirth}
                  
                   // onChange={setDateOfBirth}
 
                   onChange={(e:any) => {
-                    console.log(e);
                     const newValue = e;
 
                   

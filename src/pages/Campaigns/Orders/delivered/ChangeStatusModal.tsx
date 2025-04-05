@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Dialog } from "../../../../base-components/Headless";
 import {
+  FormInput,
   FormLabel,
   FormSelect,
   FormTextarea,
@@ -12,6 +13,10 @@ import * as yup from "yup";
 import Button from "../../../../base-components/Button";
 import Lucide from "../../../../base-components/Lucide";
 import LoadingIcon from "../../../../base-components/LoadingIcon";
+import Litepicker from "../../../../base-components/Litepicker";
+import { set } from "lodash";
+import { freeze } from "@reduxjs/toolkit";
+import { calculateNumberOfDays } from "../../../../utils/utils";
 
 interface BillboardCreationModalProps {
   isOpen: boolean;
@@ -23,7 +28,7 @@ interface BillboardCreationModalProps {
 
 
 
-const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
+const ChangeDeliveryStatusModal: React.FC<BillboardCreationModalProps> = ({
   isOpen,
   isLoading,
   campaign,
@@ -33,6 +38,10 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
   const [sendButtonRef] = useState(React.createRef<HTMLButtonElement>());
 
   const [formData, setFormData] = useState<any>();
+  const [freezeStartDate, setFreezeStartDate] = useState<any>();
+  const [freezeEndDate, setFreezeEndDate] = useState<any>();
+const [numberOfDays, setNumberOfDays] = useState<any>();
+const [isNumberOfDaysNegative, setIsNumberOfDaysNegative] = useState<boolean>(false);
 
   const validationSchema = yup.object().shape({
     status: yup.string().required("Status Code is required"),
@@ -49,6 +58,12 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
     resolver: yupResolver(validationSchema),
   });
 
+  useEffect(() => {
+   const calcNumberOfDays =  calculateNumberOfDays(freezeStartDate, freezeEndDate);
+    setNumberOfDays(calcNumberOfDays);
+    calcNumberOfDays < 0 ? setIsNumberOfDaysNegative(true) : setIsNumberOfDaysNegative(false);
+  
+  } , [freezeStartDate, freezeEndDate]);
   //   console.log(uploadedImages);
 
   const handleChange = (
@@ -65,19 +80,28 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
       [name]: value,
     }));
   };
+// check  if number of days is negative 
+  // numberOfDays < 0 ? setIsNumberOfDaysNegative(true) : setIsNumberOfDaysNegative(false);
 
   const handleChangeStatus = async (data: any) => {
     // Prepare the payload
+   const payload = {
+      // Other form fields...
+      ...data,
    
+      campaign_freeze_start_date: freezeStartDate,
+      campaign_freeze_end_date: freezeEndDate,
+      // end_date: data.end_date,
+    };
 
-    console.log(data);
+    console.log(payload);
 
     // console.log(formData);
-    onSubmit(data);
+    onSubmit(payload);
     // onClose();
   };
 
-    console.log(campaign);
+    // console.log(campaign);
 
   //   console.log(formData);
 
@@ -133,7 +157,7 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
                   className="w-full p-2 border rounded-lg py-3.5"
                 >
                   <option value="end">End</option>
-                  <option value="frozen">Frozen</option>
+                  <option value="frozen">Freeze</option>
                   {/* <option value="paid">Paid</option>
                   <option value="delivered">Delivered</option> */}
 
@@ -144,6 +168,148 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
                   </p>
                 )}
               </div>
+
+              {/* set freezing duration (sstart and end) if uption is freeze */}
+              {formData?.status === "frozen" && (
+                <>
+                  {/* <div className="col-span-12">
+                    <FormLabel
+                      className="font-medium lg:text-[16px] text-black"
+                      htmlFor="start_date"
+                    >
+                      Start Date
+                    </FormLabel>
+                    <input
+                      type="date"
+                      className="w-full p-2 border rounded-lg py-3.5"
+                      {...register("start_date")}
+                    />
+                  </div>
+                  <div className="col-span-12">
+                    <FormLabel
+                      className="font-medium lg:text-[16px] text-black"
+                      htmlFor="end_date"
+                    >
+                      End Date
+                    </FormLabel>
+                    <input
+                      type="date"
+                      className="w-full p-2 border rounded-lg py-3.5"
+                      {...register("end_date")}
+                    />
+                  </div> */}
+                   <div className="col-span-12   ">
+                <div className="col-span-12  flex justify-center items-center lg:space-x-8 space-x-2">
+                  <div className="w-full relative">
+                    <FormLabel
+                      className="text-xs font-medium lg:text-[16px] text-black"
+                      htmlFor="duration"
+                    >
+                      Start Date
+                    </FormLabel>
+
+                    <Litepicker
+                      id="campaign-duration"
+                      // value={`${orderToEdit?.campaign_start_date} - ${orderToEdit?.campaign_end_date}`}
+                      // onChange={setDaterange}
+                      value={freezeStartDate}
+                      onChange={setFreezeStartDate}
+                      options={{
+                        autoApply: false,
+                        showWeekNumbers: true,
+                        dropdowns: {
+                          minYear: new Date().getFullYear() , //set to current year
+                          maxYear: null,
+                          months: true,
+                          years: true,
+                        },
+                      }}
+                      className="block py-3 pl-8 mx-auto"
+
+
+                                    // onChange={setDateOfBirth}
+
+                  // onChange={(e:any) => {
+                  //   const newValue = e;
+                  //   // Call your custom function
+                  //   setDateOfBirth(newValue);                  
+                  //   setValue("birthday", newValue, {
+                  //     shouldValidate: true,
+                  //   });
+                  // }}
+                  
+            
+                    />
+                    <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+                      <Lucide icon="Calendar" className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="w-full relative">
+                    <FormLabel
+                      className="text-xs font-medium lg:text-[16px] text-black"
+                      htmlFor="duration"
+                    >
+                      End Date 
+                    </FormLabel>
+
+                    <Litepicker
+                      id="campaign-duration"
+                      // value={`${orderToEdit?.campaign_start_date} - ${orderToEdit?.campaign_end_date}`}
+                      // onChange={setDaterange}
+                      value={freezeEndDate}
+                      onChange={setFreezeEndDate}
+                      options={{
+                        autoApply: false,
+                        showWeekNumbers: true,
+                        dropdowns: {
+                          minYear: new Date().getFullYear() , //set to current year
+                          maxYear: null,
+                          months: true,
+                          years: true,
+                        },
+                      }}
+                      className="block py-3 pl-8 mx-auto"
+                    />
+                    <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+                      <Lucide icon="Calendar" className="w-4 h-4" />
+                    </div>
+                  </div>
+                
+                </div>
+              </div>
+              <div className="col-span-6 lg:w-1/2">
+                    <FormLabel
+                      className="font-medium text-xs lg:text-[16px] text-black"
+                      htmlFor="duration"
+                    >
+                      Number of Days
+                    </FormLabel>
+                    <FormInput
+                      formInputSize="lg"
+                      type="text"
+                      name="numberOfDays"
+                      value={ `${numberOfDays} Days`}
+                      readOnly
+                      className="w-full text-sm  border rounded bg-gray-100 cursor-not-allowed"
+                    />
+
+                    
+                    {isNumberOfDaysNegative && (
+                <div className="col-span-12">
+                  <p className="text-red-500">
+                    Number of days cannot be negative
+                  </p>  
+                </div>
+              )}
+                  </div>
+              {/* display error if number of days is negative */}
+            
+                </>
+              )
+              } 
+
+
+              
 
               <div className="col-span-12">
                 <FormLabel
@@ -211,4 +377,4 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
   );
 };
 
-export default ChangeStatusModal;
+export default ChangeDeliveryStatusModal;

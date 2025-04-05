@@ -71,6 +71,13 @@ const initialState: SideMenuState = {
 
     },
 
+    {
+      icon: "User",
+      pathname: "/users",
+      title: "Users",
+
+    },
+
 
  
 

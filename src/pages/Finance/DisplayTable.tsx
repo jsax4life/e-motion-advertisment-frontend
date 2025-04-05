@@ -155,7 +155,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                         <Lucide icon="MoreVertical" className="w-5 h-5" />
                       </Menu.Button>
                       <Menu.Items className="w-40">
-                        <Menu.Item onClick={() => {navigate(`/finance-campaign-details/${order?.id}`)}}>
+                        <Menu.Item onClick={() => {navigate(`/campaigns/${order?.id}/details/finance`)}}>
                           <Lucide icon="Edit2" className="w-4 h-4 mr-2" /> View
                           Order
                         </Menu.Item>

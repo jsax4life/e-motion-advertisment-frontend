@@ -314,8 +314,6 @@ const handleChangeStatusClick = (billboard: any) => {
         open={openModal}
         setOpen={setOpenModal}
         handleFilterChange={handleFilterChange}
-        lagosLGAs={lagosLGAs}
-        carParks={lagosParks}
         selectedLGA={selectedLGA}
         setSelectedLGA={setSelectedLGA}
         selectedCarPark={selectedPark}
@@ -464,9 +462,6 @@ const handleChangeStatusClick = (billboard: any) => {
           <FilterChips
                   selectedRole=""
                   selectedStatus=""
-                  lagosLGAs={lagosLGAs}
-                  selectedLGA={selectedLGA}
-                  selectedPark={selectedPark}
                   dateRange={dateRange}
                   selectedUser={selectedUser}
                   onRemoveFilter={handleRemoveFilter}

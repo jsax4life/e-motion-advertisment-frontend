@@ -50,4 +50,17 @@ const getOS = () => {
     return os;
 };
 
-export { formatCurrency, getOS, formatDate };
+const calculateNumberOfDays = (
+    startDate: string,
+    endDate: string
+  ): number => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const timeDifference = end.getTime() - start.getTime();
+    // check if number of days is negative and return 0
+    // if (timeDifference < 0) return 0;
+
+    return Math.ceil(timeDifference / (1000 * 3600 * 24)); // Convert milliseconds to days
+  };
+
+export { formatCurrency, getOS, formatDate, calculateNumberOfDays };

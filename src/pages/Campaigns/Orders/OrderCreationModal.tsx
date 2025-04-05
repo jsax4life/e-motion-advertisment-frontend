@@ -442,7 +442,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                         autoApply: true,
                         singleMode: false,
                         numberOfColumns: 2,
-                        numberOfMonths: 2,
+                        numberOfMonths: 12,
                         showWeekNumbers: true,
                         dropdowns: {
                           minYear: 2021,

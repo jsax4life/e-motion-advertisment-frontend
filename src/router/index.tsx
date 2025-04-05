@@ -26,13 +26,14 @@ import SurveyResponse from "../pages/Surevy/ViewResponse"
 
 import AdminRolePrivilegesTable from "../pages/Admins/AdminRoleManagement";
 import AddNewAdmiin from "../pages/Admins/AddAdmin";
-import CampaignDetails from "../pages/Campaigns/Orders/CampaignDetails";
+import CampaignDetailsOrder from "../pages/Campaigns/Orders/CampaignDetails";
 import DeliveredCampaignDetails from "../pages/Campaigns/Orders/delivered/DeliveredCampaignDetails"
 import DeliveredCampaign from "../pages/Campaigns/Orders/delivered/DeliveredCampaign";
 import AllCampaigns from "../pages/Finance/AllCampaigns";
 import FinanceCampaignDetails from "../pages/Finance/FinanceCampaignDetails";
 import ClientDetails from "../pages/Clients/ClientDetails";
-
+import CampaignDetails from "../components/CampaignDetails";
+import  UserDetails from "..//pages/Users/AdminDetails"
 
 function Router() {
   const routes = [
@@ -97,14 +98,16 @@ function Router() {
           },
         
           { path: "/details/:id", element: <BillboardDetails />},
-          { path: "/campaign-details/:id", element: <CampaignDetails />},
-          { path: "/delivered-campaign-details/:id", element: <DeliveredCampaignDetails />},
-          { path: "/finance-campaign-details/:id", element: <FinanceCampaignDetails />},
+          { path: "/campaigns/:id/details/order", element: <CampaignDetails section="order"  />},
+          { path: "/campaigns/:id/details/delivery", element: <CampaignDetails section="delivery" />},
+          // <Route path="/campaigns/:id/details/delivery" element={<CampaignDetails section="delivery" />} />
+
+          { path: "/campaigns/:id/details/finance", element: <CampaignDetails section = "finance" />},
 
           
-          { path: "/running-campaigns", element: <DeliveredCampaign />},
+          { path: "/user-details/:id", element: <UserDetails />},
 
-          {path: "/finance", element: <AllCampaigns/>},
+          // {path: "/finance", element: <AllCampaigns/>},
   
           { path: "/update-profile/:id", element: <UpdateVehicleProfile />},
   

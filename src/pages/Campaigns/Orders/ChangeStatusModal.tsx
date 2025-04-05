@@ -12,6 +12,7 @@ import * as yup from "yup";
 import Button from "../../../base-components/Button";
 import Lucide from "../../../base-components/Lucide";
 import LoadingIcon from "../../../base-components/LoadingIcon";
+import ImageUploadSection from "../../Billboards/ImageUpoadSection";
 
 interface BillboardCreationModalProps {
   isOpen: boolean;
@@ -33,6 +34,8 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
   const [sendButtonRef] = useState(React.createRef<HTMLButtonElement>());
 
   const [formData, setFormData] = useState<any>();
+  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
+
 
   const validationSchema = yup.object().shape({
     status: yup.string().required("Status Code is required"),
@@ -66,14 +69,32 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
     }));
   };
 
-  const handleChangeStatus = async (data: any) => {
-    // Prepare the payload
-   
+  const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
+    return Promise.all(
+      files.map((file) => {
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = (error) => reject(error);
+        });
+      })
+    );
+  };
 
-    console.log(data);
+  const handleChangeStatus = async (data: any) => {
+    const base64Images = await convertImagesToBase64(uploadedImages);
+
+    // Prepare the payload
+    const payLoad = {
+      ...data,
+      delivery_images: base64Images,
+    }
+
+    console.log(payLoad);
 
     // console.log(formData);
-    onSubmit(data);
+    onSubmit(payLoad);
     // onClose();
   };
 
@@ -144,6 +165,64 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
                   </p>
                 )}
               </div>
+
+              {/* add picture upload if status option is delivered */}
+              {formData?.status === "delivered" && (
+                // <div className="col-span-12">
+                //   <FormLabel
+                //     className="font-medium lg:text-[16px] text-black"
+                //     htmlFor="images"
+                //   >
+                //     Upload Picture
+                //   </FormLabel>
+                //   <div className="flex items-center justify-between space-x-4">
+                //     <div className="w-full">
+                //       <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                //         <div className="space-y-1 text-center">
+                //           <svg
+                //             className="mx-auto h-12 w-12 text-gray-400"
+                //             stroke="currentColor"
+                //             fill="none"
+                //             viewBox="0 0 24 24"
+                //             xmlns="http://www.w3.org/2000/svg"
+                //           >
+                //             <path
+                //               strokeLinecap="round"
+                //               strokeLinejoin="round"
+                //               strokeWidth="2"
+                //               d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                //             />
+                //           </svg>
+                //           <div className="flex text-sm text-gray-600">
+                //             <label
+                //               htmlFor="file-upload"
+                //               className="relative cursor-pointer bg-white rounded-md font-medium text-customColor hover:text-customColor focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-customColor"
+                //             >
+                //               <span>Upload a file</span>
+                //               <input
+                //                 id="file-upload"
+                //                 // name="images"
+                //                 type="file"
+                //                 className="sr-only"
+                //                 {...register("images")}
+                //               />
+                //             </label>
+                //             <p className="pl-1">or drag and drop</p>
+                //           </div>
+                //           <p className="text-xs text-gray-500">
+                //             PNG, JPG, GIF up to 10MB
+                //           </p>
+                //         </div>
+                //       </div>
+                //     </div>
+                //   </div>
+                // </div>
+                  <ImageUploadSection
+                  uploadedImages={uploadedImages}
+                  setUploadedImages={setUploadedImages}
+                />
+              )}
+
 
               <div className="col-span-12">
                 <FormLabel
