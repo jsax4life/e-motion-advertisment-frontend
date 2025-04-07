@@ -75,7 +75,7 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     phoneNumber: yup.string().required("Phone number is required"),
     address: yup.string().required("Address is required"),
     gender: yup.string().required("gender is required"),
-    password: yup.string().required("Password is required"),
+    password: yup.string().required('Password is Required').min(6),
     role: yup.string().required("Role is required"),
     dob: yup.string().required("Birthday is required"),
     // images: yup.array().of(yup.string()).required("Images are required"),
