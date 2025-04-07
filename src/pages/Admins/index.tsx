@@ -589,11 +589,8 @@ onClick={() => { setOpenModal(true); setActiveFilter("LGA"); }}
 </Menu>
         
 <FilterChips
-          lagosLGAs={lagosLGAs}
-          selectedLGA={selectedLGA}
           selectedRole={selectedRole}
           selectedStatus={selectedStatus}
-          selectedPark=''
           dateRange={dateRange}
           onRemoveFilter={handleRemoveFilter}
           selectedUser=''
