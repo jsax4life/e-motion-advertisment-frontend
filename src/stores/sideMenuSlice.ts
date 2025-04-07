@@ -44,7 +44,7 @@ const initialState: SideMenuState = {
      
         {
           icon: "Book",
-          pathname: "/running-campaigns",
+          pathname: "/delivered-campaigns",
           title: "Delivered",
         },
       ],

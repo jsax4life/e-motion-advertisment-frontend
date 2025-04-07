@@ -29,11 +29,12 @@ import AddNewAdmiin from "../pages/Admins/AddAdmin";
 import CampaignDetailsOrder from "../pages/Campaigns/Orders/CampaignDetails";
 import DeliveredCampaignDetails from "../pages/Campaigns/Orders/delivered/DeliveredCampaignDetails"
 import DeliveredCampaign from "../pages/Campaigns/Orders/delivered/DeliveredCampaign";
-import AllCampaigns from "../pages/Finance/AllCampaigns";
+import Finance from "../pages/Finance";
 import FinanceCampaignDetails from "../pages/Finance/FinanceCampaignDetails";
 import ClientDetails from "../pages/Clients/ClientDetails";
 import CampaignDetails from "../components/CampaignDetails";
-import  UserDetails from "..//pages/Users/AdminDetails"
+import  UserDetails from "../pages/Users/AdminDetails"
+
 
 function Router() {
   const routes = [
@@ -90,11 +91,21 @@ function Router() {
             path: "/clients",
             element: <Client />,
           },
+          {
+ 
+            path: "/finance",
+            element: <Finance />,
+          },
           { path: "/client-details/:id", element: <ClientDetails />},
 
           {
             path: "/orders",
             element: <Order />,
+          },
+
+          {
+            path: "/delivered-campaigns",
+            element: <DeliveredCampaign />,
           },
         
           { path: "/details/:id", element: <BillboardDetails />},
