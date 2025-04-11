@@ -28,7 +28,7 @@ interface Billboard {
     internalCode: string;
     billboardName: string;
     billboardType: "static" | "digital" | "bespoke";
-    numberOfSlots: number;
+    numberOfSlotsOrFaces: number;
     numberOfFaces: number;
     pricePerDay: number;
     state: string;
@@ -170,10 +170,10 @@ const handleStateChange = (stateName: string) => {
 // Handle logic for resetting dependent fields
 if (name === "billboardType") {
   if (value === "static" || value === "bespoke") {
-    setValue("numberOfSlots", ""); // Reset numberOfSlots
+    setValue("numberOfSlotsOrFaces", ""); // Reset numberOfSlots
   }
   if (value === "digital" || value === "bespoke") {
-    setValue("numberOfFaces", ""); // Reset numberOfFaces
+    setValue("numberOfSlotsOrFaces", ""); // Reset numberOfFaces
   }
 }
 
@@ -505,7 +505,6 @@ if (name === "billboardType") {
                                                         <option value="" disabled selected>--select--</option>
               
                                   <option value="Standard">Standard</option>
-                                  <option value="Non-Standard">Non-Standard</option>
                                   <option value="Custom">Custom</option>
                                   </FormSelect>
                                   {errors.dimension && ( <p className="text-red-500">{errors.dimension.message?.toString()}</p>)}
@@ -515,10 +514,10 @@ if (name === "billboardType") {
 
               {/* specifications */}
 
-{(billboard.dimension === "Custom" || formData.dimension === "Custom")  && (
+{(billboard.dimension === "Custom" || billboard.dimension === "Standard")  && (
      <div className="col-span-12 flex space-x-2">
        <div className="w-1/2 ">
-       <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="width">Width(Ft)</FormLabel>
+       <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="width">Width(M)</FormLabel>
        <FormInput
        formInputSize="lg"
         defaultValue={billboard?.width}
@@ -531,7 +530,7 @@ if (name === "billboardType") {
      </div>
 
      <div className="w-1/2 ">
-       <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="height">Height(Ft)</FormLabel>
+       <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="height">Height(M)</FormLabel>
        <FormInput
        formInputSize="lg"
         defaultValue={billboard?.height}
@@ -574,22 +573,22 @@ if (name === "billboardType") {
 
               {/* Number of Slots for Digital FormSelection only*/}
 
-              {billboard.billboardType === "digital" && (
+              {billboard.billboardType &&  (
                 <div className="col-span-12">
-                  <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="numberOfSlots">Number of Slots</FormLabel>
+                  <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="numberOfSlotsOrFaces">{billboard.billboardType === "digital"?  'Number of Slots' : 'Number of Faces' } </FormLabel>
                   <FormSelect
                     formSelectSize="lg"
                     disabled
 
                     // name="numberOfSlots"
-                    value={billboard?.numberOfSlots}
-                    {...register("numberOfSlots", {
+                    value={billboard?.numberOfSlotsOrFaces}
+                    {...register("numberOfSlotsOrFaces", {
                       onChange: (e) => {
                         handleChange(e);
                       },})}
                     className="w-full p-2 border rounded"
                   >
-                    {[...Array(8)].map((_, i) => (
+                    {[...Array(billboard?.numberOfSlotsOrFaces)].map((_, i) => (
                       <option key={i + 1} value={i + 1}>
                         Slot {i + 1}
                       </option>
@@ -600,16 +599,16 @@ if (name === "billboardType") {
 
               {/* Number of Faces for Static selection only*/}
 
-              {billboard.billboardType === "static" && (
+              {/* {billboard.billboardType === "static" && (
                 <div className="col-span-12">
                   <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="numberOfFaces">Number of Faces</FormLabel>
                   <FormSelect
                     formSelectSize="lg"
                     
             
-                    value={billboard?.numberOfFaces}
+                    value={billboard?.numberOfSlotsOrFaces}
                     disabled
-                    {...register("numberOfFaces", {
+                    {...register("numberOfSlotsOrFaces", {
                       onChange: (e) => {
                         handleChange(e);
                       },})}
@@ -622,7 +621,7 @@ if (name === "billboardType") {
                     ))}
                   </FormSelect>
                 </div>
-              )}
+              )} */}
 
               {/* Price Per Day */}
               <div className="col-span-12">

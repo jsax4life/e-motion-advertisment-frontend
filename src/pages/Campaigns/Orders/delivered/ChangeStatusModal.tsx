@@ -39,7 +39,7 @@ const ChangeDeliveryStatusModal: React.FC<BillboardCreationModalProps> = ({
 
   const [formData, setFormData] = useState<any>();
   const [freezeStartDate, setFreezeStartDate] = useState<any>();
-  const [freezeEndDate, setFreezeEndDate] = useState<any>();
+  // const [freezeEndDate, setFreezeEndDate] = useState<any>();
 const [numberOfDays, setNumberOfDays] = useState<any>();
 const [isNumberOfDaysNegative, setIsNumberOfDaysNegative] = useState<boolean>(false);
 
@@ -59,11 +59,11 @@ const [isNumberOfDaysNegative, setIsNumberOfDaysNegative] = useState<boolean>(fa
   });
 
   useEffect(() => {
-   const calcNumberOfDays =  calculateNumberOfDays(freezeStartDate, freezeEndDate);
+   const calcNumberOfDays =  calculateNumberOfDays(freezeStartDate, campaign?.campaign_end_date);
     setNumberOfDays(calcNumberOfDays);
     calcNumberOfDays < 0 ? setIsNumberOfDaysNegative(true) : setIsNumberOfDaysNegative(false);
   
-  } , [freezeStartDate, freezeEndDate]);
+  } , [freezeStartDate, campaign?.campaign_end_date]);
   //   console.log(uploadedImages);
 
   const handleChange = (
@@ -90,7 +90,7 @@ const [isNumberOfDaysNegative, setIsNumberOfDaysNegative] = useState<boolean>(fa
       ...data,
    
       campaign_freeze_start_date: freezeStartDate,
-      campaign_freeze_end_date: freezeEndDate,
+      // campaign_freeze_end_date: freezeEndDate,
       // end_date: data.end_date,
     };
 
@@ -205,7 +205,7 @@ const [isNumberOfDaysNegative, setIsNumberOfDaysNegative] = useState<boolean>(fa
                       className="text-xs font-medium lg:text-[16px] text-black"
                       htmlFor="duration"
                     >
-                      Start Date
+                      Freeze  Date
                     </FormLabel>
 
                     <Litepicker
@@ -249,15 +249,16 @@ const [isNumberOfDaysNegative, setIsNumberOfDaysNegative] = useState<boolean>(fa
                       className="text-xs font-medium lg:text-[16px] text-black"
                       htmlFor="duration"
                     >
-                      End Date 
+                      Campaign End Date 
                     </FormLabel>
 
                     <Litepicker
                       id="campaign-duration"
                       // value={`${orderToEdit?.campaign_start_date} - ${orderToEdit?.campaign_end_date}`}
                       // onChange={setDaterange}
-                      value={freezeEndDate}
-                      onChange={setFreezeEndDate}
+                      value={campaign?.campaign_end_date}
+                      disabled
+                      onChange={(e:any) => {}}
                       options={{
                         autoApply: false,
                         showWeekNumbers: true,
@@ -266,9 +267,11 @@ const [isNumberOfDaysNegative, setIsNumberOfDaysNegative] = useState<boolean>(fa
                           maxYear: null,
                           months: true,
                           years: true,
+                          
                         },
                       }}
-                      className="block py-3 pl-8 mx-auto"
+                      
+                      className="block py-3 pl-8 mx-auto "
                     />
                     <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
                       <Lucide icon="Calendar" className="w-4 h-4" />

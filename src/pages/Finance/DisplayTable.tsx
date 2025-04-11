@@ -7,6 +7,20 @@ import { Menu, Tab } from "../../base-components/Headless";
 import Table from "../../base-components/Table";
 import { formatCurrency, formatDate } from "../../utils/utils";
 
+
+const statusColors = {
+  pending: "bg-yellow-500",
+  approved: "bg-green-500",
+  delivered: "bg-purple-500",
+  frozen: "bg-red-500",
+};
+
+const paymentStatusColors = {
+  pending: "bg-yellow-500",
+  paid: "bg-green-500",
+  overdue: "bg-red-500",
+};
+
 interface Order {
   id: number;
   client_id: string;
@@ -116,17 +130,10 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                   <Table.Td className="first:rounded-l-md   last:rounded-r-md text-start bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                    <div className="flex justify-start items-center space-x-2">
                    <div
-                      className={`items-center lg:py-1 text-xs font-medium  border  w-2.5 h-2.5  rounded-full  ${
-                        order?.status === "approved"
-                          ? "bg-orange-400 border-orange-400"
-                          : order?.status === "pending"
-                          ? "bg-red-400 border-red-400"
-                          : order?.status === "paid"
-                          ? "bg-red-500 border-red-500"
-                          : order?.status === "delivered"
-                          ? "bg-green-500 border-green-500"
-                          : "bg-red-500 border-red-500"
-                      }`}
+                      className={`items-center lg:py-1 text-xs font-medium  border  w-2.5 h-2.5  rounded-full 
+                     
+                      ${statusColors[order?.status as keyof typeof statusColors] || "bg-gray-500"} 
+                      `}
                     ></div>
                     <div> {order?.status}</div>
                    </div>
@@ -134,13 +141,10 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                   <Table.Td className="first:rounded-l-md   last:rounded-r-md text-start bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                    <div className="flex justify-start items-center space-x-2">
                    <div
-                      className={`items-center lg:py-1 text-xs font-medium  border  w-2.5 h-2.5  rounded-full  ${
-                        order?.payment_status === "pending"
-                          ? "bg-orange-400 border-orange-400"
-                          : order?.payment_status === "paid"
-                          ? "bg-green-500 border-green-500"
-                          : "bg-red-500 border-red-500"
-                      }`}
+                      className={`items-center lg:py-1 text-xs font-medium  border  w-2.5 h-2.5  rounded-full  
+                     
+                      ${paymentStatusColors[order?.payment_status as keyof typeof paymentStatusColors] || "bg-gray-500"} 
+                      `}
                     ></div>
                     <div> {order?.payment_status}</div>
                    </div>

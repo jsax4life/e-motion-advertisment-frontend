@@ -166,7 +166,7 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
             freeze date
             </div>
             <div className=" font-bold  lg:text-[16px] text-stone-600">
-            {campaign?.campaign_freeze_start_date} - {campaign?.campaign_freeze_end_date}
+            {campaign?.campaign_freeze_start_date}
             </div>
           </div>
           <div className="col-span-1  ">

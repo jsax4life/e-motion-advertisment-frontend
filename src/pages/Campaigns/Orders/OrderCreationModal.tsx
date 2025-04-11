@@ -18,6 +18,7 @@ import API from "../../../utils/API";
 import { UserContext } from "../../../stores/UserContext";
 import { formatCurrency } from "../../../utils/utils";
 import { useFetchStates } from "../../../lib/Hook";
+import PdfUploadSection from "./PdfUploadSection";
 
 interface BillboardCreationModalProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ interface BillboardCreationModalProps {
   clients: Client[];
   availableBillboards: AvailableBillboard[];
   onClose: () => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: any, fileForm: any) => void;
 }
 
 interface StateData {
@@ -38,15 +39,27 @@ interface Client {
   company_name: string;
 }
 
-interface BillboardOrder {
-  id: string;
-  name: string;
-  type: "Static" | "Digital" | "Bespoke";
-  slotsAvailable: number;
-  facesAvailable: number;
-  price: number;
-}
+// interface BillboardOrder {
+//   id: string;
+//   name: string;
+//   type: "Static" | "Digital" | "Bespoke";
+//   slotsAvailable: number;
+//   facesAvailable: number;
+//   price: number;
+// }
 
+type OrderDetails = {
+  client_id: string;
+  campaign_name: string;
+  campaign_duration: number;
+  campaign_start_date: string;
+  campaign_end_date: string;
+  payment_option: string;
+  media_purchase_order: File | null;
+  total_order_amount: number;
+  discount_order_amount: number;
+  description: string;
+};
 
 
 interface AvailableBillboard {
@@ -95,6 +108,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
   // const [duration, setDuration] = useState<string>("")
   const [orders, setOrders] = useState<any[]>([]);
  
+  const [file, setFile] = useState<File | null>(null);
 
   const validationSchema = yup.object().shape({
     // company_name: yup.string().required("Company Name is required"),
@@ -138,17 +152,18 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
  
   });
 
+  
 
 
   // State for order-level details
-  const [orderDetails, setOrderDetails] = useState({
+  const [orderDetails, setOrderDetails] = useState<OrderDetails>({
     client_id: "",
     campaign_name: "",
     campaign_duration: 0,
     campaign_start_date: "",
     campaign_end_date: "",
     payment_option: "",
-    media_purchase_order: "",
+    media_purchase_order: null,
     total_order_amount: 0,
     discount_order_amount: 0,
     description: "",
@@ -156,6 +171,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
 
   const [billboards, setBillboards] = useState<any[]>([]); // List of billboards in the order
   const [usedSlotsFaces, setUsedSlotsFaces] = useState<Record<string, string[]>>({});
+  const [mediaPurchaseOrder, setMediaPurchaseOrder] = useState<File | null>(null);
 
 
   useEffect(() => {
@@ -222,6 +238,12 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
   };
 
 
+
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (e.target.files && e.target.files.length > 0) {
+    setFile(e.target.files[0]);
+  }
+};
 
   
    // Handle order-level field changes
@@ -323,7 +345,6 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     }
   };
 
- console.log(orderDetails?.campaign_duration)
   
 
   // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -353,7 +374,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
         !orderDetails.client_id ||
         !orderDetails.campaign_name ||
         !orderDetails.payment_option ||
-        !orderDetails.media_purchase_order ||
+        // !orderDetails.media_purchase_order ||
         !orderDetails.campaign_start_date ||
         !orderDetails.campaign_end_date ||
         !orderDetails.campaign_duration ||
@@ -363,18 +384,27 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
         return;
       }
 
+
+  const formData = new FormData();
+
+  if (mediaPurchaseOrder) {
+    formData.append("media_purchase_order", mediaPurchaseOrder);
+  }
+
+   
+
          // Prepare the payload
     const payload = {
       ...orderDetails,
       billboards,
+      // media_purchase_order: mediaPurchaseOrder,
       total_order_amount : billboards.reduce((acc, item) => acc + item.actual_amount, 0),
     };
 
         // Submit the order
-        onSubmit(payload);
+        onSubmit(payload, formData);
 
-        console.log(payload);
-      
+     
          // Clear the state and close the modal
     setBillboards([]);
     setUsedSlotsFaces({});
@@ -385,7 +415,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
       campaign_start_date: "", 
       campaign_end_date: "", 
       payment_option: "",
-      media_purchase_order: "",
+      media_purchase_order: null,
       total_order_amount: 0,
       discount_order_amount: 0,
       description: "",
@@ -394,7 +424,6 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     // onClose();
   };
 
-//   console.log(formData)
 // console.log(orderDetails)
   if (!isOpen) return null;
 
@@ -438,14 +467,16 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                       // onChange={setDaterange}
                       value={dateRange}
                       onChange={setDateRange}
+                    
+
                       options={{
-                        autoApply: true,
+                        autoApply: false,
                         singleMode: false,
                         numberOfColumns: 2,
-                        numberOfMonths: 12,
+                        numberOfMonths: 2,
                         showWeekNumbers: true,
                         dropdowns: {
-                          minYear: 2021,
+                          minYear: 1999,
                           maxYear: null,
                           months: true,
                           years: true,
@@ -888,8 +919,10 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                 )}
               </div>   
 
-                  {/* media purchase input */}
-              <div className="col-span-12">
+                  {/* media purchase  uploaded as pdf */}
+              
+
+                  {/* <div className="col-span-12">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
                   htmlFor="media_purchase_order"
@@ -899,7 +932,8 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                 <FormInput
                   formInputSize="lg"
                   id="media_purchase_order"
-                  type="url"
+                  type="file"
+                  accept=".pdf"
                   value={orderDetails.media_purchase_order}
                   name="media_purchase_order"
                   onChange={handleOrderDetailsChange}
@@ -911,7 +945,35 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
                     {errors.media_purchase_order.message?.toString()}
                   </p>
                 )}
-              </div>
+              </div> */}
+
+              {/* <FormInput
+  formInputSize="lg"
+  id="media_purchase_order"
+  type="file"
+  accept=".pdf"
+  name="media_purchase_order"
+  onChange={(e) => {
+    const file = e.target.files?.[0] || null;
+    setOrderDetails((prev) => ({
+      ...prev,
+      media_purchase_order: file,
+    }));
+  }}
+  className="p-2 border rounded"
+/> */}
+
+
+<PdfUploadSection
+  uploadedPdf={mediaPurchaseOrder}
+  setUploadedPdf={setMediaPurchaseOrder}
+/>
+
+              <div className="border-b border-slate-200"></div>
+
+             
+
+           
 
                   {/* description */}
               <div className="col-span-12">

@@ -26,6 +26,14 @@ import { PullCampaignContext } from "../../../stores/CampaignDataContext";
 import ChangeStatusModal from "./ChangeStatusModal";
 import toast from "react-hot-toast";
 
+// different background colors for different status
+const statusColors = {
+  pending: "bg-yellow-100",
+  approved: "bg-green-100",
+  paid: "bg-blue-100",
+  delivered: "bg-purple-100",
+  frozen: "bg-red-100",
+};
 
 export default function CampaignDetails() {
   const { user } = useContext(UserContext);
@@ -220,7 +228,9 @@ const {id} = useParams<{id: any}>();
           <div className=" hidden mr-auto md:block capitalize">
             <div className="flex justify-center items-center">
             <h2 className="mr-5 text-3xl font-bold truncate ">{campaign?.campaign_name}</h2>
-            <div className="w-2 h-2 border rounded-full bg-green-400 mr-2"></div>
+            <div className={`w-2 h-2 border rounded-full 
+            ${statusColors[campaign?.status as keyof typeof statusColors] || "bg-gray-100"}  mr-2`}></div>
+            
             <div className="font-normal text-sm"> {campaign?.status}</div>
             </div>
             <Breadcrumb

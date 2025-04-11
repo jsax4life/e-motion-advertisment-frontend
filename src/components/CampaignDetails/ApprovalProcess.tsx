@@ -14,6 +14,7 @@ import {
     approved: "Approved By",
     paid: "Paid By",
     delivered: "Delivered By",
+    frozen: "Frozen By",
   };
   
   export default function ApprrovalProcess({ statusLog }: any) {

@@ -5,8 +5,11 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
 @layer base {
     body {
       @apply font-poppin font-normal text-sm tracking-wider text-blue-100;
+      
     }
   }

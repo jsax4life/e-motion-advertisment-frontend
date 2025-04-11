@@ -345,7 +345,7 @@ export default function DeliveredCampaign() {
 
     {/* Running Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "running")} />
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "delivered")} />
     </Tab.Panel>
 
     {/* Ended Campaigns */}

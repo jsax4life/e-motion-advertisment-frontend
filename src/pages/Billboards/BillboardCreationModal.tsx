@@ -67,8 +67,10 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     // pricePerDay: yup.string().required("Price Per Day is required"),
     pricePerMonth: yup.string().required("Price Per Month is required"),
     status: yup.string().required("Status is required"),
-    activeStatus: yup.string().required("Active Status is required"),
+    // activeStatus: yup.string().required("Active Status is required"),
     orientation: yup.string().required("Board Orientation is required"),
+    dimension: yup.string().required("Dimension is required"),  
+    billboardType: yup.string().required("Billboard Type is required"),
   });
 
   const {
@@ -89,7 +91,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     lga: "",
     address: "",
     geolocation: { lat: "", lng: "" },
-    dimension: "Standard", // Default dimension
+    dimension: "", 
     height: "",
     width: "",
     billboardType: "Static",
@@ -449,9 +451,44 @@ console.log(formData);
                 { errors.lng  && ( <p className="text-red-500">{errors.lng.message?.toString()} </p>)} */}
               </div>
 
-              {/* dimension */}
+                          {/* Billboard Type */}
 
-              <div className="col-span-12">
+              {/* <div className="col-span-12">
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="billboardType"
+                >
+                  Billboard Type
+                </FormLabel>
+                <FormSelect
+                  id="billboardType"
+                  formSelectSize="lg"
+                  {...register("billboardType", {
+                    onChange: (e) => {
+                      handleChange(e);
+                    },
+                  })}
+                  className="w-full p-2 border rounded"
+                >
+                  <option disabled selected value="">
+                    --Select--
+                  </option>
+
+                  <option value="static">Static</option>
+                  <option value="digital">Digital</option>
+                  <option value="bespoke">Bespoke (Innovative)</option>
+                </FormSelect>
+                {errors.billboardType && (
+                  <p className="text-red-500">
+                    {errors.billboardType.message?.toString()}
+                  </p>
+                )}
+              </div> */}
+
+
+              {/* dimension */}              
+
+              {/* <div className="col-span-12">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
                   htmlFor="dimension"
@@ -472,7 +509,6 @@ console.log(formData);
                   </option>
 
                   <option value="Standard">Standard</option>
-                  <option value="Non-Standard">Non-Standard</option>
                   <option value="Custom">Custom</option>
                 </FormSelect>
                 {errors.dimension && (
@@ -480,11 +516,11 @@ console.log(formData);
                     {errors.dimension.message?.toString()}
                   </p>
                 )}
-              </div>
+              </div> */}
 
               {/* specifications */}
 
-              {formData.dimension === "Custom" && (
+              {/* {formData.dimension === "Custom" && (
                 <div className="col-span-12 flex space-x-2">
                   <div className="w-1/2 ">
                     <FormLabel
@@ -520,42 +556,142 @@ console.log(formData);
                     />
                   </div>
                 </div>
-              )}
+              )} */}
 
-              {/* Billboard Type */}
+<div className="col-span-12">
+  <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="billboardType">
+    Billboard Type
+  </FormLabel>
+  <FormSelect
+    id="billboardType"
+    formSelectSize="lg"
+    {...register("billboardType", {
+      onChange: (e) => {
+        handleChange(e);
+      },
+    })}
+    className="w-full p-2 border rounded"
+  >
+    <option disabled selected value="">--Select--</option>
+    <option value="static">Static</option>
+    <option value="digital">Digital</option>
+    <option value="bespoke">Bespoke (Innovative)</option>
+  </FormSelect>
+  {errors.billboardType && (
+    <p className="text-red-500">{errors.billboardType.message?.toString()}</p>
+  )}
+</div>
 
-              <div className="col-span-12">
-                <FormLabel
-                  className="font-medium lg:text-[16px] text-black"
-                  htmlFor="billboardType"
-                >
-                  Billboard Type
-                </FormLabel>
-                <FormSelect
-                  id="billboardType"
-                  formSelectSize="lg"
-                  {...register("billboardType", {
-                    onChange: (e) => {
-                      handleChange(e);
-                    },
-                  })}
-                  className="w-full p-2 border rounded"
-                >
-                  <option disabled selected value="">
-                    --Select--
-                  </option>
+{/* Dimension */}
+<div className="col-span-12">
+  <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="dimension">
+    Dimension
+  </FormLabel>
+  <FormSelect
+    formSelectSize="lg"
+    {...register("dimension", {
+      onChange: (e) => {
+        handleChange(e);
+      },
+    })}
+    className="w-full p-2 border rounded"
+  >
+    <option value="" disabled selected>--select--</option>
+    <option value="Standard">Standard</option>
+    <option value="Custom">Custom</option>
+  </FormSelect>
+  {errors.dimension && (
+    <p className="text-red-500">{errors.dimension.message?.toString()}</p>
+  )}
+</div>
 
-                  <option value="static">Static</option>
-                  <option value="digital">Digital</option>
-                  <option value="bespoke">Bespoke (Innovative)</option>
-                </FormSelect>
-                {errors.billboardType && (
-                  <p className="text-red-500">
-                    {errors.billboardType.message?.toString()}
-                  </p>
-                )}
-              </div>
+{/* Conditional fields for Standard dimensions */}
+{formData.dimension === "Standard" && formData.billboardType === "static" && (
+  <div className="col-span-12">
+    <FormLabel className="font-medium lg:text-[16px] text-black">
+      Select Standard Size (Static) M
+    </FormLabel>
+    <FormSelect
+      formSelectSize="lg"
+      {...register("standardSize", {
+        onChange: (e) => {
+          const [width, height] = e.target.value.split("X");
+          setValue("width", width.trim());
+          setValue("height", height.trim());
+        },
+      })}
+      className="w-full p-2 border rounded"
+    >
+      <option value="" disabled selected>--Select Size--</option>
+      <option value="8 X 10">8M X 10M</option>
+      <option value="43 X 2">43M X 2M</option>
+      <option value="20 X 1.9">20M X 1.9M</option>
+      <option value="36 X 1.9">36M X 1.9M</option>
+      <option value="46 X 3M">46M X 3M</option>
+      <option value="18 X 2.4">18M X 2.4M</option>
+    </FormSelect>
+  </div>
+)}
 
+{formData.dimension === "Standard" && formData.billboardType === "digital" && (
+  <div className="col-span-12">
+    <FormLabel className="font-medium lg:text-[16px] text-black">
+      Select Standard Size (Digital) M
+    </FormLabel>
+    <FormSelect
+      formSelectSize="lg"
+      {...register("standardSize", {
+        onChange: (e) => {
+          const [width, height] = e.target.value.split("X");
+          setValue("width", width.trim());
+          setValue("height", height.trim());
+        },
+      })}
+      className="w-full p-2 border rounded"
+    >
+      <option value="" disabled selected>--Select Size--</option>
+      <option value="60 X 6.4">60M X 6.4M</option>
+      <option value="35 X 7">35M X 7M</option>
+      <option value="33 X 7">33M X 7M</option>
+      <option value="8.32 X 6.4">8.32 X 6.4M</option>
+      <option value="18 X 14">18M X 14M</option>
+    </FormSelect>
+  </div>
+)}
+
+{/* Custom input for width and height */}
+{formData.dimension === "Custom" && (
+  <div className="col-span-12 flex space-x-2">
+    <div className="w-1/2">
+      <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="width">
+        Width (Mt)
+      </FormLabel>
+      <FormInput
+        formInputSize="lg"
+        id="width"
+        type="text"
+        placeholder="Width"
+        {...register("width")}
+        className="p-2 border rounded"
+      />
+    </div>
+    <div className="w-1/2">
+      <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="height">
+        Height (Mt)
+      </FormLabel>
+      <FormInput
+        formInputSize="lg"
+        id="height"
+        type="text"
+        placeholder="Height"
+        {...register("height")}
+        className="p-2 border rounded"
+      />
+    </div>
+  </div>
+)}
+
+  
               {/* Number of Slots for Digital FormSelection only*/}
 
               {(formData.billboardType === "digital" ||
@@ -705,7 +841,7 @@ console.log(formData);
               </div>
 
               {/* active status */}
-              <div className="col-span-12">
+              {/* <div className="col-span-12">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
                   htmlFor="activeStatus"
@@ -731,7 +867,7 @@ console.log(formData);
                     {errors.activeStatus.message?.toString()}
                   </p>
                 )}
-              </div>
+              </div> */}
 
               {/* board orientation */}
               <div className="col-span-12">
@@ -753,6 +889,7 @@ console.log(formData);
                 >
                   <option value="landscape">Landscape</option>
                   <option value="portrait">Portrait</option>
+                  <option value="cube">Cube</option>
                 </FormSelect>
                 {errors.orientation && (
                   <p className="text-red-500">

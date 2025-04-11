@@ -428,7 +428,7 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
 
               {/* brand_industry */}
                 <div className="col-span-12">
-                    <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="brand_industry">brand_industry</FormLabel>
+                    <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="brand_industry">brand industry</FormLabel>
                     <FormSelect
                     formSelectSize="lg"
 
@@ -441,9 +441,35 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
                     
                     className="w-full "
                     >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="under_maintenance">Under Maintenance</option>
+                   
+                      <option disabled value="">--Select--</option>
+                      <option value="advertising">Advertising</option>
+<option value="agriculture">Agriculture</option>
+<option value="automobile">Automobile</option>
+<option value="automotive">Automotive</option>
+<option value="aviation_and_travel">Aviation & Travel</option>
+<option value="banking_and_fintech">Banking & Finance, Fin-Tech</option>
+<option value="construction">Construction</option>
+<option value="ecommerce">E-commerce</option>
+<option value="education">Education</option>
+<option value="energy">Energy</option>
+<option value="entertainment">Entertainment</option>
+<option value="fashion">Fashion</option>
+<option value="finance">Finance</option>
+<option value="food">Food</option>
+<option value="health">Health</option>
+<option value="hospitality">Hospitality</option>
+<option value="insurance">Insurance</option>
+<option value="logistics">Logistics</option>
+<option value="media">Media</option>
+<option value="public_sector_and_government_agencies">Public Sector & Government Agencies</option>
+<option value="real_estate">Real Estate & Infrastructure</option>
+<option value="retail_and_FMCG">Retail & FMCG</option>
+<option value="sports">Sports</option>
+<option value="technology">Technology</option>
+<option value="telecom">Telecom</option>
+<option value="travel">Travel</option>
+
                     </FormSelect>
                     {errors.brand_industry && ( <p className="text-red-500">{errors.brand_industry.message?.toString()}</p>)}
                 </div>

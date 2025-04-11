@@ -153,11 +153,23 @@ const ChangeStatusModal: React.FC<BillboardCreationModalProps> = ({
                   })}
                   className="w-full p-2 border rounded-lg py-3.5"
                 >
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  {/* <option value="paid">Paid</option> */}
-                  <option value="delivered">Delivered</option>
+                  {/* disable all status if campaign.status is 'frozen' */}
+                  
+                  <option value="" selected  disabled>
+                   --Select Status--
+                  </option>
+                 
+                  <option value="pending" disabled={campaign.status === "frozen"}>
+                    Pending
+                  </option>
+                  <option value="approved" disabled={campaign.status === "frozen"}>
+                    Approved
+                  </option>
+                  <option value="delivered" disabled={campaign.status === "frozen"}>
+                    Delivered
+                  </option>
 
+                 
                 </FormSelect>
                 {errors.status && (
                   <p className="text-red-500">

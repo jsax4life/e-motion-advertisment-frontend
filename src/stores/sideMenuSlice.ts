@@ -18,7 +18,7 @@ export interface SideMenuState {
 const initialState: SideMenuState = {
   menu: [
     {
-      icon: "LayoutDashboard",
+      icon: "LayoutDashboardIcon",
       pathname: "/dashboard",
       title: "Dashboard",
 
@@ -26,24 +26,24 @@ const initialState: SideMenuState = {
     },
 
     {
-      icon: "Book",
+      icon: "BarChart2Icon",
       title: "Campaigns",
       subMenu: [
         {
-          icon: "Book",
+          icon: "ShoppingBagIcon",
           pathname: "/orders",
           title: "Orders",
         },
     
       
         {
-          icon: "Book",
+          icon: "CalendarIcon",
           pathname: "#",
           title: "Calendar",    
         },
      
         {
-          icon: "Book",
+          icon: "TruckIcon",
           pathname: "/delivered-campaigns",
           title: "Delivered",
         },
@@ -51,7 +51,7 @@ const initialState: SideMenuState = {
     },
 
     {
-      icon: "Users",
+      icon: "UserCircleIcon",
       pathname: "/clients",
       title: "Client",
 
@@ -59,22 +59,29 @@ const initialState: SideMenuState = {
 
 
     {
-      icon: "Tv2",
+      icon: "BriefcaseBusinessIcon",
       pathname: "/billboards",
       title: "Billboards",
 
     },
     {
-      icon: "DollarSign",
+      icon: "WalletIcon",
       pathname: "/finance",
       title: "Finance",
 
     },
 
     {
-      icon: "User",
+      icon: "UsersIcon",
       pathname: "/users",
       title: "Users",
+
+    },
+
+    {
+      icon: "ShieldCheckIcon",
+      pathname: "/role-management",
+      title: "Role Management",
 
     },
 
@@ -132,3 +139,5 @@ export const sideMenuSlice = createSlice({
 export const selectSideMenu = (state: RootState) => state.sideMenu.menu;
 
 export default sideMenuSlice.reducer;
+
+

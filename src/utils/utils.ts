@@ -63,4 +63,12 @@ const calculateNumberOfDays = (
     return Math.ceil(timeDifference / (1000 * 3600 * 24)); // Convert milliseconds to days
   };
 
-export { formatCurrency, getOS, formatDate, calculateNumberOfDays };
+  import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+const cn = (...inputs: ClassValue[]) => {
+  return twMerge(clsx(inputs));
+}
+
+
+export { formatCurrency, getOS, formatDate, calculateNumberOfDays, cn };

@@ -31,6 +31,15 @@ import ChangeFinanceStatusModal from "../../pages/Finance/ChangeStatusModal";
 
 import toast from "react-hot-toast";
 
+// different background colors for different status
+const statusColors = {
+  pending: "bg-yellow-500",
+  approved: "bg-green-500",
+  paid: "bg-blue-500",
+  delivered: "bg-purple-500",
+  frozen: "bg-red-500",
+};
+
 
 export default function DeliveredCampaignDetails({ section }: { section: string }) {
   const { user } = useContext(UserContext);
@@ -259,7 +268,9 @@ const location = useLocation();
           <div className=" hidden mr-auto md:block capitalize">
             <div className="flex justify-center items-center">
             <h2 className="mr-5 text-3xl font-bold truncate ">{campaign?.campaign_name}</h2>
-            <div className="w-2 h-2 border rounded-full bg-green-400 mr-2"></div>
+            <div className={`w-2 h-2 border rounded-full 
+            ${statusColors[campaign?.status as keyof typeof statusColors] || "bg-gray-100"}  mr-2`}></div>
+            
             <div className="font-normal text-sm"> {campaign?.status}</div>
             </div>
             <Breadcrumb

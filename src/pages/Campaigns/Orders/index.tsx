@@ -169,42 +169,86 @@ export default function Main() {
     );
   };
 
-  const handleAddOrder = (data: any) => {
+  const handleAddOrder = (data: any, fileForm: any) => {
     console.log(data);
+    console.log(fileForm);
     // setIsModalOpen(false);
     setLoading(true);
+   
+
+  
 
     API(
       "post",
-      `campaign-orders`,
+      `upload-purchase-order`,
 
-      data,
-      function (reponse: any) {
-        console.log(reponse);
-        setOrderList((prev) => [reponse.data, ...prev]);
-        setLoading(false);
-        setIsModalOpen(false);
+  fileForm,
+      function (res: any) {
+          // Expecting a response with path or filename
+          const uploadedFilePath = res.path || res.filename;
+          console.log(uploadedFilePath);
+  
+          // STEP 2: Submit full order with the uploaded file path
+          const fullPayload = {
+            ...data,
+            media_purchase_order: uploadedFilePath,
+            
+          };
 
-        setLoading(false);
-        const successEl = document
-          .querySelectorAll("#success-notification-content")[0]
-          .cloneNode(true) as HTMLElement;
+          API(
+            "post",
+            `campaign-orders`,
+      
+            fullPayload,
+            function (reponse: any) {
+              console.log(reponse);
+              setOrderList((prev) => [reponse.data, ...prev]);
+              setLoading(false);
+              setIsModalOpen(false);
+      
+              setLoading(false);
+              const successEl = document
+                .querySelectorAll("#success-notification-content")[0]
+                .cloneNode(true) as HTMLElement;
+      
+              successEl.classList.remove("hidden");
+              Toastify({
+                node: successEl,
+                duration: 8000,
+                newWindow: true,
+                close: true,
+                gravity: "top",
+                position: "right",
+                stopOnFocus: true,
+              }).showToast();
+            },
+      
+            function (error: any) {
+              alert("Erro submitting order" + error);
+              setLoading(false);
+      
+              setErrorMessage(error);
+              const failedEl = document
+                .querySelectorAll("#failed-notification-content")[0]
+                .cloneNode(true) as HTMLElement;
+              failedEl.classList.remove("hidden");
+              Toastify({
+                node: failedEl,
+                duration: 8000,
+                newWindow: true,
+                close: true,
+                gravity: "top",
+                position: "right",
+                stopOnFocus: true,
+              }).showToast();
+            },
+            user?.token && user.token
+          );
 
-        successEl.classList.remove("hidden");
-        Toastify({
-          node: successEl,
-          duration: 8000,
-          newWindow: true,
-          close: true,
-          gravity: "top",
-          position: "right",
-          stopOnFocus: true,
-        }).showToast();
-        // console.log(responseData);
       },
 
       function (error: any) {
-        console.error("Error fetching recent searches:", error);
+        alert("File upload failed: " + error);
         setLoading(false);
 
         setErrorMessage(error);
@@ -225,6 +269,9 @@ export default function Main() {
       user?.token && user.token
     );
     // Call your API to add a new billboard here
+
+
+    
   };
 
  
