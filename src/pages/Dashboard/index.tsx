@@ -31,7 +31,8 @@ import axios from "axios";
 import Breadcrumb from "../../base-components/Breadcrumb";
 import clsx from "clsx";
 import Tippy from "../../base-components/Tippy";
-import TopClient from "./TopClient";
+import AnalyticsCard from "./AnalyticsCard";
+import Analytics from "./Analytics/Analytics";
 
 interface Change {
   original: string | number | null;
@@ -86,7 +87,6 @@ const lagosLGAs = [
 function Main() {
   const { user } = useContext(UserContext);
   const [openModal, setOpenModal] = useState(false);
-  const [parks, setParks] = useState<{ code: string, desc: string }[]>([]); // Updated to include parkDesc
 
   const [dateRange, setDateRange] = useState<string>("");
   const [startDate, setStartDate] = useState<string>("");
@@ -98,16 +98,9 @@ function Main() {
   const [userList, setUserList] = useState<any[]>([]);
 
   const [dashboardData, setDashboardData] = useState<any>(null);
-  const [loadingKpiData, setLoadingKpiData] = useState(true);
-  const [loadingActivityData, setLoadingActivityData] = useState(true);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
-  const [kpiData, setKpiData] = useState<any>(null);
-  const [activitylogs, setActiviyLogs] = useState([]);
-  const [datepickerModalPreview, setDatepickerModalPreview] = useState(false);
-  const [lgaModal, setLGAModal] = useState(false);
-  const [tempSelectedLGA, setTempSelectedLGA] = useState("");
   const [activeFilter, setActiveFilter] = useState<"State" | "Status" | "Orientation" | "Type">(
     "State"
   );
@@ -123,7 +116,6 @@ const [dailyReveneModal, setDailyReveneModal] = useState(false);
   useEffect(() => {
     if (user?.token) {
       fetchDashboardData();
-      fetchKPIData();
       fetchAllUsers();
     }
   }, [user?.token]);
@@ -139,47 +131,6 @@ const [dailyReveneModal, setDailyReveneModal] = useState(false);
     fetchDashboardData();
   }, [dateRange, selectedLGA, selectedPark, selectedUser]);
 
-  // useEffect(() => {
-  //   if (user?.token) {
-  //     fetchKPIData();
-  //   }
-  // }, [user?.token]);
-
-  useEffect(() => {
-    fetchActivityLogs();
-  }, []);
-
-  useEffect(() => {
-   
-  
-    const validatePack = async () => {
-      try {
-        const response = await axios.post('https://api.lagroute.org/validattion/sa.getpark.php', {
-          PassKey: `9c83a5d9-56f0-11ef-8aae-f23c93600e21`,
-          type: 'A'
-        }, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          }
-        });
-  
-        // console.log('Responses:', response.data.data);
-  
-        if (Array.isArray(response?.data?.data)) {
-          setParks(response?.data?.data);
-          console.log(response.data.data)
-          // localStorage.setItem('parks', response?.data?.data)
-        } else {
-          console.error('Unexpected response format:', response.data);
-        }
-      } catch (error) {
-        console.error('Error making request:', error);
-      }
-    };
-  
-    validatePack();
-  }, []);
-  
 
 
   const fetchAllUsers = () => {
@@ -294,55 +245,7 @@ const [dailyReveneModal, setDailyReveneModal] = useState(false);
     // Update your data or perform actions here
   };
 
-  const fetchKPIData = () => {
-    setError("");
 
-    setLoadingKpiData(true);
-
-    API(
-      "get",
-      `registration-kpi`,
-      {},
-
-      function (response: any) {
-        setKpiData(response);
-
-        console.log(response);
-        setLoadingKpiData(false);
-      },
-      function (error: any) {
-        console.error("Error fetching recent searches:", error);
-        setLoadingKpiData(false);
-      },
-      user?.token && user.token
-    );
-  };
-
-  const fetchActivityLogs = () => {
-    setError("");
-
-    console.log("hello");
-
-    setLoadingActivityData(true);
-
-    API(
-      "get",
-      "activity-logs",
-      {},
-
-      function (response: any) {
-        setActiviyLogs(response);
-
-        console.log(response);
-        setLoadingActivityData(false);
-      },
-      function (error: any) {
-        console.error("Error fetching recent searches:", error);
-        setLoadingActivityData(false);
-      },
-      user?.token && user.token
-    );
-  };
 
   // useEffect(() => {
   //   if (user?.token) {
@@ -357,24 +260,16 @@ const [dailyReveneModal, setDailyReveneModal] = useState(false);
 
   const fetchDashboardData = () => {
     setLoadingAnalytics(true);
-    const [startDate, endDate] = dateRange?.split(" - ") || [null, null];
 
     setError("");
 
-    const params: any = {};
-    if (selectedLGA) params.lga = selectedLGA;
-    if (startDate && endDate) {
-      params.start_date = startDate.trim();
-      params.end_date = endDate.trim();
-    }
-    if (selectedUser) params.user = selectedUser;
-    if (selectedPark) params.park = selectedPark;
 
     API(
       "get",
-      `dashboard-analytics`,
-      params,
+      `analytics`,
+      {},
       function (dashboardData: any) {
+        console.log(dashboardData)
         setDashboardData(dashboardData);
         setLoadingAnalytics(false);
       },
@@ -390,161 +285,11 @@ const [dailyReveneModal, setDailyReveneModal] = useState(false);
     setDailyReveneModal(false);
     seTotalReveneModal(false);
   };
-  // const formatChanges = (changes: Changes): string => {
-  //   let formattedChanges = '';
-
-  //   Object.entries(changes).forEach(([section, fields]) => {
-  //     Object.entries(fields).forEach(([field, values]) => {
-  //       if (field !== 'updated_at') { // Optional: skip 'updated_at' field
-  //         formattedChanges += `${section.toUpperCase()} - ${field}: ${values.original} -> ${values.updated}\n`;
-  //       }
-  //     });
-  //   });
-
-  //   return formattedChanges;
-  // };
-
-  // const formatChanges = (changes: string): JSX.Element => {
-  //   const changeElements: JSX.Element[] = [];
-
-  //   try {
-  //     // Parse the changes JSON string into an object
-  //     const parsedChanges: Changes = JSON.parse(changes);
-
-  //     // Iterate over the parsed object
-  //     Object.entries(parsedChanges).forEach(([section, fields]) => {
-  //       if (fields && typeof fields === 'object') {
-  //         Object.entries(fields).forEach(([field, values]) => {
-  //           if (values && typeof values === 'object' && 'original' in values && 'updated' in values) {
-  //             if (field !== 'updated_at') { // Optional: skip 'updated_at' field
-  //               changeElements.push(
-  //                 <div key={`${section}-${field}`} className=" inline-flex items-center   text-xs  truncate">
-  //                   <span className="">
-  //                     {section.toUpperCase()} - {field}: {values.original} -{">"} {values.updated}
-  //                   </span>
-  //                   <span
-  //                     className='bg-orange-600 h-1.5 w-1.5 rounded-full inline-block mx-2'
-  //                     aria-hidden="true"
-  //                   />
-  //                 </div>
-  //               );
-  //             }
-  //           }
-  //         });
-  //       }
-  //     });
-  //   } catch (error) {
-  //     console.error('Error parsing changes:', error);
-  //   }
-
-  //   return <>{changeElements}</>;
-  // };
-
-  const formatChanges = (changes: string | null | undefined): JSX.Element => {
-    const changeElements: JSX.Element[] = [];
-
-    // Check if changes is a valid non-empty string
-    if (typeof changes !== "string" || changes.trim() === "") {
-      console.error("Invalid changes input: The input is not a valid string.");
-      return <>{changeElements}</>; // Return empty if input is invalid
-    }
-
-    try {
-      // Parse the changes JSON string into an object
-      const parsedChanges: Changes = JSON.parse(changes);
-
-      // Iterate over the parsed object
-      Object.entries(parsedChanges).forEach(([section, fields]) => {
-        if (fields && typeof fields === "object") {
-          Object.entries(fields).forEach(([field, values]) => {
-            if (
-              values &&
-              typeof values === "object" &&
-              "original" in values &&
-              "updated" in values
-            ) {
-              if (field !== "updated_at") {
-                // Optional: skip 'updated_at' field
-                changeElements.push(
-                  <div
-                    key={`${section}-${field}`}
-                    className=" inline-flex items-center   text-xs  truncate"
-                  >
-                    <span className="">
-                      {section.toUpperCase()} - {field}: {values.original} -
-                      {">"} {values.updated}
-                    </span>
-                    <span
-                      className="bg-orange-600 h-1.5 w-1.5 rounded-full inline-block mx-2"
-                      aria-hidden="true"
-                    />
-                  </div>
-                );
-              }
-            }
-          });
-        }
-      });
-    } catch (error) {
-      console.error("Error parsing changes:", error);
-    }
-
-    return <>{changeElements}</>;
-  };
-
-  // const formatChanges = (changes: string): JSX.Element => {
-  //   const changeElements: JSX.Element[] = [];
-
-  //   try {
-  //     const parsedChanges: Changes = JSON.parse(changes);
-
-  //     Object.entries(parsedChanges).forEach(([section, fields]) => {
-  //       if (fields && typeof fields === 'object') {
-  //         Object.entries(fields).forEach(([field, values]) => {
-  //           if (values && typeof values === 'object' && 'original' in values && 'updated' in values) {
-  //             if (field !== 'updated_at') { // Optional: skip 'updated_at' field
-  //               changeElements.push(
-  //                 <div key={`${section}-${field}`}>
-  //                   {section.toUpperCase()} - {field}: {values.original}
-  //                   <span className='bg-orange-600 h-1.5 w-1.5 rounded-full inline-block mx-2' aria-hidden="true" />
-  //                   {values.updated}
-  //                 </div>
-  //               );
-  //             }
-  //           }
-  //         });
-  //       }
-  //     });
-  //   } catch (error) {
-  //     console.error('Error parsing changes:', error);
-  //   }
-
-  //   return <>{changeElements}</>;
-  // };
 
 
+ const {occupancy, revenue, top_billboards, top_campaigns, top_clients} = dashboardData?? {}
   
-//   const revenueBreakdown = ({ numberOfRegistrations}: any ) => {
-//     const companySharePerVehicle = 5000;
-//     const motSharePerVehicle = 1000;
-  
-  
-  
-//     // Calculate the breakdown
-//     const companyTotal = numberOfRegistrations * companySharePerVehicle;
-//     const motTotal = numberOfRegistrations * motSharePerVehicle;
-
-//     const revenueDailyShare = {
-//       dailySiitechRevenue: companyTotal? companyTotal : 0,
-//       dailMoTRevenue: motTotal? motTotal : 0,
-//     }
-  
-//     if (!companyTotal || isNaN(companyTotal)) {
-//       revenueDailyShare.dailySiitechRevenue = 0;
-//       revenueDailyShare.dailMoTRevenue = 0;
-//     }
-  
-
+console.log(occupancy)
 
 // return revenueDailyShare;
     
@@ -723,132 +468,7 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
     </Dialog>
     }
 
-{monthlyReveneModal && <Dialog
-      open={monthlyReveneModal}
-      onClose={() => {handleClose}}
-      initialFocus={sendButtonRef}
-      className="flex place-self-center lg:items-center lg:justify-center "
-    >
-      <Dialog.Panel className="relative">
-        <Dialog.Title>
 
-       <button className="absolute right-4 top-4"
-       onClick={() => seTotalReveneModal(false)}
-       >
-       <Lucide
-                icon= "X"
-                className="w-4 h-4  "
-              />
-       </button>
-
-          <div className="flex flex-col gap-y-2">
-     
-           <div className="justify-center items-center flex">
-           <div className="bg-customColor/20 fill-customColor text-customColor mr-2 rounded-lg p-2">
-              <Lucide
-                icon= "Banknote"
-                className="w-5 h-5"
-              />
-             
-            </div>
-            <div className="">
-              <h2 className="mr-auto text-slate-600 font-bold">
-                
-                 Total Revenue Distribution
-                
-              </h2>
-              <p className="text-xs text-slate-500">
-               Breakdown of revenue sharing with specific date.
-                
-              </p>
-            </div>
-           </div>
-           <div>
-       <FilterChips
-          selectedRole=""
-          selectedStatus=""
-            dateRange={dateRange}
-            selectedUser={selectedUser}
-            onRemoveFilter={handleRemoveFilter}
-          />
-       </div>
-          </div>
-        </Dialog.Title>
-
-        <Dialog.Description className="grid grid-cols-12 gap-4 gap-y-3">
-         
-            <div className="col-span-12 p-4 cursor-pointer   rounded-xl  flex  items-center justify-between box ">
-            <div className="flex">
-            <div
-                className={`  rounded-md  bg-blue-500 w-5 h-5 mr-4`}
-              >
-            
-              </div>
-              <div>Administrator</div>
-            </div>
-
-              <div className="font-bold text-lg">
-                
-
-{loadingAnalytics ? (
-                    <div className="flex flex-col items-center justify-end col-span-6 sm:col-span-3 xl:col-span-2">
-                      <LoadingIcon icon="three-dots" className="w-6 h-6" />
-                    </div>
-                  ) :  (`N ${formatCurrency (revenueBreakdown({ numberOfRegistrations: dashboardData?.total_registered_vehicles || 0 }).dailySiitechRevenue)}`)
-              }
-
-                      </div>
-              </div>
-
-          
-              <div className="col-span-12 p-4 cursor-pointer   rounded-xl py-5 flex  items-center justify-between box ">
-            <div className="flex">
-            <div
-                className={`  rounded-md  bg-customColor w-5 h-5 mr-4`}
-              >
-            
-              </div>
-              <div>Remittance</div>
-            </div>
-
-              <div className="font-bold text-lg">
-                
-
-{loadingAnalytics ? (
-                    <div className="flex flex-col items-center justify-end col-span-6 sm:col-span-3 xl:col-span-2">
-                      <LoadingIcon icon="three-dots" className="w-6 h-6" />
-                    </div>
-                  ) :  (`N ${formatCurrency (revenueBreakdown({ numberOfRegistrations: dashboardData?.total_registered_vehicles || 0 }).dailMoTRevenue)}`)
-              }
-
-                      </div>
-              </div>
-        </Dialog.Description>
-
-        <Dialog.Footer className="text-right">
-          {/* <Button
-            type="button"
-            variant="outline-secondary"
-            onClick={handleClose}
-            className="w-20 mr-1 border-customColor text-customColor"
-          >
-            Cancel
-          </Button> */}
-          {/* <Button
-            variant="primary"
-            type="button"
-            className="lg:w-25 bg-customColor"
-            ref={sendButtonRef}
-            onClick={
-              activeFilter === "LGA"
-            }
-          >
-            Apply Filter
-          </Button> */}
-        </Dialog.Footer>
-      </Dialog.Panel>
-    </Dialog>
-    }
 
       <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 lg:mt-0 intro-y   py-8  ">
         <div className="col-span-12 justify-end items-start flex  intro-y sm:flex">
@@ -975,9 +595,10 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
           </Menu>
         </div>
 
-      
+        <Analytics title="Revenue"  item1Name={'upfront'} item2Name={'postpaid'} item3Name={'total'} item1Data={`₦${formatCurrency(revenue?.upfront)}`} item2Data={`₦${formatCurrency(revenue?.postpaid)}`} item3Data={`₦${formatCurrency(revenue?.total)}`} iconBgColor1={'bg-blue-500'} iconBgColor2={'bg-pink-400'} iconBgColor3={'bg-green-400'}/>  
+        <Analytics title="Occupancy"  item1Name={'vacant'} item2Name={'occupied'} item3Name={'total'}  item1Data={occupancy?.vacant} item2Data={occupancy?.occupied}  item3Data={occupancy?.total}  iconBgColor1={'bg-purple-500'} iconBgColor2={'bg-yellow-500'} iconBgColor3={'bg-pink-400'}/>  
 
-        <div className="col-span-12 intro-y lg:col-span-8">
+        {/* <div className="col-span-12 intro-y lg:col-span-8">
           <div className="grid grid-cols-12 gap-6 mt-5 lg:mt-0">
             <DashboardCard
               count={dashboardData?.daily_registered_vehicles}
@@ -1028,7 +649,7 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
               laadingCount={loadingAnalytics}
             />
           </div>
-        </div>
+        </div> */}
 
         <div className=" flex flex-col col-span-12 justify-center items-center lg:col-span-4 gap-y-4 bg-white border-slate-300  rounded-2xl">
           {/* <div className="flex flex-col flex-cols-12  lg:mt-0 justify-center items-center"> */}
@@ -1066,15 +687,31 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
             </div>
 
 
+            {/* <Progress className="h-1 mt-2">
+
+<Progress.Bar
+  className="bg-customColor"
+  role="progressbar"
+  aria-valuenow={kpiData?.percentage_achieved}
+  aria-valuemin={0}
+  aria-valuemax={100}
+  style={{ width: `${kpiData?.percentage_achieved}%` }}
+></Progress.Bar>
+
+</Progress> */}
 
 <div className="relative size-40 " onClick = {() => setDailyReveneModal(true)}>
-  <svg className="rotate-[135deg] size-full rounded-full bg-green-100" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+  {/* <svg className="rotate-[135deg] size-full rounded-full bg-green-100" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
 
     <circle cx="18" cy="18" r="17" fill="none" className="stroke-current text-green-500 dark:text-green-500" stroke-width="2" stroke-dasharray="56.25 100" stroke-linecap="round"></circle>
-  </svg>
+  </svg> */}
+
+  <svg className="rotate-[135deg] size-full rounded-full bg-green-100" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="18" cy="18" r="17" fill="none" className="stroke-current text-green-500 dark:text-green-500" stroke-width="2" stroke-dasharray={`${occupancy?.occupancy_percentage} ${100 - occupancy?.occupancy_percentage}`} stroke-linecap="round"></circle>
+</svg>
 
   <div className="absolute top-1/2 start-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-  <span className="text-center text-4xl font-bold text-green-600 dark:text-green-500">35%</span>
+  <span className="text-center text-4xl font-bold text-green-600 dark:text-green-500">{occupancy?.occupancy_percentage}%</span>
 
   </div>
 </div>
@@ -1086,12 +723,48 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
       <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 intro-y">
                 
 
-<TopClient title="Top Client"/>  
-<TopClient title="Top Performing Billboard"/>
-<TopClient title="Top Campaigns"/>
+{/* <TopAnalytics title="Top Client" itemData={top_clients}/>   */}
+<AnalyticsCard
+  title="Top Clients"
+  itemData={top_clients?.map((client: { id: any; company_name: any; logo: any; campaign_order_sum_total_order_amount: any; campaign_order_count: any; }) => ({
+    id: client.id,
+    name: client.company_name,
+    image: client.logo,
+    value: `₦${formatCurrency(client.campaign_order_sum_total_order_amount)}`,
+    secondaryValue: `${client.campaign_order_count}`,
+  }))}
+  valueLabel="Total spent"
+  secondaryValueLabel="Campaigns"
+/>
+
+<AnalyticsCard
+  title="Top Billboards"
+  itemData={top_billboards?.map((billboard: { id: any; billboard: { billboardName: any; pricePerMonth: any; presigned_picture_url:any }; usage_count: any; } ) => ({
+    id: billboard.id,
+    name: billboard.billboard.billboardName,
+    value: `₦${formatCurrency (billboard.billboard.pricePerMonth)} `,
+    secondaryValue: `${billboard.usage_count}`,
+    image: billboard.billboard.presigned_picture_url
+  }))}
+  valueLabel="Impressions"
+  secondaryValueLabel="Usage"
+/>
+{/* <TopAnalytics title="Top Performing Billboard" itemData={top_billboards}/>
+<TopAnalytics title="Top Campaigns" itemData={top_campaigns}/> */}
 
 
-
+<AnalyticsCard
+  title="Top Campaigns"
+  itemData={top_campaigns?.map((campaign: { id: any; campaign_name: any; presigned_image_url: any; total_order_amount: any; ctr: any; }) => ({
+    id: campaign.id,
+    name: campaign.campaign_name,
+    image: campaign?.presigned_image_url?.[0],
+    value: `₦${formatCurrency(campaign.total_order_amount)}`,
+    secondaryValue: ``,
+  }))}
+  valueLabel="Conversions"
+  secondaryValueLabel=""
+/>
 
       </div>
     </>

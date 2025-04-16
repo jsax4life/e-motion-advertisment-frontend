@@ -398,7 +398,10 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       ...orderDetails,
       billboards,
       // media_purchase_order: mediaPurchaseOrder,
-      total_order_amount : billboards.reduce((acc, item) => acc + item.actual_amount, 0),
+      // total_order_amount : billboards.reduce((acc, item) => acc + item.actual_amount, 0),
+      total_order_amount: parseFloat(
+        billboards.reduce((acc, item) => acc + item.actual_amount, 0).toFixed(2)
+      )
     };
 
         // Submit the order
