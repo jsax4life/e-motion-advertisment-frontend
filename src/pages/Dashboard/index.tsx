@@ -33,6 +33,7 @@ import clsx from "clsx";
 import Tippy from "../../base-components/Tippy";
 import AnalyticsCard from "./AnalyticsCard";
 import Analytics from "./Analytics/Analytics";
+import { ErpDashboardOld } from "./ErpDashboardOld";
 
 interface Change {
   original: string | number | null;
@@ -288,6 +289,18 @@ const [dailyReveneModal, setDailyReveneModal] = useState(false);
 
 
  const {occupancy, revenue, top_billboards, top_campaigns, top_clients} = dashboardData?? {}
+
+ const itemData = {
+  postpaid: revenue?.postpaid,
+  total_billboard_space: occupancy?.total,
+  vacant_billboard_space: occupancy?.vacant,
+  occupied_billboards: occupancy?.occupied,
+
+total_revenue: revenue?.total,
+upfront: revenue?.upfront,
+occupancy_percentage: occupancy?.occupancy_percentage
+
+ }
   
 console.log(occupancy)
 
@@ -471,7 +484,7 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
 
 
       <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 lg:mt-0 intro-y   py-8  ">
-        <div className="col-span-12 justify-end items-start flex  intro-y sm:flex">
+        <div className="col-span-12 justify-end items-start flex  intro-y ">
        
       <div className=" hidden mr-auto md:block">
               <h2 className="mr-5 text-3xl font-bold truncate">
@@ -594,9 +607,10 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
            
           </Menu>
         </div>
-
-        <Analytics title="Revenue"  item1Name={'upfront'} item2Name={'postpaid'} item3Name={'total'} item1Data={`₦${formatCurrency(revenue?.upfront)}`} item2Data={`₦${formatCurrency(revenue?.postpaid)}`} item3Data={`₦${formatCurrency(revenue?.total)}`} iconBgColor1={'bg-blue-500'} iconBgColor2={'bg-pink-400'} iconBgColor3={'bg-green-400'}/>  
-        <Analytics title="Occupancy"  item1Name={'vacant'} item2Name={'occupied'} item3Name={'total'}  item1Data={occupancy?.vacant} item2Data={occupancy?.occupied}  item3Data={occupancy?.total}  iconBgColor1={'bg-purple-500'} iconBgColor2={'bg-yellow-500'} iconBgColor3={'bg-pink-400'}/>  
+    
+<ErpDashboardOld top_billboards={top_billboards} top_campaigns={top_campaigns} top_clients={top_clients} itemData={itemData}/>
+        {/* <Analytics title="Revenue"  item1Name={'upfront'} item2Name={'postpaid'} item3Name={'total'} item1Data={`₦${formatCurrency(revenue?.upfront)}`} item2Data={`₦${formatCurrency(revenue?.postpaid)}`} item3Data={`₦${formatCurrency(revenue?.total)}`} iconBgColor1={'bg-blue-500'} iconBgColor2={'bg-pink-400'} iconBgColor3={'bg-green-400'}/>  
+        <Analytics title="Occupancy"  item1Name={'vacant'} item2Name={'occupied'} item3Name={'total'}  item1Data={occupancy?.vacant} item2Data={occupancy?.occupied}  item3Data={occupancy?.total}  iconBgColor1={'bg-purple-500'} iconBgColor2={'bg-yellow-500'} iconBgColor3={'bg-pink-400'}/>   */}
 
         {/* <div className="col-span-12 intro-y lg:col-span-8">
           <div className="grid grid-cols-12 gap-6 mt-5 lg:mt-0">
@@ -651,60 +665,17 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
           </div>
         </div> */}
 
-        <div className=" flex flex-col col-span-12 justify-center items-center lg:col-span-4 gap-y-4 bg-white border-slate-300  rounded-2xl">
-          {/* <div className="flex flex-col flex-cols-12  lg:mt-0 justify-center items-center"> */}
-            {/* <div onClick={() => setDailyReveneModal(true)} className="col-span-12 p-4 cursor-pointer  shadow-lg rounded-xl bg-white py-5 zoom-in flex" >
-              <div
-                className={`flex mr-4 items-center justify-center rounded-md  bg-green-200 w-10 h-10`}
-              >
-                <Lucide
-                  icon="Banknote"
-                  fill="green"
-                  className={`p-1 w-[40px] h-[38px] text-green-300`}
-                />
-              </div>
-              <div>
-                <div className="text-base font-medium ">
-                
-
-{loadingAnalytics ? (
-                    <div className="flex flex-col items-center justify-end col-span-6 sm:col-span-3 xl:col-span-2">
-                      <LoadingIcon icon="three-dots" className="w-6 h-6" />
-                    </div>
-                  ) : (
-                    `N ${formatCurrency(
-                      dashboardData?.daily_registered_vehicles * 6000
-                      )}`
-                  )}
-                </div>
-                <div className="text-slate-500 text-xs">
-                  Daily Registration Fee
-                </div>
-              </div>
-            </div> */}
+        {/* <div className=" flex flex-col col-span-12 justify-center items-center lg:col-span-4 gap-y-4 bg-white border-slate-300  rounded-2xl">
+         
             <div>
               Occupancy
             </div>
 
 
-            {/* <Progress className="h-1 mt-2">
-
-<Progress.Bar
-  className="bg-customColor"
-  role="progressbar"
-  aria-valuenow={kpiData?.percentage_achieved}
-  aria-valuemin={0}
-  aria-valuemax={100}
-  style={{ width: `${kpiData?.percentage_achieved}%` }}
-></Progress.Bar>
-
-</Progress> */}
+         
 
 <div className="relative size-40 " onClick = {() => setDailyReveneModal(true)}>
-  {/* <svg className="rotate-[135deg] size-full rounded-full bg-green-100" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
-
-    <circle cx="18" cy="18" r="17" fill="none" className="stroke-current text-green-500 dark:text-green-500" stroke-width="2" stroke-dasharray="56.25 100" stroke-linecap="round"></circle>
-  </svg> */}
+ 
 
   <svg className="rotate-[135deg] size-full rounded-full bg-green-100" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
     <circle cx="18" cy="18" r="17" fill="none" className="stroke-current text-green-500 dark:text-green-500" stroke-width="2" stroke-dasharray={`${occupancy?.occupancy_percentage} ${100 - occupancy?.occupancy_percentage}`} stroke-linecap="round"></circle>
@@ -716,57 +687,10 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
   </div>
 </div>
     
-          {/* </div> */}
-        </div>
+        </div> */}
       </div>
 
-      <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 intro-y">
-                
-
-{/* <TopAnalytics title="Top Client" itemData={top_clients}/>   */}
-<AnalyticsCard
-  title="Top Clients"
-  itemData={top_clients?.map((client: { id: any; company_name: any; logo: any; campaign_order_sum_total_order_amount: any; campaign_order_count: any; }) => ({
-    id: client.id,
-    name: client.company_name,
-    image: client.logo,
-    value: `₦${formatCurrency(client.campaign_order_sum_total_order_amount)}`,
-    secondaryValue: `${client.campaign_order_count}`,
-  }))}
-  valueLabel="Total spent"
-  secondaryValueLabel="Campaigns"
-/>
-
-<AnalyticsCard
-  title="Top Billboards"
-  itemData={top_billboards?.map((billboard: { id: any; billboard: { billboardName: any; pricePerMonth: any; presigned_picture_url:any }; usage_count: any; } ) => ({
-    id: billboard.id,
-    name: billboard.billboard.billboardName,
-    value: `₦${formatCurrency (billboard.billboard.pricePerMonth)} `,
-    secondaryValue: `${billboard.usage_count}`,
-    image: billboard.billboard.presigned_picture_url
-  }))}
-  valueLabel="Impressions"
-  secondaryValueLabel="Usage"
-/>
-{/* <TopAnalytics title="Top Performing Billboard" itemData={top_billboards}/>
-<TopAnalytics title="Top Campaigns" itemData={top_campaigns}/> */}
-
-
-<AnalyticsCard
-  title="Top Campaigns"
-  itemData={top_campaigns?.map((campaign: { id: any; campaign_name: any; presigned_image_url: any; total_order_amount: any; ctr: any; }) => ({
-    id: campaign.id,
-    name: campaign.campaign_name,
-    image: campaign?.presigned_image_url?.[0],
-    value: `₦${formatCurrency(campaign.total_order_amount)}`,
-    secondaryValue: ``,
-  }))}
-  valueLabel="Conversions"
-  secondaryValueLabel=""
-/>
-
-      </div>
+   
     </>
   );
 }
