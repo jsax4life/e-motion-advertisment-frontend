@@ -414,7 +414,7 @@ const hideSearchDropdown = () => {
       
   return (
     <>
-       <FilterModal
+       {/* <FilterModal
         open={openModal}
         setOpen={setOpenModal}
         handleFilterChange={handleFilterChange}
@@ -431,7 +431,7 @@ const hideSearchDropdown = () => {
         setActiveFilter={setActiveFilter}
         selectedStatus={selectedStatus}
         setSelectedStatus={setSelectedStatus}
-      />
+      /> */}
       <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 lg:mt-0 intro-y   py-8  ">
         <div className="col-span-12 justify-start items-start flex  intro-y sm:flex">
           {/* <div className='mr-auto'>
@@ -666,14 +666,14 @@ onClick={() => { setOpenModal(true); setActiveFilter("LGA"); }}
     </Menu.Items>
 </Menu>
         
-<FilterChips
+{/* <FilterChips
           selectedRole={selectedRole}
           selectedStatus={selectedStatus}
           
           selectedUser=''
           dateRange={dateRange}
           onRemoveFilter={handleRemoveFilter}
-        />
+        /> */}
 
  
         </div>

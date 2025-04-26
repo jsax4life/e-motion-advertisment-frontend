@@ -25,6 +25,7 @@ const init = (el: HTMLElement, props: TippyContentProps) => {
         {
           name: "preventOverflow",
           options: {
+            
             rootBoundary: "viewport",
           },
         },
@@ -32,7 +33,7 @@ const init = (el: HTMLElement, props: TippyContentProps) => {
     },
     animateFill: false,
     animation: "shift-away",
-    theme: "light",
+    theme: "dark",
     trigger: "click",
     ...props.options,
   });

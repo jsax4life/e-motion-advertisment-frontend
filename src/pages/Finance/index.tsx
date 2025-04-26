@@ -19,6 +19,7 @@ import Breadcrumb from "../../base-components/Breadcrumb";
 import Notification from "../../base-components/Notification";
 import Toastify from "toastify-js";
 import DisplayTable from "./DisplayTable";
+import { OrderOverviewSection } from "./ThreeCards";
 
 
 
@@ -56,7 +57,6 @@ export default function AllCampaigns() {
   const { user } = useContext(UserContext);
   const { campaignDispatch} = useContext(PullCampaignContext)
 
-  const [openModal, setOpenModal] = useState(false);
 
   const [orderList, setOrderList] = useState<any[]>([]);
 
@@ -66,16 +66,14 @@ export default function AllCampaigns() {
 
   const [selectedLGA, setSelectedLGA] = useState<string>("");
   const [selectedUser, setSelectedUser] = useState<string>("");
+  const [anayticsData, setAnalyticsData] = useState<any>(null);
 
-  const [kpiData, setKpiData] = useState(null);
-  const [selectedPark, setSelectedPark] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const [clients, setClients] = useState<Client[]>([]);
-  const [billboards, setBillboards] = useState<AvailableBillboard[]>([]);
 
   const [loading, setLoading] = useState(true);
 
@@ -86,6 +84,7 @@ export default function AllCampaigns() {
   useEffect(() => {
     if (user?.token) {
       fetchOrderData();
+      fetchAnalyticsData();
       // fetchClients();
       // fetchBillboards();
     }
@@ -104,16 +103,15 @@ export default function AllCampaigns() {
       params.end_date = endDate.trim();
     }
     if (selectedUser) params.user = selectedUser;
-    if (selectedPark) params.park = selectedPark;
 
     API(
       "get",
-      `delivered-campaign-orders`,
+      `approved-campaign-orders`,
       params,
       // {lga: 'Alimosho'},
       function (orderData: any) {
         setOrderList(orderData?.data);
-        campaignDispatch({ type: "STORE_CAMPAIGN_DATA", campaign: orderData?.data });
+        // campaignDispatch({ type: "STORE_CAMPAIGN_DATA", campaign: orderData?.data });
         setLoading(false);
         console.log(orderData);
       },
@@ -125,48 +123,42 @@ export default function AllCampaigns() {
     );
   };
 
-  // const fetchClients = () => {
 
-  //   setLoading(true);
-
-  //   API(
-  //     "get",
-  //     `clients-data`,
-  //     {},
-  //     function (data: any) {
-  //       setClients(data?.registered_clients);
-  //       setLoading(false);
-  //       console.log(data);
-  //     },
-
-  //     function (error: any) {
-  //       console.error("Error fetching recent searches:", error);
-  //       setLoading(false);
-  //     },
-  //     user?.token && user.token
-  //   );
-  // };
-
-  // const fetchBillboards = () => {
-
-  //   setLoading(true);
+  const fetchAnalyticsData = () => {
+    const [startDate, endDate] = dateRange?.split(" - ") || [null, null];
 
 
-  //   API(
-  //     "get",
-  //     `billboard-data`,
-  //     {},
-  //     function (data: any) {
-  //       setBillboards(data?.registered_billboards);
-  //       setLoading(false);
-  //     },
-  //     function (error: any) {
-  //       console.error("Error fetching recent searches:", error);
-  //       setLoading(false);
-  //     },
-  //     user?.token && user.token
-  //   );
-  // };
+    setLoadingAnalytics(true);
+
+    setError("");
+
+
+    setError("");
+
+    const params: any = {};
+    if (startDate && endDate) {
+      params.start_date = startDate.trim();
+      params.end_date = endDate.trim();
+    }
+   
+
+    API(
+      "get",
+      `analytics`,
+      params,
+      function (data: any) {
+        console.log(data)
+        setAnalyticsData(data);
+        setLoadingAnalytics(false);
+      },
+      function (error: any) {
+        console.error("Error fetching recent searches:", error);
+        setLoadingAnalytics(false);
+      },
+      user?.token && user.token
+    );
+  };
+
 
   const handleAddOrder = (data: any) => {
     console.log(data);
@@ -226,7 +218,8 @@ export default function AllCampaigns() {
     // Call your API to add a new billboard here
   };
 
- 
+  const {finance_revenue} = anayticsData?? {}
+
 
   return (
     <>
@@ -274,6 +267,15 @@ export default function AllCampaigns() {
             onSubmit={handleAddOrder}
           /> */}
         </div>
+
+
+        <div className="col-span-12  bg-neutralneutral-100-day  intro-y     ">
+     
+            <OrderOverviewSection totalOverdueOrderAmount={finance_revenue?.total_overdue_amount}  totalOverdueOrderCount={finance_revenue?.total_overdue_orders} totalPaidOrderAmount={finance_revenue?.total_paid_amount} totalUnpaidOrderAmount={finance_revenue?.total_unPaid_amount}  />
+
+           
+          </div>
+
 
         <Tab.Group className="col-span-12">
           <div className="  space-x-4 justify-between items-center flex  intro-y   pt-5 lg:pt-2  intro-y ">

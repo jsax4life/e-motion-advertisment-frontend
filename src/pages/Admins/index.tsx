@@ -359,7 +359,7 @@ const hideSearchDropdown = () => {
   return (
     <>
    
-   <FilterModal
+   {/* <FilterModal
         open={openModal}
         setOpen={setOpenModal}
         handleFilterChange={handleFilterChange}
@@ -377,7 +377,7 @@ const hideSearchDropdown = () => {
         setActiveFilter={setActiveFilter}
         selectedStatus={selectedStatus}
         setSelectedStatus={setSelectedStatus}
-      />
+      /> */}
   
     <div className="max-w-7xl mx-auto pb-12 lg:pb-0  lg:px-0 lg:mx-0 ">
       <div className="bg-white   px-5 py-6 sm:px-6">
@@ -588,13 +588,13 @@ onClick={() => { setOpenModal(true); setActiveFilter("LGA"); }}
     </Menu.Items>
 </Menu>
         
-<FilterChips
+{/* <FilterChips
           selectedRole={selectedRole}
           selectedStatus={selectedStatus}
           dateRange={dateRange}
           onRemoveFilter={handleRemoveFilter}
           selectedUser=''
-        />
+        /> */}
             
           </div>
         </div>

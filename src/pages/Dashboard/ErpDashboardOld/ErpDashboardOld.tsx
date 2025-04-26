@@ -2,25 +2,28 @@ import React from "react";
 import { Card, CardContent } from "../../../components/ui/card";
 import { Separator } from "../../../components/ui/separator";
 import { BillboardOverviewSection } from "./sections/BillboardOverviewSection";
-import { ClientsAndBillboardsSection } from "./sections/ClientsAndBillboardsSection";
-import { DashboardMetricsSection } from "./sections/DashboardMetricsSection/DashboardMetricsSection";
-import { FooterSection } from "./sections/FooterSection/FooterSection";
-import { SideNavigationSection } from "./sections/SideNavigationSection";
-import { TopClientsSection } from "./sections/TopClientsSection";
-import { TopNavigationSection } from "./sections/TopNavigationSection";
-import { TopPerformingBillboardsSection } from "./sections/TopPerformingBillboardsSection";
+
 import AnalyticsCard from "../AnalyticsCard";
 import { formatCurrency } from "../../../utils/utils";
 
 
 type BillboardItem = {
-  occupied_billboards: number | string ;
-  postpaid: number ;
-  total_billboard_space: number | string;
-  upfront: number ;
-  vacant_billboard_space: number | string;
-  total_revenue: number,
-  occupancy_percentage: number,
+  occupied_billboards: any ;
+  postpaid: any ;
+  total_billboard_space: any;
+  upfront: any ;
+  vacant_billboard_space: any;
+  total_digital_billboard_available: any;
+  total_static_billboard_available: any;
+
+  total_static_billboard_occupied: any;
+  total_static_billboard_vacant: any;
+
+  total_digital_billboard_occupied: any;
+  total_digital_billboard_vacant: any;
+
+  total_revenue: any,
+  occupancy_percentage: any,
   // Add any other optional fields that might be needed
 }
 
@@ -45,7 +48,7 @@ export const ErpDashboardOld = ({ top_clients, top_billboards, top_campaigns, it
 
           {/* Billboard Overview Section */}
           <div className="flex flex-col gap-6 w-full">
-            <BillboardOverviewSection occupiedBillboards={itemData.occupied_billboards} postpaid={itemData.postpaid} totalBillboardSpace={itemData.total_billboard_space} totalRevenue={itemData.total_revenue} upfront={itemData.upfront} vacantBillboardSpace={itemData.vacant_billboard_space} occupancyPercentage={itemData.occupancy_percentage}/>
+            <BillboardOverviewSection totalBillboardSpace={itemData.total_billboard_space} totaldBillboardOccupied={itemData.occupied_billboards} totalBillboardVacant={itemData.vacant_billboard_space} totalStaticOccupied={itemData.total_static_billboard_occupied}  totalDigitalOccupied={itemData.total_digital_billboard_occupied} totalStaticVacant={itemData.total_static_billboard_vacant}  totalDigitalVacant={itemData.total_digital_billboard_vacant} postpaid={itemData.postpaid}  totalRevenue={itemData.total_revenue} upfront={itemData.upfront}  occupancyPercentage={itemData.occupancy_percentage}  totalDigitalAvailable={itemData.total_digital_billboard_available} totalStaticAvailable={itemData.total_static_billboard_available} />
 
             {/* Three Column Layout */}
           

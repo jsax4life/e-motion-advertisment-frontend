@@ -27,8 +27,8 @@ interface FilterModalProps {
   setEndDate: (date: string) => void;
   selectedUser: string;
   setSelectedUser:  (user: string) => void;
-  activeFilter: "State" | "Status" | "Orientation" | "Type";
-  setActiveFilter: (filter: "State" | "Status" | "Orientation" | "Type") => void;
+  activeFilter: "Date" | "Status" | "Orientation" | "Type";
+  setActiveFilter: (filter: "Date" | "Status" | "Orientation" | "Type") => void;
 }
 
 const FilterModal: React.FC<FilterModalProps> = ({
@@ -105,8 +105,8 @@ const FilterModal: React.FC<FilterModalProps> = ({
             <div className="bg-customColor/20 fill-customColor text-customColor mr-2 rounded-lg p-2">
               <Lucide
                 icon={
-                  activeFilter === "State"
-                    ? "Home"
+                activeFilter === "Date" 
+                  ? "Calendar" 
                     : activeFilter === "Status"
                     ? "Car"
                     : activeFilter === "Orientation" 
@@ -119,8 +119,8 @@ const FilterModal: React.FC<FilterModalProps> = ({
             </div>
             <div className="">
               <h2 className="mr-auto text-slate-600 font-bold">
-                {activeFilter === "State"
-                  ? "Local Government Area (LGA)"
+                {activeFilter === "Date"
+                  ? "Date Range"
                   : activeFilter === "Status"
                   ? "Car Park"
                   : activeFilter === "Orientation"
@@ -128,8 +128,8 @@ const FilterModal: React.FC<FilterModalProps> = ({
                   : "Date Range"}
               </h2>
               <p className="text-xs text-slate-500">
-                {activeFilter === "State"
-                  ? "Choose an LGA to filter"
+                {activeFilter === "Date"
+                  ? "Select a date range"
                   : activeFilter === "Status"
                   ? "Choose a Car Park to filter"
                   : activeFilter === "Type"
@@ -141,29 +141,52 @@ const FilterModal: React.FC<FilterModalProps> = ({
         </Dialog.Title>
 
         <Dialog.Description className="grid grid-cols-12 gap-4 gap-y-3">
-          {activeFilter === "Type" ? (
-            <div className="col-span-12 ">
-              <FormLabel htmlFor="lga">Select User</FormLabel>
-              <FormSelect
-                id="user"
-                className=""
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setTempSelectedUser(value); // Store the selected value temporarily
-                }}
-                value={tempSelectedUser}
-              >
-                <option value="" disabled>
-                  All Users
-                </option>
-                {users.map((user, index) => (
-                  <option key={index} value={user?.name}>
-                    {user?.name}
-                  </option>
-                ))}
-              </FormSelect>
-            </div>
-          ) : (
+          {activeFilter === "Date" ? (
+            <>
+              <div className="col-span-12 relative">
+                <FormLabel htmlFor="modal-datepicker-1">Start Date</FormLabel>
+                <Litepicker
+                  id="modal-datepicker-1"
+                  value={tempStartDate}
+                  onChange={setTempStartDate}
+                  options={{
+                    autoApply: false,
+                    showWeekNumbers: true,
+                    dropdowns: {
+                      minYear: 1990,
+                      maxYear: null,
+                      months: true,
+                      years: true,
+                    },
+                  }}
+                />
+                <div className="absolute flex items-center justify-center w-8 h-8 right-0 bottom-1 text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+                  <Lucide icon="Calendar" className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="col-span-12 relative ">
+                <FormLabel htmlFor="modal-datepicker-2">End Date</FormLabel>
+                <Litepicker
+                  id="modal-datepicker-2"
+                  value={tempEndDate}
+                  onChange={setTempEndDate}
+                  options={{
+                    autoApply: false,
+                    showWeekNumbers: true,
+                    dropdowns: {
+                      minYear: 1990,
+                      maxYear: null,
+                      months: true,
+                      years: true,
+                    },
+                  }}
+                />
+                <div className="absolute flex items-center justify-center w-8 h-8 right-0 bottom-1 text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+                  <Lucide icon="Calendar" className="w-4 h-4" />
+                </div>
+              </div>
+            </>
+          )  : (
             <>
               <div className="col-span-12 relative">
                 <FormLabel htmlFor="modal-datepicker-1">Start Date</FormLabel>
@@ -226,8 +249,8 @@ const FilterModal: React.FC<FilterModalProps> = ({
             className="lg:w-25 bg-customColor"
             ref={sendButtonRef}
             onClick={
-              activeFilter === "State"
-              ? applyLGAFilter
+              activeFilter === "Date"
+              ? applyDateFilter
               : activeFilter === "Status"
               ? applyCarParkFilter
               : activeFilter === "Orientation"

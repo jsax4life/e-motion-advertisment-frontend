@@ -8,7 +8,6 @@ import clsx from "clsx";
 import { useState, useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
-
 import Button from "../../base-components/Button";
 import Pagination from "../../base-components/Pagination";
 import {
@@ -28,7 +27,7 @@ import API from "../../utils/API";
 import { Link, useNavigate } from "react-router-dom";
 import LoadingIcon from "../../base-components/LoadingIcon";
 import FilterChips from "../../components/FilterChips";
-import FilterModal from "../Dashboard/filterModal";
+import FilterModal from "../../components/filterModal";
 import Breadcrumb from "../../base-components/Breadcrumb";
 import BillboardCreationModal from "./BillboardCreationModal";
 import Notification from "../../base-components/Notification";
@@ -37,38 +36,30 @@ import { PullBillboardContext } from "../../stores/BillboardDataContext";
 import ChangeStatusModal from "./ChangeStatusModal";
 import { formatCurrency } from "../../utils/utils";
 
-const lagosLGAs = [
-  "Agege",
-  "Ajeromi-Ifelodun",
-  "Alimosho",
-  "Amuwo-Odofin",
-  "Apapa",
-  "Badagry",
-  "Epe",
-  "Eti-Osa",
-  "Ibeju-Lekki",
-  "Ifako-Ijaiye",
-  "Ikeja",
-  "Ikorodu",
-  "Kosofe",
-  "Lagos Island",
-  "Lagos Mainland",
-  "Mushin",
-  "Ojo",
-  "Oshodi-Isolo",
-  "Shomolu",
-  "Surulere",
-];
+const locations = [
+  "Abia", "Adamawa", "AkwaIbom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
+  "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa",
+  "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger",
+  "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
+]
 
+const billboard_types  =[
+  "Digital",
+  "Static",
+  "Bespoke",
+]
 
+const orientations = [
+  "Landscape",
+  "Portrait",
+  "Cube",
+]
 
-const lagosParks = [
-  "Agege Park",
-  "Alimosho Park",
-  "Apapa Park",
-  "Badagry Park",
-  "Epe Park",
-];
+const statuses = [
+  'Active',
+  "Inactive",
+  "Under Maintenance",
+]
 
 
 
@@ -87,10 +78,12 @@ export default function Main() {
   const [endDate, setEndDate] = useState<string>("");
   const [userList, setUserList] = useState<any[]>([]);
 
-  const [selectedLGA, setSelectedLGA] = useState<string>("");
-  const [selectedUser, setSelectedUser] = useState<string>("");
+  const [selectedOrientation, setSelectedOrientation] = useState<string>("");
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [selectedLocation, setSelectedLocation] = useState<string>("");
 
-  const [selectedPark, setSelectedPark] = useState<string>("");
+  const [selectedBillboardType, setSelectedBillboardType] =
+    useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isStatusModalOpen, setStatusModalOpen] = useState(false);
 
@@ -99,10 +92,16 @@ export default function Main() {
   const [error, setError] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [datepickerModalPreview, setDatepickerModalPreview] = useState(false);
+
   const [activeFilter, setActiveFilter] = useState<
-    "State" | "Status" | "Orientation" | "Type"
-  >("State");
+    | "Location"
+    | "Date"
+    | "Industry"
+    | "ClientType"
+    | "Orientation"
+    | "BillboardType"
+    | "Status"
+  >("Location");
   const cancelButtonRef = useRef(null);
   const isInitialMount = useRef(true);
 
@@ -115,7 +114,7 @@ export default function Main() {
       isInitialMount.current = false;
       // console.log('true')
 
-      setDateRange("");
+      
       const userListFromLocalStorage = localStorage.getItem("userList");
       setUserList(
         userListFromLocalStorage ? JSON.parse(userListFromLocalStorage) : []
@@ -123,29 +122,27 @@ export default function Main() {
       return;
     }
 
-    fetchDashboardData();
-  }, [dateRange, selectedLGA, selectedPark, selectedUser]);
+    fetchBillboardData();
+  }, [user?.token]);
 
   useEffect(() => {
     if (user?.token) {
-      fetchDashboardData();
+      fetchBillboardData();
     }
-  }, [user?.token]);
+  }, [user?.token, selectedBillboardType, selectedOrientation, selectedStatus, selectedLocation]);
 
-  const fetchDashboardData = () => {
-    const [startDate, endDate] = dateRange?.split(" - ") || [null, null];
+  const fetchBillboardData = () => {
 
     setError("");
     setLoading(true);
 
     const params: any = {};
-    if (selectedLGA) params.lga = selectedLGA;
-    if (startDate && endDate) {
-      params.start_date = startDate.trim();
-      params.end_date = endDate.trim();
-    }
-    if (selectedUser) params.user = selectedUser;
-    if (selectedPark) params.park = selectedPark;
+    if (selectedBillboardType) params.billboardType = selectedBillboardType;
+    
+    if (selectedOrientation) params.orientation = selectedOrientation;
+    if (selectedStatus) params.status = selectedStatus;
+    if (selectedLocation) params.location = selectedLocation;
+
 
     API(
       "get",
@@ -154,7 +151,10 @@ export default function Main() {
       // {lga: 'Alimosho'},
       function (bbListData: any) {
         setBillboardList(bbListData.registered_billboards);
-        billboardDispatch({ type: "STORE_BILLBOARD_DATA", billboard: bbListData.registered_billboards });
+        billboardDispatch({
+          type: "STORE_BILLBOARD_DATA",
+          billboard: bbListData.registered_billboards,
+        });
         setLoading(false);
         console.log(bbListData);
       },
@@ -175,29 +175,28 @@ export default function Main() {
       "post",
       `create-billboard`,
 
-      {...data},
+      { ...data },
       function (reponse: any) {
         console.log(reponse);
-        setBillboardList((prev) => [ reponse.data, ...prev]);
+        setBillboardList((prev) => [reponse.data, ...prev]);
         setLoading(false);
         setIsModalOpen(false);
 
-
         setLoading(false);
         const successEl = document
-        .querySelectorAll("#success-notification-content")[0]
-        .cloneNode(true) as HTMLElement;
-  
-      successEl.classList.remove("hidden");
-      Toastify({
-        node: successEl,
-        duration: 8000,
-        newWindow: true,
-        close: true,
-        gravity: "top",
-        position: "right",
-        stopOnFocus: true,
-      }).showToast();
+          .querySelectorAll("#success-notification-content")[0]
+          .cloneNode(true) as HTMLElement;
+
+        successEl.classList.remove("hidden");
+        Toastify({
+          node: successEl,
+          duration: 8000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
         // console.log(responseData);
       },
 
@@ -205,31 +204,30 @@ export default function Main() {
         console.error("Error fetching recent searches:", error);
         setLoading(false);
 
-
         setErrorMessage(error);
         const failedEl = document
-        .querySelectorAll("#failed-notification-content")[0]
-        .cloneNode(true) as HTMLElement;
-      failedEl.classList.remove("hidden");
-      Toastify({
-        node: failedEl,
-        duration: 8000,
-        newWindow: true,
-        close: true,
-        gravity: "top",
-        position: "right",
-        stopOnFocus: true,
-      }).showToast();
+          .querySelectorAll("#failed-notification-content")[0]
+          .cloneNode(true) as HTMLElement;
+        failedEl.classList.remove("hidden");
+        Toastify({
+          node: failedEl,
+          duration: 8000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
       },
       user?.token && user.token
     );
     // Call your API to add a new billboard here
   };
 
-const handleChangeStatusClick = (billboard: any) => {
+  const handleChangeStatusClick = (billboard: any) => {
     setSelectedBillboard(billboard);
-    setStatusModalOpen(true)
-}
+    setStatusModalOpen(true);
+  };
   const handleUpdateBillboardStatus = (data: any) => {
     console.log(data);
     // setIsModalOpen(false);
@@ -245,7 +243,6 @@ const handleChangeStatusClick = (billboard: any) => {
         setLoading(false);
         setStatusModalOpen(false);
 
-
         setLoading(false);
         toast.success("Status updated successfully");
       },
@@ -254,10 +251,8 @@ const handleChangeStatusClick = (billboard: any) => {
         console.error("Error fetching recent searches:", error);
         setLoading(false);
 
-
         setErrorMessage(error);
-        toast.error(error)
-     
+        toast.error(error);
       },
       user?.token && user.token
     );
@@ -266,15 +261,15 @@ const handleChangeStatusClick = (billboard: any) => {
 
   // Function to handle removing filters
   const handleRemoveFilter = (filter: string) => {
-    if (filter === "State") {
-      setSelectedLGA("");
+    if (filter === "Location") {
+      setSelectedLocation("");
     } else if (filter === "Status") {
-      setSelectedPark("");
+      setSelectedStatus("");
     } else if (filter === "Orientation") {
-      setDateRange("");
-    } else if (filter === "Type") {
-      setSelectedUser("");
-    }
+      setSelectedOrientation("");
+    } else if (filter === "BillboardType") {
+      setSelectedBillboardType("");
+    } 
 
     // Optionally update your data based on the filters being removed
   };
@@ -282,24 +277,24 @@ const handleChangeStatusClick = (billboard: any) => {
   // Function to handle filter changes
   const handleFilterChange = (filter: string, value: string) => {
     const newFilters = {
-      lga: selectedLGA,
-      park: selectedPark,
-      date: dateRange,
-      user: selectedUser,
+      orientation: selectedOrientation,
+      location: selectedLocation,
+      status: selectedStatus,
+      billboardType: selectedBillboardType,
     };
 
-    if (filter === "State") {
-      setSelectedLGA(value);
-      newFilters.lga = value;
+    if (filter === "Location") {
+      setSelectedLocation(value);
+      newFilters.location = value;
     } else if (filter === "Status") {
-      setSelectedPark(value);
-      newFilters.park = value;
+      setSelectedStatus(value);
+      newFilters.status = value;
     } else if (filter === "Orientation") {
-      setDateRange(value);
-      newFilters.date = value;
-    } else if (filter === "Type") {
-      setSelectedUser(value);
-      newFilters.user = value;
+      setSelectedOrientation(value);
+      newFilters.orientation = value;
+    } else if (filter === "BillboardType") {
+      setSelectedBillboardType(value);
+      newFilters.billboardType = value;
     }
 
     // Call any logic to update data based on the new filters
@@ -314,19 +309,37 @@ const handleChangeStatusClick = (billboard: any) => {
         open={openModal}
         setOpen={setOpenModal}
         handleFilterChange={handleFilterChange}
-        selectedLGA={selectedLGA}
-        setSelectedLGA={setSelectedLGA}
-        selectedCarPark={selectedPark}
-        setSelectedCarPark={setSelectedPark}
+       
+
+        setSelectedBillboardType={setSelectedBillboardType}
+        setSelectedOrientation={setSelectedOrientation}
+        setSelectedStatus={setSelectedStatus}
+        setSelectedLocation={setSelectedLocation}
+
         startDate={startDate}
         setStartDate={setStartDate}
         endDate={endDate}
         setEndDate={setEndDate}
         activeFilter={activeFilter}
         setActiveFilter={setActiveFilter}
-        selectedUser={selectedUser}
-        setSelectedUser={setSelectedUser}
-        users={userList}
+        clientTypes={[]}
+        industries={[]}
+        setSelectedClientType={() => {}}
+        setSelectedIndustry={() => {}}
+        selectedClientType={""}
+        selectedIndustry={""}
+
+        selectedBillboardType={selectedBillboardType}
+        selectedOrientation={selectedOrientation}
+        selectedStatus={selectedStatus}
+        selectedLocation={selectedLocation}
+
+
+        billboardTypes={billboard_types}
+        orientations={orientations}
+        statuses={statuses}
+        locations={locations}
+
       />
 
       <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 lg:mt-0 intro-y   py-8  ">
@@ -352,9 +365,8 @@ const handleChangeStatusClick = (billboard: any) => {
           </div>
 
           <Button
-           
-           onClick={() => setIsModalOpen(true)}
-           className="mr-2 flex  justify-center items-center font-medium shadow-sm bg-customColor rounded-lg px-4 py-2 text-white text-sm"
+            onClick={() => setIsModalOpen(true)}
+            className="mr-2 flex  justify-center items-center font-medium shadow-sm bg-customColor rounded-lg px-4 py-2 text-white text-sm"
           >
             <Lucide icon="Plus" className="w-5 h-5 mr-2 " /> New Billboard
           </Button>
@@ -364,19 +376,19 @@ const handleChangeStatusClick = (billboard: any) => {
           </Button>
 
           <BillboardCreationModal
-        isOpen={isModalOpen}
-        isLoading={loading}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleAddBillboard}
-      />
+            isOpen={isModalOpen}
+            isLoading={loading}
+            onClose={() => setIsModalOpen(false)}
+            onSubmit={handleAddBillboard}
+          />
 
-<ChangeStatusModal
-        isOpen={isStatusModalOpen}
-        billboard={selectedBillboard}
-        isLoading={loading}
-        onClose={() => setStatusModalOpen(false)}
-        onSubmit={handleUpdateBillboardStatus}
-      />
+          <ChangeStatusModal
+            isOpen={isStatusModalOpen}
+            billboard={selectedBillboard}
+            isLoading={loading}
+            onClose={() => setStatusModalOpen(false)}
+            onSubmit={handleUpdateBillboardStatus}
+          />
         </div>
 
         <div className="col-span-12 justify-start items-center flex  intro-y sm:flex ">
@@ -389,10 +401,8 @@ const handleChangeStatusClick = (billboard: any) => {
             <Lucide
               icon="Search"
               className="absolute inset-y-0 left-4 w-6 h-6 my-auto mr-3 text-slate-300 dark:text-slate-500"
-              />
+            />
           </div>
-
-        
 
           <Menu className="text-xs mr-2 border rounded-lg border-customColor">
             <Menu.Button as={Button} className=" text-customColor text-[16px]">
@@ -414,11 +424,11 @@ const handleChangeStatusClick = (billboard: any) => {
               <Menu.Item
                 onClick={() => {
                   setOpenModal(true);
-                  setActiveFilter("State");
+                  setActiveFilter("BillboardType");
                 }}
               >
                 <Lucide icon="Home" className="w-4 h-4 mr-2" />
-                State
+                Billboard Type
                 <Lucide icon="ChevronRight" className="w-4 h-4 ml-auto" />
               </Menu.Item>
 
@@ -449,148 +459,33 @@ const handleChangeStatusClick = (billboard: any) => {
                 // onClick={() => setShowLgaSubMenu(!showLgaSubMenu)}
                 onClick={() => {
                   setOpenModal(true);
-                  setActiveFilter("Type");
+                  setActiveFilter("Location");
                 }}
               >
                 <Lucide icon="Type" className="w-4 h-4 mr-2" />
-                Type
+                Location
                 <Lucide icon="ChevronRight" className="w-4 h-4 ml-auto" />
               </Menu.Item>
             </Menu.Items>
           </Menu>
 
+         
           <FilterChips
-                  selectedRole=""
-                  selectedStatus=""
+                 selectedLocation={selectedLocation}
+                  selectedIndustry={""}
                   dateRange={dateRange}
-                  selectedUser={selectedUser}
+                  selectedClientType={""}
+                  selectedBillboardType={selectedBillboardType}
+                  selectedOrientation={selectedOrientation}
+                  selectedStatus={selectedStatus}
+
                   onRemoveFilter={handleRemoveFilter}
                 />
-
- 
         </div>
 
         <div className="col-span-12 border rounded-2xl  bg-white   px-5  sm:px-6 intro-y">
-
-         
-
           <div className="grid grid-cols-12 gap-6 ">
-            {/* <div className="col-span-12 intro-y text-black  bg-white  lg:px-0">
-              <div className="flex flex-col lg:flex-row w-full gap-y-2 text-primary items-center space-x-3">
-                {datepickerModalPreview && (
-                  <Dialog
-                    open={datepickerModalPreview}
-                    onClose={() => {
-                      setDatepickerModalPreview(false);
-                    }}
-                    initialFocus={cancelButtonRef}
-                    className="flex place-self-center lg:items-center lg:justify-center  "
-                  >
-                    <Dialog.Panel
-                      className=""
-                    >
-                      <Dialog.Title>
-                        <div className="flex justify-center items-center">
-                          <div className="bg-customColor/20 fill-customColor text-customColor mr-2 rounded-lg p-1.5">
-                            <Lucide icon="Calendar" className="w-6 h-6 " />
-                          </div>
-                          <div className="">
-                            <h2 className="mr-auto text-slate-600 font-bold">
-                              Date Range
-                            </h2>
-                            <p className="text-xs">
-                              Choose a date range to filter
-                            </p>
-                          </div>
-                        </div>
-                      </Dialog.Title>
-                
-                      <Dialog.Description className="grid grid-cols-12 gap-x gap-y-6">
-                        <div className="col-span-12 relative">
-                          <FormLabel htmlFor="modal-datepicker-1">
-                            Start Date
-                          </FormLabel>
-                          <Litepicker
-                            id="modal-datepicker-1"
-                            value={startDate}
-                            onChange={setStartDate}
-                            options={{
-                              autoApply: false,
-                              showWeekNumbers: true,
-                              dropdowns: {
-                                minYear: 1990,
-                                maxYear: null,
-                                months: true,
-                                years: true,
-                              },
-                            }}
-                          />
-                          <div className="absolute flex items-center justify-center w-8  h-8 right-0 bottom-1  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
-                            <Lucide icon="Calendar" className="w-4 h-4" />
-                          </div>
-                        </div>
-                        <div className="col-span-12 relative ">
-                          <FormLabel htmlFor="modal-datepicker-2">
-                            End Date
-                          </FormLabel>
-                          <Litepicker
-                            id="modal-datepicker-2"
-                            value={endDate}
-                            onChange={setEndDate}
-                            options={{
-                              autoApply: false,
-                              showWeekNumbers: true,
-                              dropdowns: {
-                                minYear: 1990,
-                                maxYear: null,
-                                months: true,
-                                years: true,
-                              },
-                            }}
-                          />
-
-                          <div className="absolute flex items-center justify-center w-8  h-8 right-0 bottom-1  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
-                            <Lucide icon="Calendar" className="w-4 h-4" />
-                          </div>
-                        </div>
-                      </Dialog.Description>
-                  
-                      <Dialog.Footer className="text-right">
-                        <Button
-                          variant="outline-secondary"
-                          type="button"
-                          onClick={() => {
-                            setDatepickerModalPreview(false);
-                          }}
-                          className="w-20 mr-1"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          // variant="primary"
-                          type="button"
-                          className="w-autos bg-customColor text-secondary"
-                          ref={cancelButtonRef}
-                          onClick={() => {
-                            setDateRange(`${startDate}-${endDate}`);
-                  
-                            handleFilterChange(
-                              "Date",
-                              `${startDate} - ${endDate}`
-                            );
-                            setDatepickerModalPreview(false);
-                          }}
-                        >
-                          Apply Filter
-                        </Button>
-                      </Dialog.Footer>
-                    </Dialog.Panel>
-                  </Dialog>
-                )}
-
           
-              </div>
-            </div> */}
 
             {/* Data List or Loading Indicator */}
             {loading ? (
@@ -608,9 +503,7 @@ const handleChangeStatusClick = (billboard: any) => {
                 <Table className="border-spacing-y-[8px] border-separate ">
                   <Table.Thead className=" lg:h-10 text-slate-400">
                     <Table.Tr>
-                      <Table.Th className="   whitespace-nowrap">
-                        S/N
-                      </Table.Th>
+                      <Table.Th className="   whitespace-nowrap">S/N</Table.Th>
                       <Table.Th className="   whitespace-nowrap">
                         BILLBOARD NAME
                       </Table.Th>
@@ -623,7 +516,7 @@ const handleChangeStatusClick = (billboard: any) => {
                       <Table.Th className="   whitespace-nowrap">
                         STATE
                       </Table.Th>
-                    
+
                       <Table.Th className="text-start    whitespace-nowrap">
                         STATUS
                       </Table.Th>
@@ -638,11 +531,12 @@ const handleChangeStatusClick = (billboard: any) => {
                       </Table.Th>
                     </Table.Tr>
                   </Table.Thead>
-                  <Table.Tbody
-                  className=''
-                  >
+                  <Table.Tbody className="">
                     {billboardList.map(
-                      (billboard: any, billboardKey: any | null | undefined) => (
+                      (
+                        billboard: any,
+                        billboardKey: any | null | undefined
+                      ) => (
                         <Table.Tr
                           key={billboardKey}
                           className="intro-x text-black capitalize"
@@ -680,7 +574,7 @@ const handleChangeStatusClick = (billboard: any) => {
                             </div>
                           </Table.Td> */}
 
-<Table.Td className="first:rounded-l-md last:rounded-r-md bg-white  dark:bg-darkmode-600 border-slate-200 border-b">
+                          <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white  dark:bg-darkmode-600 border-slate-200 border-b">
                             <>
                               <div className="whitespace-nowrap">
                                 {billboard?.billboardName}
@@ -688,11 +582,11 @@ const handleChangeStatusClick = (billboard: any) => {
                             </>
                           </Table.Td>
 
-                          
                           <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                             <>
                               <div className=" whitespace-nowrap">
-                              &#x20A6;{formatCurrency(billboard?.pricePerMonth)}
+                                &#x20A6;
+                                {formatCurrency(billboard?.pricePerMonth)}
                               </div>
                             </>
                           </Table.Td>
@@ -704,16 +598,16 @@ const handleChangeStatusClick = (billboard: any) => {
                             </>
                           </Table.Td>
                           <Table.Td className="first:rounded-l-md last:rounded-r-md w-40  bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
-                            <div className="">
-                              {billboard.state}
-                            </div>
+                            <div className="">{billboard.state}</div>
                           </Table.Td>
 
                           <Table.Td className="first:rounded-l-md last:rounded-r-md text-start bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                             <span
                               className={`items-center  lg:py-1  text-xs font-medium uppercase ${
-                                billboard?.status == 'active'
-                                  ? "text-green-600" : billboard?.status == 'inactive'? "text-red-600"
+                                billboard?.status == "active"
+                                  ? "text-green-600"
+                                  : billboard?.status == "inactive"
+                                  ? "text-red-600"
                                   : "text-orange-400"
                               }`}
                             >
@@ -722,11 +616,14 @@ const handleChangeStatusClick = (billboard: any) => {
                           </Table.Td>
 
                           <Table.Td className="first:rounded-l-md last:rounded-r-md text-start   dark:bg-darkmode-600 border-slate-200 border-b">
-                          <div className="">
-                              
-                              <span className="mr-1 bg-purple-100 text-indigo-600 px-1">{billboard?.orientation}</span>
+                            <div className="">
+                              <span className="mr-1 bg-purple-100 text-indigo-600 px-1">
+                                {billboard?.orientation}
+                              </span>
 
-                              <span className="bg-blue-100 text-blue-7600 px-1">{billboard?.billboardType}</span>
+                              <span className="bg-blue-100 text-blue-7600 px-1">
+                                {billboard?.billboardType}
+                              </span>
                             </div>
                           </Table.Td>
 
@@ -743,31 +640,53 @@ const handleChangeStatusClick = (billboard: any) => {
                               </button>
                             </div> */}
                             <Menu className="ml-3">
-        <Menu.Button
-        //   tag="p"
-          className="w-5 h-5 text-slate-500"
-        >
-          <Lucide icon="MoreVertical" className="w-5 h-5" />
-        </Menu.Button>
-        <Menu.Items className="w-40">
-        <Menu.Item onClick = {() => {navigate(`/details/${billboard?.id}`)}}>
-            <Lucide icon="Edit2" className="w-4 h-4 mr-2" /> View Details
-          </Menu.Item>
-          <Menu.Item  onClick = {() =>  handleChangeStatusClick(billboard) } >
-            <Lucide icon="Edit2" className="w-4 h-4 mr-2" /> Change Status
-          </Menu.Item>
-          <Menu.Item className="text-red-500">
-            <Lucide icon="Trash" className="w-4 h-4 mr-2 " /> Delete 
-          </Menu.Item>
-        </Menu.Items>
-      </Menu>
+                              <Menu.Button
+                                //   tag="p"
+                                className="w-5 h-5 text-slate-500"
+                              >
+                                <Lucide
+                                  icon="MoreVertical"
+                                  className="w-5 h-5"
+                                />
+                              </Menu.Button>
+                              <Menu.Items className="w-40">
+                                <Menu.Item
+                                  onClick={() => {
+                                    navigate(`/details/${billboard?.id}`);
+                                  }}
+                                >
+                                  <Lucide
+                                    icon="Edit2"
+                                    className="w-4 h-4 mr-2"
+                                  />{" "}
+                                  View Details
+                                </Menu.Item>
+                                <Menu.Item
+                                  onClick={() =>
+                                    handleChangeStatusClick(billboard)
+                                  }
+                                >
+                                  <Lucide
+                                    icon="Edit2"
+                                    className="w-4 h-4 mr-2"
+                                  />{" "}
+                                  Change Status
+                                </Menu.Item>
+                                <Menu.Item className="text-red-500">
+                                  <Lucide
+                                    icon="Trash"
+                                    className="w-4 h-4 mr-2 "
+                                  />{" "}
+                                  Delete
+                                </Menu.Item>
+                              </Menu.Items>
+                            </Menu>
                           </Table.Td>
                         </Table.Tr>
                       )
                     )}
                   </Table.Tbody>
                 </Table>
-
               </div>
             )}
 
@@ -813,33 +732,24 @@ const handleChangeStatusClick = (billboard: any) => {
         </div>
       </div>
 
-
-      <Notification
-              id="success-notification-content"
-              className="flex  "
-            >
-              <Lucide icon="CheckCircle" className="text-success" />
-              <div className="ml-4 mr-4">
-                <div className="font-medium">Billboard Added!</div>
-                <div className="mt-1 text-slate-500">
-                Successfully  added new billboard
-                </div>
-              </div>
-            </Notification>
-            {/* END: Success Notification Content */}
-            {/* BEGIN: Failed Notification Content */}
-            <Notification
-              id="failed-notification-content"
-              className="flex"
-            >
-              <Lucide icon="XCircle" className="text-danger" />
-              <div className="ml-4 mr-4">
-                <div className="font-medium">Failed to Create!</div>
-                <div className="mt-1 text-slate-500">
-                  {errorMessage}
-                </div>
-              </div>
-            </Notification>
+      <Notification id="success-notification-content" className="flex  ">
+        <Lucide icon="CheckCircle" className="text-success" />
+        <div className="ml-4 mr-4">
+          <div className="font-medium">Billboard Added!</div>
+          <div className="mt-1 text-slate-500">
+            Successfully added new billboard
+          </div>
+        </div>
+      </Notification>
+      {/* END: Success Notification Content */}
+      {/* BEGIN: Failed Notification Content */}
+      <Notification id="failed-notification-content" className="flex">
+        <Lucide icon="XCircle" className="text-danger" />
+        <div className="ml-4 mr-4">
+          <div className="font-medium">Failed to Create!</div>
+          <div className="mt-1 text-slate-500">{errorMessage}</div>
+        </div>
+      </Notification>
     </>
   );
 }

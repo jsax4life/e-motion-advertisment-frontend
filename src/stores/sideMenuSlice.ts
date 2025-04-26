@@ -36,11 +36,11 @@ const initialState: SideMenuState = {
         },
     
       
-        {
-          icon: "CalendarIcon",
-          pathname: "#",
-          title: "Calendar",    
-        },
+        // {
+        //   icon: "CalendarIcon",
+        //   pathname: "#",
+        //   title: "Calendar",    
+        // },
      
         {
           icon: "TruckIcon",
@@ -59,7 +59,7 @@ const initialState: SideMenuState = {
 
 
     {
-      icon: "BriefcaseBusinessIcon",
+      icon: "Signpost",
       pathname: "/billboards",
       title: "Billboards",
 

@@ -25,7 +25,7 @@ import API from "../../utils/API";
 import { Link, useNavigate } from "react-router-dom";
 import LoadingIcon from "../../base-components/LoadingIcon";
 import FilterChips from "../../components/FilterChips";
-import FilterModal from "../Dashboard/filterModal";
+import FilterModal from "../../components/filterModal";
 import Breadcrumb from "../../base-components/Breadcrumb";
 import CllientCreationModal from "./ClientCreationModal";
 import Notification from "../../base-components/Notification";
@@ -34,36 +34,47 @@ import DisplaySection from "./DisplayTable";
 import DisplayTable from "./DisplayTable";
 import { PullClientContext } from "../../stores/ClientDataContext";
 
-const lagosLGAs = [
-  "Agege",
-  "Ajeromi-Ifelodun",
-  "Alimosho",
-  "Amuwo-Odofin",
-  "Apapa",
-  "Badagry",
-  "Epe",
-  "Eti-Osa",
-  "Ibeju-Lekki",
-  "Ifako-Ijaiye",
-  "Ikeja",
-  "Ikorodu",
-  "Kosofe",
-  "Lagos Island",
-  "Lagos Mainland",
-  "Mushin",
-  "Ojo",
-  "Oshodi-Isolo",
-  "Shomolu",
-  "Surulere",
+const client_types = [
+  "Direct",
+  "Agency",
+  
 ];
 
-const lagosParks = [
-  "Agege Park",
-  "Alimosho Park",
-  "Apapa Park",
-  "Badagry Park",
-  "Epe Park",
+const industry_types = [
+ "Advertising",
+"Agriculture",
+"Automobile",
+ "Automotive",
+  "Aviation & Travel",
+  "Banking & Finance, Fin-Tech",
+ "Construction",
+  "E-commerce",
+ "Education",
+ "Energy",
+ "Entertainment",
+  "Fashion",
+  "Finance",
+ "Food",
+ "Health",
+ "Hospitality",
+ "Insurance",
+ "Logistics",
+ "Media",
+"Public Sector & Government Agencies",
+  "Real Estate & Infrastructure",
+  "Retail & FMCG",
+ "Sports",
+"Technology",
+ "Telecom",
+  "ravel",
 ];
+
+const locations = [
+  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
+  "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa",
+  "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger",
+  "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
+]
 
 const tagStyle = [
   "bg-orange-100 text-orange-600",
@@ -85,11 +96,11 @@ export default function Main() {
   const [endDate, setEndDate] = useState<string>("");
   const [userList, setUserList] = useState<any[]>([]);
 
-  const [selectedLGA, setSelectedLGA] = useState<string>("");
-  const [selectedUser, setSelectedUser] = useState<string>("");
+  const [selectedClientType, setSelectedClientType] = useState<string>("");
+  const [selectedLocation, setSelectedLocation] = useState<string>("");
 
   const [kpiData, setKpiData] = useState(null);
-  const [selectedPark, setSelectedPark] = useState<string>("");
+  const [selectedIndustry, setSelectedIndustry] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
@@ -97,8 +108,8 @@ export default function Main() {
   const [loading, setLoading] = useState(true);
   const [datepickerModalPreview, setDatepickerModalPreview] = useState(false);
   const [activeFilter, setActiveFilter] = useState<
-    "State" | "Status" | "Orientation" | "Type"
-  >("State");
+    "Location" | "Date" | "Industry" | "ClientType" | "Orientation" | "BillboardType" | "Status"  
+  >("Location");
   const cancelButtonRef = useRef(null);
   const isInitialMount = useRef(true);
 
@@ -111,7 +122,7 @@ export default function Main() {
     if (user?.token) {
       fetchClientData();
     }
-  }, [user?.token]);
+  }, [user?.token, selectedClientType, selectedIndustry, selectedLocation]);
 
   const fetchClientData = () => {
     const [startDate, endDate] = dateRange?.split(" - ") || [null, null];
@@ -120,13 +131,13 @@ export default function Main() {
     setLoading(true);
 
     const params: any = {};
-    if (selectedLGA) params.lga = selectedLGA;
-    if (startDate && endDate) {
-      params.start_date = startDate.trim();
-      params.end_date = endDate.trim();
-    }
-    if (selectedUser) params.user = selectedUser;
-    if (selectedPark) params.park = selectedPark;
+   
+    if (selectedClientType) params.clientType = selectedClientType;
+
+    if (selectedIndustry) params.industry = selectedIndustry;
+    if (selectedLocation) params.location = selectedLocation;
+
+    console.log(params);
 
     API(
       "get",
@@ -211,14 +222,12 @@ export default function Main() {
 
   // Function to handle removing filters
   const handleRemoveFilter = (filter: string) => {
-    if (filter === "State") {
-      setSelectedLGA("");
-    } else if (filter === "Status") {
-      setSelectedPark("");
-    } else if (filter === "Orientation") {
-      setDateRange("");
-    } else if (filter === "Type") {
-      setSelectedUser("");
+    if (filter === "ClientType") {
+      setSelectedClientType("");
+    } else if (filter === "Location") {
+      setSelectedLocation("");
+    } else if (filter === "Industry") {
+      setSelectedIndustry("");
     }
 
     // Optionally update your data based on the filters being removed
@@ -227,24 +236,21 @@ export default function Main() {
   // Function to handle filter changes
   const handleFilterChange = (filter: string, value: string) => {
     const newFilters = {
-      lga: selectedLGA,
-      park: selectedPark,
-      date: dateRange,
-      user: selectedUser,
+      industry: selectedIndustry,
+      location: selectedLocation,
+      clientType: selectedClientType,
     };
 
-    if (filter === "State") {
-      setSelectedLGA(value);
-      newFilters.lga = value;
-    } else if (filter === "Status") {
-      setSelectedPark(value);
-      newFilters.park = value;
-    } else if (filter === "Orientation") {
-      setDateRange(value);
-      newFilters.date = value;
-    } else if (filter === "Type") {
-      setSelectedUser(value);
-      newFilters.user = value;
+    
+    if (filter === "ClientType") {
+      setSelectedClientType(value);
+      newFilters.clientType = value;
+    } else if (filter === "Location") {
+      setSelectedLocation(value);
+      newFilters.location = value;
+    } else if (filter === "Industry") {
+      setSelectedIndustry(value);
+      newFilters.industry = value;
     }
 
     // Call any logic to update data based on the new filters
@@ -259,19 +265,39 @@ export default function Main() {
         open={openModal}
         setOpen={setOpenModal}
         handleFilterChange={handleFilterChange}
-        selectedLGA={selectedLGA}
-        setSelectedLGA={setSelectedLGA}
-        selectedCarPark={selectedPark}
-        setSelectedCarPark={setSelectedPark}
+        selectedClientType={selectedClientType}
+        selectedIndustry={selectedIndustry}
+        selectedLocation={selectedLocation}
+        setSelectedClientType={setSelectedClientType}
+        setSelectedIndustry={setSelectedIndustry}
+        setSelectedLocation={setSelectedLocation}
+
         startDate={startDate}
         setStartDate={setStartDate}
         endDate={endDate}
         setEndDate={setEndDate}
         activeFilter={activeFilter}
         setActiveFilter={setActiveFilter}
-        selectedUser={selectedUser}
-        setSelectedUser={setSelectedUser}
-        users={userList}
+clientTypes={client_types}    
+industries={industry_types}
+locations={locations} 
+
+
+
+selectedBillboardType=""
+selectedOrientation=""
+selectedStatus=""
+
+
+setSelectedBillboardType={() =>{}}
+setSelectedOrientation={() =>{}}
+setSelectedStatus={() =>{}}
+ 
+
+billboardTypes={[]}
+orientations={[]}
+statuses={[]}
+   
       />
 
       <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 lg:mt-0 intro-y   py-8  ">
@@ -348,25 +374,16 @@ export default function Main() {
 
         </Menu.Item> */}
 
-              <Menu.Item
-                onClick={() => {
-                  setOpenModal(true);
-                  setActiveFilter("State");
-                }}
-              >
-                <Lucide icon="Home" className="w-4 h-4 mr-2" />
-                State
-                <Lucide icon="ChevronRight" className="w-4 h-4 ml-auto" />
-              </Menu.Item>
+           
 
               <Menu.Item
                 onClick={() => {
                   setOpenModal(true);
-                  setActiveFilter("Status");
+                  setActiveFilter("Location");
                 }}
               >
                 <Lucide icon="Cloud" className="w-4 h-4 mr-2" />
-                Status
+                Location
                 <Lucide icon="ChevronRight" className="w-4 h-4 ml-auto" />
               </Menu.Item>
 
@@ -374,11 +391,11 @@ export default function Main() {
                 onClick={(event: React.MouseEvent) => {
                   event.preventDefault();
                   setOpenModal(true);
-                  setActiveFilter("Orientation");
+                  setActiveFilter("Industry");
                 }}
               >
                 <Lucide icon="Calendar" className="w-4 h-4 mr-2" />
-                Orientation
+                Industry
                 <Lucide icon="ChevronRight" className="w-4 h-4 ml-auto" />
               </Menu.Item>
 
@@ -386,21 +403,24 @@ export default function Main() {
                 // onClick={() => setShowLgaSubMenu(!showLgaSubMenu)}
                 onClick={() => {
                   setOpenModal(true);
-                  setActiveFilter("Type");
+                  setActiveFilter("ClientType");
                 }}
               >
                 <Lucide icon="Type" className="w-4 h-4 mr-2" />
-                Type
+                Client Type
                 <Lucide icon="ChevronRight" className="w-4 h-4 ml-auto" />
               </Menu.Item>
             </Menu.Items>
           </Menu>
 
           <FilterChips
-                  selectedRole=""
-                  selectedStatus=""
+                 selectedLocation={selectedLocation}
+                  selectedIndustry={selectedIndustry}
                   dateRange={dateRange}
-                  selectedUser={selectedUser}
+                  selectedClientType={selectedClientType}
+                  selectedBillboardType={""}
+                  selectedOrientation={""}
+                  selectedStatus={""}
                   onRemoveFilter={handleRemoveFilter}
                 />
 

@@ -378,9 +378,10 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         !orderDetails.campaign_start_date ||
         !orderDetails.campaign_end_date ||
         !orderDetails.campaign_duration ||
-        billboards.length === 0
+        billboards.length === 0 ||
+        !mediaPurchaseOrder
       ) {
-        alert("No orders to create.");
+        alert("Please fill all order informations");
         return;
       }
 

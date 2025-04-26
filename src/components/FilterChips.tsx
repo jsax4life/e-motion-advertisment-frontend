@@ -5,18 +5,24 @@ import Chip from './Chip';
 
 interface FilterChipsProps {
  
-  selectedRole: string;
+  selectedLocation: string;
+  selectedIndustry: string;
+  selectedClientType: string;
+  selectedOrientation: string;
   selectedStatus: string;
-  selectedUser: string;
+  selectedBillboardType: string;
   dateRange: string;
   onRemoveFilter: (filter: string) => void;
 }
 
 const FilterChips: React.FC<FilterChipsProps> = ({
 
-  selectedRole,
+  selectedLocation,
+  selectedIndustry,
+  selectedClientType,
+  selectedOrientation,
   selectedStatus,
-  selectedUser,
+  selectedBillboardType,
   dateRange,
   onRemoveFilter,
 }) => {
@@ -26,14 +32,23 @@ const FilterChips: React.FC<FilterChipsProps> = ({
       {dateRange && (
         <Chip label={`Date: ${dateRange}`} onDelete={() => onRemoveFilter('Date')} icon={'Calendar'} />
       )}
-      {selectedRole && (
-        <Chip label={`Role: ${selectedRole}`} onDelete={() => onRemoveFilter('Role')} icon={'User'} />
+      {selectedLocation && (
+        <Chip label={`Location: ${selectedLocation}`} onDelete={() => onRemoveFilter('Location')} icon={'User'} />
+      )}
+       {selectedIndustry && (
+        <Chip label={`Industry: ${selectedIndustry}`} onDelete={() => onRemoveFilter('Industry')} icon={'Check'} />
+      )}
+       {selectedClientType && (
+        <Chip label={`Client Type: ${selectedClientType}`} onDelete={() => onRemoveFilter('ClientType')} icon={'User'} />
+      )}
+       {selectedBillboardType && (
+        <Chip label={`Billboard Type: ${selectedBillboardType}`} onDelete={() => onRemoveFilter('BillboardType')} icon={'User'} />
+      )}
+       {selectedOrientation && (
+        <Chip label={`Orientation: ${selectedOrientation}`} onDelete={() => onRemoveFilter('Orientation')} icon={'User'} />
       )}
        {selectedStatus && (
-        <Chip label={`Status: ${selectedStatus}`} onDelete={() => onRemoveFilter('Status')} icon={'Check'} />
-      )}
-       {selectedUser && (
-        <Chip label={`User: ${selectedUser}`} onDelete={() => onRemoveFilter('User')} icon={'User'} />
+        <Chip label={`Status: ${selectedStatus}`} onDelete={() => onRemoveFilter('Status')} icon={'User'} />
       )}
     </div>
   );
