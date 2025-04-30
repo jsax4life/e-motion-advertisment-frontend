@@ -18,11 +18,13 @@ interface FilterModalProps {
 
   locations: any[];
   industries: any[];
+  roles: any[],
   clientTypes: any[];
   statuses: any[];
   orientations: any[];
   billboardTypes: any[];
   selectedIndustry: string,
+  selectedRole: string,
   selectedLocation: string,
   selectedClientType: string,
   selectedStatus: string,
@@ -32,6 +34,7 @@ interface FilterModalProps {
   setSelectedStatus: (status: string) => void,
   setSelectedOrientation: (orientation: string) => void,
   setSelectedBillboardType: (billboardType: string) => void,
+  setSelectedRole:  (role: string) => void,
 
   setSelectedClientType: (clientType: string) => void;
   setSelectedLocation: (location: string) => void;
@@ -41,7 +44,7 @@ interface FilterModalProps {
   setStartDate: (date: string) => void;
   endDate: string;
   setEndDate: (date: string) => void;
-  activeFilter: "Date" | "Location" | "Industry" | "ClientType" | "Orientation" | "BillboardType" | "Status";
+  activeFilter: "Date" | "Location" | "Industry" | "ClientType" | "Orientation" | "BillboardType" | "Status" | "Role"; 
   setActiveFilter: (filter: "Date" | "Location" | "Industry" | "ClientType" | "Orientation" | "BillboardType" | "Status") => void;
 }
 
@@ -53,11 +56,12 @@ const FilterModal: React.FC<FilterModalProps> = ({
   selectedIndustry,
   selectedLocation,
   selectedClientType,
+  selectedRole,
 
   selectedStatus,
   selectedOrientation,
   selectedBillboardType,
-
+  roles,
   locations,
   industries,
   clientTypes,
@@ -65,6 +69,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
   orientations,
   billboardTypes,
   
+  setSelectedRole,
   setSelectedStatus,
   setSelectedOrientation,
   setSelectedBillboardType,
@@ -86,6 +91,9 @@ const FilterModal: React.FC<FilterModalProps> = ({
     useState(selectedIndustry);
     const [tempSelectedStatus, setTempSelectedStatus] =
     useState(selectedStatus);
+    const [tempSelectedRole, setTempSelectedRole] =
+    useState(selectedRole);
+    
     const [tempSelectedOrientation, setTempSelectedOrientation] =
     useState(selectedOrientation);
     const [tempSelectedBillboardType, setTempSelectedBillboardType] =
@@ -143,6 +151,12 @@ const FilterModal: React.FC<FilterModalProps> = ({
       setOpen(false);
     };
     
+    const applyRoleFilter = () => {
+      setSelectedRole(tempSelectedRole);
+      handleFilterChange("Role", tempSelectedRole);
+      setOpen(false);
+    };
+    
 
   // Handle modal close
   const handleClose = () => {
@@ -176,7 +190,9 @@ const FilterModal: React.FC<FilterModalProps> = ({
                     ? "Users" 
                     : activeFilter === "BillboardType"
                     ? "Users" 
-                    : "Users"
+                    : activeFilter === "Role"
+                    ? "User" :
+                    "User"
                 }
                 className="w-5 h-5"
               />
@@ -199,6 +215,8 @@ const FilterModal: React.FC<FilterModalProps> = ({
                   ? "Orientations" 
                   : activeFilter === "BillboardType"
                   ? "All Billboard " 
+                  : activeFilter === "Role"
+                  ? "Roles " 
                 
                   : ""}
               </h2>
@@ -217,6 +235,8 @@ const FilterModal: React.FC<FilterModalProps> = ({
                   ? "Select an orientation type" 
                   : activeFilter === "BillboardType"
                   ? "Choose a billboard type to filter " 
+                  : activeFilter === "Role"
+                  ? "Select a role to filter "
                   : ""}
               </p>
             </div>
@@ -401,6 +421,28 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 ))}
               </FormSelect>
             </div>
+          ) : activeFilter === "Role" ? (
+            <div className="col-span-12 ">
+              <FormLabel htmlFor="industry">Select Role</FormLabel>
+              <FormSelect
+                id="industry"
+                className=""
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setTempSelectedRole(value); // Store the selected value temporarily
+                }}
+                value={tempSelectedRole}
+              >
+                <option value="" disabled>
+                  All Roles
+                </option>
+                {roles.map((role, index) => (
+                  <option key={index} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </FormSelect>
+            </div>
           ) : (
             <>
              
@@ -436,6 +478,8 @@ const FilterModal: React.FC<FilterModalProps> = ({
               : activeFilter === "Status"
               ? applyStatusFilter
               : activeFilter === "BillboardType"
+              ? applyStatusFilter
+              : activeFilter === "Role"
               ? applyBillboardTypeFilter
              
               : () => {}

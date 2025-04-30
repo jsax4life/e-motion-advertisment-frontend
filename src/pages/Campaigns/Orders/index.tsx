@@ -20,6 +20,8 @@ import OrderCreationModal from "./OrderCreationModal";
 import Notification from "../../../base-components/Notification";
 import Toastify from "toastify-js";
 import DisplaySection from "./DisplaySection";
+import FilterChips from "../../../components/FilterChips";
+import OrderFilterModal from "./delivered/OrderFilterModal";
 
 
 
@@ -57,7 +59,7 @@ export default function Main() {
   const { user } = useContext(UserContext);
   const { campaignDispatch} = useContext(PullCampaignContext)
 
-  const [openModal, setOpenModal] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   const [orderList, setOrderList] = useState<any[]>([]);
 
@@ -78,6 +80,14 @@ export default function Main() {
   const [clients, setClients] = useState<Client[]>([]);
   const [billboards, setBillboards] = useState<AvailableBillboard[]>([]);
 
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+
+
+  const [activeFilter, setActiveFilter] = useState<
+    "Date"  
+>("Date");
+
   const [loading, setLoading] = useState(true);
 
   // console.log(vehicleList)
@@ -86,11 +96,18 @@ export default function Main() {
 
   useEffect(() => {
     if (user?.token) {
-      fetchOrderData();
+      // fetchOrderData();
       fetchClients();
       fetchBillboards();
     }
   }, [user?.token]);
+
+  useEffect(() => {
+    if (user?.token) {
+      fetchOrderData();
+      
+    }
+  }, [user?.token, dateRange]);
 
   const fetchOrderData = () => {
     const [startDate, endDate] = dateRange?.split(" - ") || [null, null];
@@ -99,14 +116,11 @@ export default function Main() {
     setLoading(true);
 
     const params: any = {};
-    if (selectedLGA) params.lga = selectedLGA;
     if (startDate && endDate) {
       params.start_date = startDate.trim();
       params.end_date = endDate.trim();
     }
-    if (selectedUser) params.user = selectedUser;
-    if (selectedPark) params.park = selectedPark;
-
+ 
     API(
       "get",
       `campaign-orders`,
@@ -275,9 +289,48 @@ export default function Main() {
   };
 
  
+    // Function to handle filter changes
+    const handleFilterChange = (filter: string, value: string) => {
+      console.log(`Filter Type: ${filter}, Value: ${value}`);
+  
+      const newFilters = {
+        
+        date: dateRange,
+      };
+  
+     if (filter === "Date") {
+        setDateRange(value);
+        newFilters.date = value;
+      }
+  
+      // Call any logic to update data based on the new filters
+      console.log("New Filters:", newFilters);
+  
+      // Update your data or perform actions here
+    };
+
+
+   // Function to handle removing filters
+   const handleRemoveFilter = (filter: string) => {
+    if (filter === "Date") {
+      setDateRange("");
+    } 
+  };
 
   return (
     <>
+        <OrderFilterModal
+        open={isFilterModalOpen}
+        setOpen={setIsFilterModalOpen}
+        handleFilterChange={handleFilterChange}
+        startDate={startDate}
+        setStartDate={setStartDate}
+        endDate={endDate}
+        setEndDate={setEndDate}
+        activeFilter={activeFilter}
+        setActiveFilter={setActiveFilter}
+
+      />
       <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 lg:mt-0 intro-y   py-8  ">
         <div className="col-span-12 justify-start items-start flex  intro-y sm:flex">
           {/* <div className='mr-auto'>
@@ -309,6 +362,14 @@ export default function Main() {
             <Lucide icon="Plus" className="w-5 h-5 mr-2  " /> New Campaign
           </Button>
 
+          <Button
+          
+          onClick={() => setIsFilterModalOpen(true)}
+          className="mr-2 flex  justify-center items-center font-semibold shadow-sm  border-customColor rounded-lg px-4 py-2 text-customColor text-sm lg:text-[14px]"
+        >
+          <Lucide icon="Plus" className="w-5 h-5 mr-2  " /> This  Month
+        </Button>
+
           <Button className="mr-2 shadow-sm  border-slate-300 py-1.5">
             <Lucide icon="Download" className="w-5 h-5 mr-2" /> Export as Excel
           </Button>
@@ -321,6 +382,21 @@ export default function Main() {
             onClose={() => setIsModalOpen(false)}
             onSubmit={handleAddOrder}
           />
+        </div>
+
+        <div className="col-span-12">
+        <FilterChips
+           selectedLocation=""
+           selectedIndustry=""
+           dateRange={dateRange}
+           selectedClientType=""
+           selectedBillboardType={""}
+                  selectedOrientation={""}
+                  selectedStatus={""}
+                  selectedRole=""
+            onRemoveFilter={handleRemoveFilter}
+          />
+
         </div>
 
         <Tab.Group className="col-span-12">

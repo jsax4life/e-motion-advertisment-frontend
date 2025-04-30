@@ -281,8 +281,10 @@ export default function Main() {
 clientTypes={client_types}    
 industries={industry_types}
 locations={locations} 
+roles={[]}
 
-
+selectedRole=""
+setSelectedRole={() =>{}}
 
 selectedBillboardType=""
 selectedOrientation=""
@@ -421,6 +423,7 @@ statuses={[]}
                   selectedBillboardType={""}
                   selectedOrientation={""}
                   selectedStatus={""}
+                  selectedRole=""
                   onRemoveFilter={handleRemoveFilter}
                 />
 

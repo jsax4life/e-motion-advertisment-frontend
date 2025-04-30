@@ -10,6 +10,7 @@ interface FilterChipsProps {
   selectedClientType: string;
   selectedOrientation: string;
   selectedStatus: string;
+  selectedRole: string;
   selectedBillboardType: string;
   dateRange: string;
   onRemoveFilter: (filter: string) => void;
@@ -22,6 +23,7 @@ const FilterChips: React.FC<FilterChipsProps> = ({
   selectedClientType,
   selectedOrientation,
   selectedStatus,
+  selectedRole,
   selectedBillboardType,
   dateRange,
   onRemoveFilter,
@@ -50,6 +52,12 @@ const FilterChips: React.FC<FilterChipsProps> = ({
        {selectedStatus && (
         <Chip label={`Status: ${selectedStatus}`} onDelete={() => onRemoveFilter('Status')} icon={'User'} />
       )}
+       {selectedRole && (
+        <Chip label={`Role: ${selectedRole}`} onDelete={() => onRemoveFilter('Role')} icon={'User'} />
+      )}
+
+
+
     </div>
   );
 };

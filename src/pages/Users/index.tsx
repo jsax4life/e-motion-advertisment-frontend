@@ -25,7 +25,6 @@ import API from "../../utils/API";
 import { Link, useNavigate } from "react-router-dom";
 import LoadingIcon from "../../base-components/LoadingIcon";
 import FilterChips from "../../components/FilterChips";
-import FilterModal from "./filterModal";
 import Breadcrumb from "../../base-components/Breadcrumb";
 import AdminCreationModal from "./AdminCreationModal";
 import Notification from "../../base-components/Notification";
@@ -35,27 +34,23 @@ import DisplayTable from "./DisplayTable";
 import { PullClientContext } from "../../stores/ClientDataContext";
 import profile from "../../assets/images/profile.png";
 import { debounce } from '../../utils/debounce';
+import FilterModal from '../../components/filterModal';
 
 
 const roles = [
-    "Registration Officer",
-    "Attachment Officer",
-    "Operation Officer",
+    "Supper Admin",
+    "Admin",
+    "CTO ",
+    "CEO",
 
   ];
 
-const lagosParks = [
-  "Agege Park",
-  "Alimosho Park",
-  "Apapa Park",
-  "Badagry Park",
-  "Epe Park",
-];
+  const statuses = [
+    'Active',
+    "Inactive",
+  ]
+  
 
-const tagStyle = [
-  "bg-orange-100 text-orange-600",
-  "bg-green-100 text-green-600",
-];
 
 type FilterType = {
     lga: string;
@@ -93,17 +88,15 @@ export default function Main() {
 
   const [selectedUser, setSelectedUser] = useState<string>("");
 
-  const [kpiData, setKpiData] = useState(null);
-  const [selectedPark, setSelectedPark] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [datepickerModalPreview, setDatepickerModalPreview] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<"Role"| "LGA" | "Date" | "Status">(
-    "LGA"
-  );
+  const [activeFilter, setActiveFilter] = useState<
+  "Location" | "Date" | "Industry" | "ClientType" | "Orientation" | "BillboardType" | "Status" | "Role" 
+>("Location");
 
   const [filterState, setFilterState] = useState<FilterType>({
     lga: selectedLGA,
@@ -381,12 +374,6 @@ const hideSearchDropdown = () => {
       if (filter === 'Role') {
           setSelectedRole(value);  
           newFilters.role = value;
-        } else if (filter === 'Date') {
-          setDateRange(value);
-          const [start, end] = value.split(' - ').map((date) => date.trim());
-          newFilters.startDate = start;
-          newFilters.endDate = end;
-          delete newFilters.date;
         } else if (filter === 'Status') {
           setSelectedStatus(value);
           newFilters.status = value;
@@ -419,8 +406,6 @@ const hideSearchDropdown = () => {
         setOpen={setOpenModal}
         handleFilterChange={handleFilterChange}
         roles={roles}
-        selectedLGA={selectedLGA}
-        setSelectedLGA={setSelectedLGA}
         selectedRole={selectedRole}
         setSelectedRole={setSelectedRole}
         startDate={startDate}
@@ -432,6 +417,44 @@ const hideSearchDropdown = () => {
         selectedStatus={selectedStatus}
         setSelectedStatus={setSelectedStatus}
       /> */}
+
+<FilterModal
+        open={openModal}
+        setOpen={setOpenModal}
+        handleFilterChange={handleFilterChange}
+        startDate={startDate}
+        setStartDate={setStartDate}
+        selectedRole={selectedRole}
+        setSelectedRole={setSelectedRole}
+        selectedStatus={selectedStatus}
+        roles={roles}
+        setSelectedStatus={setSelectedStatus}
+        endDate={endDate}
+        setEndDate={setEndDate}
+        activeFilter={activeFilter}
+        setActiveFilter={setActiveFilter}
+        selectedClientType=""
+        selectedIndustry=""
+        selectedLocation=""
+        selectedBillboardType=""
+        selectedOrientation=""
+        setSelectedClientType={() =>{}}
+        setSelectedIndustry={() =>{}}
+        setSelectedLocation={() =>{}}
+        setSelectedBillboardType={() =>{}}
+        setSelectedOrientation={() =>{}}
+      
+        
+
+clientTypes={[]}    
+industries={[]}
+locations={[]} 
+
+billboardTypes={[]}
+orientations={[]}
+statuses={statuses}
+
+      />
       <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 lg:mt-0 intro-y   py-8  ">
         <div className="col-span-12 justify-start items-start flex  intro-y sm:flex">
           {/* <div className='mr-auto'>
@@ -633,7 +656,7 @@ onClick={() => { setOpenModal(true); setActiveFilter("Role"); }}
               <Lucide icon="ChevronRight" className="w-4 h-4 ml-auto" />
         </Menu.Item> 
 
-<Menu.Item
+{/* <Menu.Item
 onClick={() => { setOpenModal(true); setActiveFilter("LGA"); }}
 >
            
@@ -650,7 +673,7 @@ onClick={() => { setOpenModal(true); setActiveFilter("LGA"); }}
 
             <Lucide icon="ChevronRight" className="w-4 h-4 ml-auto" />
 
-        </Menu.Item>
+        </Menu.Item> */}
         
         <Menu.Item
         onClick={() => { setOpenModal(true); setActiveFilter("Status"); }}
@@ -674,7 +697,18 @@ onClick={() => { setOpenModal(true); setActiveFilter("LGA"); }}
           dateRange={dateRange}
           onRemoveFilter={handleRemoveFilter}
         /> */}
+  <FilterChips
+            selectedRole={selectedRole}
+            selectedStatus={selectedStatus}
 
+           selectedLocation=""
+           selectedIndustry=""
+           dateRange={dateRange}
+           selectedClientType=""
+           selectedBillboardType={""}
+                  selectedOrientation={""}
+            onRemoveFilter={handleRemoveFilter}
+          />
  
         </div>
 

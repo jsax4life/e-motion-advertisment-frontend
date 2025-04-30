@@ -257,6 +257,7 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
         startDate={startDate}
         setStartDate={setStartDate}
         endDate={endDate}
+        roles={[]}
         setEndDate={setEndDate}
         activeFilter={activeFilter}
         setActiveFilter={setActiveFilter}
@@ -272,7 +273,8 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
         setSelectedBillboardType={() =>{}}
         setSelectedOrientation={() =>{}}
         setSelectedStatus={() =>{}}
-      
+      selectedRole=""
+      setSelectedRole={() =>{}}
         
 
 clientTypes={[]}    
@@ -314,6 +316,7 @@ statuses={[]}
           <FilterChips
            selectedLocation=""
            selectedIndustry=""
+           selectedRole=""
            dateRange={dateRange}
            selectedClientType=""
            selectedBillboardType={""}

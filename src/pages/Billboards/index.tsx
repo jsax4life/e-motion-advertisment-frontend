@@ -340,6 +340,10 @@ export default function Main() {
         statuses={statuses}
         locations={locations}
 
+        roles={[]}
+        selectedRole=""
+        setSelectedRole={() =>{}}
+
       />
 
       <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 lg:mt-0 intro-y   py-8  ">
@@ -478,6 +482,7 @@ export default function Main() {
                   selectedBillboardType={selectedBillboardType}
                   selectedOrientation={selectedOrientation}
                   selectedStatus={selectedStatus}
+                  selectedRole=""
 
                   onRemoveFilter={handleRemoveFilter}
                 />

@@ -20,6 +20,8 @@ import Notification from "../../base-components/Notification";
 import Toastify from "toastify-js";
 import DisplayTable from "./DisplayTable";
 import { OrderOverviewSection } from "./ThreeCards";
+import OrderFilterModal from "../Campaigns/Orders/delivered/OrderFilterModal";
+import FilterChips from "../../components/FilterChips";
 
 
 
@@ -62,7 +64,7 @@ export default function AllCampaigns() {
 
   const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false);
   const deleteButtonRef = useRef(null);
-  const [dateRange, setDateRasnge] = useState<string>("");
+  const [dateRange, setDateRange] = useState<string>("");
 
   const [selectedLGA, setSelectedLGA] = useState<string>("");
   const [selectedUser, setSelectedUser] = useState<string>("");
@@ -75,6 +77,14 @@ export default function AllCampaigns() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+
+
+  const [activeFilter, setActiveFilter] = useState<
+    "Date"  
+>("Date");
+
   const [loading, setLoading] = useState(true);
 
   // console.log(vehicleList)
@@ -84,11 +94,19 @@ export default function AllCampaigns() {
   useEffect(() => {
     if (user?.token) {
       fetchOrderData();
+      // fetchClients();
+      // fetchBillboards();
+    }
+  }, [user?.token, dateRange]);
+
+  useEffect(() => {
+    if (user?.token) {
       fetchAnalyticsData();
       // fetchClients();
       // fetchBillboards();
     }
   }, [user?.token]);
+
 
   const fetchOrderData = () => {
     const [startDate, endDate] = dateRange?.split(" - ") || [null, null];
@@ -160,69 +178,53 @@ export default function AllCampaigns() {
   };
 
 
-  const handleAddOrder = (data: any) => {
-    console.log(data);
-    // setIsModalOpen(false);
-    setLoading(true);
+ // Function to handle filter changes
+ const handleFilterChange = (filter: string, value: string) => {
+  console.log(`Filter Type: ${filter}, Value: ${value}`);
 
-    API(
-      "post",
-      `campaign-orders`,
-
-      data,
-      function (reponse: any) {
-        console.log(reponse);
-        setOrderList((prev) => [reponse.data, ...prev]);
-        setLoading(false);
-        setIsModalOpen(false);
-
-        setLoading(false);
-        const successEl = document
-          .querySelectorAll("#success-notification-content")[0]
-          .cloneNode(true) as HTMLElement;
-
-        successEl.classList.remove("hidden");
-        Toastify({
-          node: successEl,
-          duration: 8000,
-          newWindow: true,
-          close: true,
-          gravity: "top",
-          position: "right",
-          stopOnFocus: true,
-        }).showToast();
-        // console.log(responseData);
-      },
-
-      function (error: any) {
-        console.error("Error fetching recent searches:", error);
-        setLoading(false);
-
-        setErrorMessage(error);
-        const failedEl = document
-          .querySelectorAll("#failed-notification-content")[0]
-          .cloneNode(true) as HTMLElement;
-        failedEl.classList.remove("hidden");
-        Toastify({
-          node: failedEl,
-          duration: 8000,
-          newWindow: true,
-          close: true,
-          gravity: "top",
-          position: "right",
-          stopOnFocus: true,
-        }).showToast();
-      },
-      user?.token && user.token
-    );
-    // Call your API to add a new billboard here
+  const newFilters = {
+    
+    date: dateRange,
   };
+
+ if (filter === "Date") {
+    setDateRange(value);
+    newFilters.date = value;
+  }
+
+  // Call any logic to update data based on the new filters
+  console.log("New Filters:", newFilters);
+
+  // Update your data or perform actions here
+};
+
+
+// Function to handle removing filters
+const handleRemoveFilter = (filter: string) => {
+if (filter === "Date") {
+  setDateRange("");
+} 
+};
+
 
   const {finance_revenue} = anayticsData?? {}
 
 
   return (
     <>
+     <OrderFilterModal
+        open={isModalOpen}
+        setOpen={setIsModalOpen}
+        handleFilterChange={handleFilterChange}
+        startDate={startDate}
+        setStartDate={setStartDate}
+        endDate={endDate}
+        setEndDate={setEndDate}
+        activeFilter={activeFilter}
+        setActiveFilter={setActiveFilter}
+
+      />
+
       <div className="grid grid-cols-12 gap-5 lg:gap-7 mt-5 lg:mt-0 intro-y   py-8  ">
         <div className="col-span-12 justify-start items-start flex  intro-y sm:flex">
           {/* <div className='mr-auto'>
@@ -257,15 +259,21 @@ export default function AllCampaigns() {
           <Button className="mr-2 shadow-sm  border-slate-300 py-1.5">
             <Lucide icon="Download" className="w-5 h-5 mr-2" /> Export as Excel
           </Button>
-{/* 
-          <OrderCreationModal
-            clients={clients}
-            availableBillboards={billboards}
-            isOpen={isModalOpen}
-            isLoading={loading}
-            onClose={() => setIsModalOpen(false)}
-            onSubmit={handleAddOrder}
-          /> */}
+
+           <div className="col-span-12">
+        <FilterChips
+           selectedLocation=""
+           selectedIndustry=""
+           dateRange={dateRange}
+           selectedClientType=""
+           selectedBillboardType={""}
+                  selectedOrientation={""}
+                  selectedStatus={""}
+                  selectedRole=""
+            onRemoveFilter={handleRemoveFilter}
+          />
+
+        </div>
         </div>
 
 

@@ -71,12 +71,12 @@ export const ErpDashboardOld = ({ top_clients, top_billboards, top_campaigns, it
 
 <AnalyticsCard
   title="Top Billboards"
-  itemData={top_billboards?.map((billboard: { id: any; billboard: { billboardName: any; pricePerMonth: any; presigned_picture_url:any }; usage_count: any; } ) => ({
+  itemData={top_billboards?.map((billboard: { id: any; billboard: { billboardName: any; pricePerMonth: any; presigned_picture_urls:any }; usage_count: any; } ) => ({
     id: billboard.id,
     name: billboard.billboard.billboardName,
     value: `₦${formatCurrency (billboard.billboard.pricePerMonth)} `,
     secondaryValue: `${billboard.usage_count}`,
-    image: billboard.billboard.presigned_picture_url
+    image: billboard.billboard.presigned_picture_urls?.[0]
   }))}
   valueLabel="Impressions"
   secondaryValueLabel="Usage"
