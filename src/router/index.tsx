@@ -20,7 +20,7 @@ import BillboardDetails from "../pages/Billboards/BillboardDetails";
 import AddNewUser from "../pages/Users/AddUser";
 import PrivateRoute from './PrivateRoute';
 import RolePrivilegesTable from "../pages/Users/RoleManagement";
-import {ErpRoleManagement} from "../pages/RoleManagementSection"
+import ErpRoleManagement from "../pages/RoleManagementSection"
 import AllAdmins from "../pages/Admins"
 import Survey from "../pages/Surevy"
 import SurveyResponse from "../pages/Surevy/ViewResponse"

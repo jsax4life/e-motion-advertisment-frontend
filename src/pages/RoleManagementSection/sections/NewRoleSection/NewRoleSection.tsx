@@ -9,7 +9,18 @@ import {
 } from "../../../../components/ui/breadcrumb";
 import { Button } from "../../../../components/ui/button";
 
-export const MainContentSection = (): JSX.Element => {
+interface NewRoleSectionProps {
+  setShowNewRoleModal: (value: any) => void;
+  resetNewRoleForm: () => void;
+}
+
+
+ 
+
+export const NewRoleSection: React.FC<NewRoleSectionProps>  = ({
+  resetNewRoleForm,
+  setShowNewRoleModal,
+}) => {
   return (
     <div className="flex items-start justify-between w-full">
       <div className="flex flex-col gap-6">
@@ -44,10 +55,20 @@ export const MainContentSection = (): JSX.Element => {
       </div>
 
       <div className="flex items-end gap-3">
-        <Button className="bg-[#2774ff] hover:bg-[#2774ff]/90 text-shadeswhite rounded-lg flex items-center gap-2.5">
+        <Button 
+         onClick={() => {
+          resetNewRoleForm();
+          setShowNewRoleModal(true);
+        }}
+        className="bg-customColor hover:bg-customColor text-white rounded-lg flex items-center gap-2.5">
           <PlusIcon className="w-4 h-4" />
           <span className="font-semibold text-base">New Role</span>
         </Button>
+        
+
+
+  
+
       </div>
     </div>
   );

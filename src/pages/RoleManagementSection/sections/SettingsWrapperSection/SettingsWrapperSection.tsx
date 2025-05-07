@@ -2,7 +2,25 @@ import React from "react";
 import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
 
-export const SettingsWrapperSection = (): JSX.Element => {
+type Role = {
+  id: number;
+  name: string;
+};
+
+
+interface SettingsWrapperSection {
+  isDisabled: boolean;
+  activeRole: Role;
+  // (3) handler that toggles one privilege on/off
+  onSave: () => void;
+}
+
+
+  export const SettingsWrapperSection: React.FC<SettingsWrapperSection> = ({
+    isDisabled,
+    onSave,
+    activeRole
+  }) => {
   return (
     <div className="flex items-center justify-between w-full">
       <div className="flex items-center gap-4">
@@ -23,12 +41,23 @@ export const SettingsWrapperSection = (): JSX.Element => {
       <Button
         variant="secondary"
         className="h-10 px-4 py-2 bg-[#c5cad8] hover:bg-[#c5cad8] rounded-lg"
-        disabled
+        disabled = {isDisabled}
+        onClick={onSave}
+
       >
         <span className="font-semibold text-shadeswhite text-base whitespace-nowrap">
-          Save Settings
+        
+          Save {activeRole.name} Permissions
+
         </span>
       </Button>
+
+      {/* <button
+          onClick={handleSave}
+          className="mt-6 px-4 py-2 bg-blue-600 text-white rounded"
+        >
+          Save {activeRole} Permissions
+        </button> */}
     </div>
   );
 };

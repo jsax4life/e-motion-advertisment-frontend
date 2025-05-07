@@ -24,70 +24,80 @@ import Notification from "../../base-components/Notification";
 // | "Vehicle Attachment Officer";
 
 type Role =
-  |'Super Admin'
-  |'Admin'
-  |'Manager'
-  |'Administrator'
-  |'Operation Manager'
-  |'Support Administrator'
+|'Super Admin'
+|'Administrator'
+|'Operation Manager'
+|'Guest'
+|'CEO'
+|'Finance'
   
 type Privilege =
 |'add_users'
 |'change_password'
+|'view_vehicle'
+|'edit_vehicle'
+|'view_users'
 |'edit_users'
 |'delete_user'
+|'view_admins'
+|'edit_admins'
+|'delete_admin'
+|'view_role'
 |'delete_role'
-|'update_billboard_status'
-|'update_campaign_status'
-|'approve_campaign_order'
-|'mark_campaign_as_paid'
-|'deliver_campaign_order'
+|'dashboard_view'
 
 // Initial privileges for each role (can be fetched from backend)
-const roles: Role[] = [
+
+  const roles: Role[] = [
   'Super Admin',
-  'Admin',
-  'Manager',
-  'Administrator',
-  'Operation Manager',
-  'Support Administrator',
+    'Administrator',
+    'Operation Manager',
+    'Guest',
+    'CEO',
+    'Finance',
 ];
 
 const privileges: Privilege[] = [
   'add_users',
   'change_password',
+  'view_vehicle',
+  'edit_vehicle',
+  'view_users',
   'edit_users',
   'delete_user',
+  'view_admins',
+  'edit_admins',
+  'delete_admin',
+  'view_role',
   'delete_role',
-  'update_billboard_status',
-  'update_campaign_status',
-  'approve_campaign_order',
-  'mark_campaign_as_paid',
-  'deliver_campaign_order',
+  'dashboard_view',
 ];
 
 
   
   const roleMapping: Record<Role, number> = {
-    "Super Admin": 1,
-    "Admin": 2,
-    "Manager" : 3,
-    "Administrator": 4,
-    "Operation Manager": 5,
-    "Support Administrator": 6,
+    'Super Admin' : 1,
+    'Administrator': 2,
+    'Operation Manager' : 3,
+    'Guest' : 4,
+    'CEO': 5,
+    'Finance': 6,
   };
   
   const privilegeMapping: Record<Privilege, number> = {
-    'add_users': 1,
-    'change_password' :2,
-    'edit_users': 3,
-    'delete_user': 4,
-    'delete_role': 5,
-    'update_billboard_status': 6,
-    'update_campaign_status': 7,
-    'approve_campaign_order': 8,
-    'mark_campaign_as_paid': 9,
-    'deliver_campaign_order': 10,
+    'add_users' : 1,
+    'change_password' : 2,
+    'view_vehicle' : 3,
+    'edit_vehicle': 4,
+    'view_users': 5,
+    'edit_users': 6,
+    'delete_user': 7,
+    'view_admins': 8,
+    'edit_admins': 9,
+    'delete_admin': 10,
+    'view_role': 11,
+    'delete_role': 12,
+    'dashboard_view': 13,
   };
 
   const initialPrivileges = roles.reduce((acc, role) => {
@@ -98,11 +108,12 @@ const privileges: Privilege[] = [
     return acc;
   }, {} as Record<Role, Record<Privilege, boolean>>);
   
+  
 
 const AdminRolePrivilegesTable: React.FC = () => {
   const [rolePrivileges, setRolePrivileges] = useState(initialPrivileges);
-
  
+  const [roles, setRoles] = useState<Role[]>([]);
 
   const { user } = useContext(UserContext);
 
@@ -111,58 +122,81 @@ const AdminRolePrivilegesTable: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
 
-  // Fetch the existing role privileges when the component mounts
   useEffect(() => {
+    fetchRole(); // Will also initialize rolePrivileges
+  }, []);
+  
+  useEffect(() => {
+    if (roles.length > 0) {
+      fetchRolePrivileges(); // Only fetch privileges once roles are available
+    }
+  }, [roles]);
+  
 
+  const initializePrivileges = (roles: Role[]): Record<Role, Record<Privilege, boolean>> => {
+    return roles.reduce((acc, role) => {
+      acc[role] = privileges.reduce((roleAcc, privilege) => {
+        roleAcc[privilege] = false;
+        return roleAcc;
+      }, {} as Record<Privilege, boolean>);
+      return acc;
+    }, {} as Record<Role, Record<Privilege, boolean>>);
+  };
+  
 
+ 
 
     const fetchRolePrivileges = () => {
-
-        // setError("");
-        setLoading(true);
-     
+      setLoading(true);
     
-        API(
-          "get",
-          `get-role-privileges`,
-          
-          {},
-        //   filterState,
-          // {lga: 'Alimosho'},
-          function (response: any) {
-            const fetchedData = response;
-
-            // Map the fetched data into the format that matches the rolePrivileges state
-            const updatedPrivileges = { ...initialPrivileges };
-            fetchedData.forEach((roleData: { role: Role, privileges: number[] }) => {
-              privileges.forEach((privilege, index) => {
-                // Assuming privileges are stored as ID numbers in the fetched data
-                updatedPrivileges[roleData.role][privilege] = roleData.privileges.includes(index + 1); // Assuming privilege ID starts from 1
-              });
+      API(
+        "get",
+        "get-role-privileges",
+        {},
+        function (response: any) {
+          const updatedPrivileges = initializePrivileges(roles);
+          response.forEach((roleData: { role: Role, privileges: number[] }) => {
+            privileges.forEach((privilege, index) => {
+              updatedPrivileges[roleData.role][privilege] = roleData.privileges.includes(index + 1);
             });
+          });
     
-            setRolePrivileges(updatedPrivileges);
-            setLoading(false);
-
-
-          },
-          function (error: any) {
-            console.error("Error fetching recent searches:", error);
-            setLoading(false);
-          },
-          user?.token && user.token
-        );
-    
-    
-      };
+          setRolePrivileges(updatedPrivileges);
+          setLoading(false);
+        },
+        function (error: any) {
+          console.error("Error fetching role privileges:", error);
+          setLoading(false);
+        },
+        user?.token && user.token
+      );
+    };
     
 
 
-    fetchRolePrivileges();
-  }, []); // Empty dependency array to ensure this runs only once on mount
-
+  
   // console.log(vehicleList)
-
+  const fetchRole = () => {
+    setLoading(true);
+  
+    API(
+      "get",
+      "get-roles",
+      {},
+      function (response: any) {
+        const fetchedRoles = response.map((role: { role: Role }) => role.role);
+        setRoles(fetchedRoles);
+        setRolePrivileges(initializePrivileges(fetchedRoles));
+        setLoading(false);
+      },
+      function (error: any) {
+        console.error("Error fetching roles:", error);
+        setLoading(false);
+      },
+      user?.token && user.token
+    );
+  };
+  
 
 //   const transformPrivilegesForBackend = () => {
 //     const transformedData = Object.entries(rolePrivileges).reduce(
