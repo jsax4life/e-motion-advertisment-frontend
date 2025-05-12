@@ -304,15 +304,22 @@ if (filter === "Date") {
                 </Tab.Button>
               </Tab>
               <Tab fullWidth={false}>
-                <Tab.Button className="flex items-center  cursor-pointer">
+                <Tab.Button className="flex items-center space-x-2 font-normal  cursor-pointer">
                   {/* <Lucide icon="Shield" className="w-4 h-4 mr-2" /> */}
-                  Unpaid Orders
+                 <div> Unpaid Orders </div>
+
+                  {orderList.filter(order => order.payment_status === "pending").length > 0 && (
+                   <div className="bg-pending text-white rounded-full px-2 py-1">{orderList.filter(order => order.payment_status === "pending").length}</div>
+                 )}
                 </Tab.Button>
               </Tab>
               <Tab fullWidth={false}>
-                <Tab.Button className="flex items-center  cursor-pointer">
+                <Tab.Button className="flex items-center  space-x-2  cursor-pointer">
                   {/* <Lucide icon="Shield" className="w-4 h-4 mr-2" /> */}
-                  Overdue Orders
+                  <div >  Overdue Orders</div>
+                 {orderList.filter(order => order.payment_status === "overdue").length > 0 && (
+                   <div className="bg-red-500 text-white rounded-full px-2 py-1">{orderList.filter(order => order.payment_status === "overdue").length}</div>
+                 )}
                 </Tab.Button>
               </Tab>
   

@@ -27,6 +27,7 @@ interface Campaign {
   description: string;
   campaign_start_date: string;
   campaign_end_date: string;
+  payment_due_date: string;
   campaign_freeze_start_date: string;
   campaign_freeze_end_date: string
   campaign_unfreeze_date: string;
@@ -51,7 +52,7 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
     const startDate = new Date(campaign?.campaign_start_date);
     const endDate = new Date(campaign?.campaign_end_date);
     const today = new Date();
-    const diff = endDate.getTime() - today.getTime();
+    const diff = endDate.getTime() - startDate.getTime();
     const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
     setDaysLeft(days);
   } , [campaign?.campaign_start_date, campaign?.campaign_end_date]) 
@@ -60,12 +61,11 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
   
   useEffect(() => { 
     const startDate = new Date(campaign?.campaign_start_date);
-    const endDate = new Date(campaign?.campaign_end_date);
-    const today = new Date();
-    const diff = endDate.getTime() - today.getTime();
+    const dueDate = new Date(campaign?.payment_due_date);
+    const diff = dueDate.getTime() - startDate.getTime();
     const weeks = Math.ceil(diff / (1000 * 60 * 60 * 24 * 7));
     setWeeksLeft(weeks);
-  } , [campaign?.campaign_start_date, campaign?.campaign_end_date])
+  } , [campaign?.payment_due_date])
 
   console.log(campaign);
 
@@ -152,7 +152,7 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
             payment period
             </div>
             <div className=" font-bold  lg:text-[16px] text-stone-600">
-            {weeksLeft} weeks
+            {campaign.payment_option === 'prepaid' ? `${weeksLeft} weeks` : 'not applicable'} 
             </div>
           </div>
        
@@ -190,7 +190,7 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
             <div className=" md:text-[12px] text-slate-500 font-bold mb-1">
               media purchase order document
             </div>
-            <div className=" font-bold   text-customColor">
+            <div className=" font-bold   text-customColor truncate">
               {campaign?.media_purchase_order}
             </div>
           </div>

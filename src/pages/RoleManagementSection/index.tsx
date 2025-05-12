@@ -36,6 +36,7 @@ type Privilege =
   | "download_client_details"
   | "create_campaigns"
   | "approve_campaign"
+  | "end_campaign"
   | "download_campaign"
   | "delivered_campaign"
   | "update_campaign_status"
@@ -66,7 +67,7 @@ const privileges: Privilege[] = [
   "edit_clients",
   "delete_client",
   "download_client_details",
-
+  "end_campaign",
   "create_campaigns",
   "approve_campaign",
   "download_campaign",
@@ -106,6 +107,7 @@ const privilegeMapping: Record<Privilege, number> = {
   approve_campaign: 6,
   download_campaign: 7,
   delivered_campaign: 8,
+  
   update_campaign_status: 9,
   approve_campaign_order: 10,
   mark_campaign_as_paid: 11,
@@ -129,6 +131,7 @@ const privilegeMapping: Record<Privilege, number> = {
   add_user_role: 26,
   delete_role: 27,
   update_user_role: 28,
+  end_campaign: 29
 };
 
 // const initialPrivileges = roles.reduce((acc, role) => {
@@ -583,14 +586,14 @@ const ErpRoleManagement: React.FC = () => {
       ) : (
         <div className="relative">
           {/* Main content area */}
-          <div className=" w-[1139px]">
+          <div className=" w-full">
             <div className="flex flex-col gap-6">
               <NewRoleSection
                 resetNewRoleForm={handleResetNewRoleForm}
                 setShowNewRoleModal={hanldeShowNewRoleModal}
               />
 
-              <div className="flex bg-white">
+              <div className="flex bg-white space-x-6">
                 {/* Left sidebar */}
                 {/* <ActiveCampaignsSection roles = {roles}  getActiveRole = {getActiveRole}/> */}
                 <ActiveRoleSection
@@ -600,7 +603,7 @@ const ErpRoleManagement: React.FC = () => {
                 />
 
                 {/* Main content with scrollable sections */}
-                <div className="flex flex-col gap-8 p-6 flex-1 bg-neutralneutral-bg-day rounded-[0px_10px_10px_0px] border border-solid border-neutralneutral-border-day overflow-y-auto">
+                <div className="flex flex-col w-full gap-8 p-6  bg-neutralneutral-bg-day rounded-[0px_10px_10px_0px] border border-solid border-neutralneutral-border-day overflow-y-auto">
               
                   {activeRole && (
                     <SettingsWrapperSection

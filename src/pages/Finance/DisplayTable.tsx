@@ -36,6 +36,8 @@ interface Order {
   // slot_or_face: "",
   start_date: string;
   end_date: string;
+  payment_due_date: string;
+  campaign_start_date: string;
   payment_option: string;
   media_purchase_order: string;
   total_order_amount: number;
@@ -79,7 +81,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                   PAYMENT OPTION
                 </Table.Th>
                 <Table.Th className="whitespace-nowrap">START DATE</Table.Th>
-                <Table.Th className="whitespace-nowrap">END DATE</Table.Th>
+                <Table.Th className="whitespace-nowrap">DUE DATE</Table.Th>
                 <Table.Th className="text-start whitespace-nowrap">
                   STATUS
                 </Table.Th>
@@ -120,11 +122,11 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                   </Table.Td>
                   <Table.Td className="first:rounded-l-md last:rounded-r-md  text-xs bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
                     <div className="whitespace-nowrap">
-                      {formatDate(order?.billboards?.[0]?.start_date)}
+                      {formatDate(order?.campaign_start_date)}
                     </div>
                   </Table.Td>
                   <Table.Td className="first:rounded-l-md last:rounded-r-md w-40 text-xs bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
-                    <div>{formatDate(order?.billboards?.[0]?.end_date)}</div>
+                    <div>{order?.payment_due_date? formatDate(order?.payment_due_date) : 'not applicable'}</div>
                   </Table.Td>
 
                   <Table.Td className="first:rounded-l-md   last:rounded-r-md text-start bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">

@@ -354,9 +354,14 @@ console.log(startDate, endDate)
                 </Tab.Button>
               </Tab>
               <Tab fullWidth={false}>
-                <Tab.Button className="flex items-center  cursor-pointer">
+                <Tab.Button className="flex items-center space-x-2 cursor-pointer">
                   {/* <Lucide icon="Shield" className="w-4 h-4 mr-2" /> */}
-                  Running
+                  <div>Running</div>
+                  {orderList.filter(order => order.status === "delivered").length > 0 && (
+                                      <div className="bg-success text-white rounded-full px-2 py-1">{orderList.filter(order => order.status === "delivered").length}</div>
+
+                  )}
+
                 </Tab.Button>
               </Tab>
               <Tab fullWidth={false}>

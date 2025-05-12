@@ -282,7 +282,7 @@ const location = useLocation();
             >
               <Breadcrumb.Link to="/">Application</Breadcrumb.Link>
               <Breadcrumb.Link to="/" active={true}>
-                Billboard
+                Campaigns
               </Breadcrumb.Link>
             </Breadcrumb>
           </div>

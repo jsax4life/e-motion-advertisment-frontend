@@ -37,28 +37,31 @@ import { debounce } from '../../utils/debounce';
 import FilterModal from '../../components/filterModal';
 
 
-const roles = [
-    "Supper Admin",
-    "Admin",
-    "CTO ",
-    "CEO",
+// const roles = [
+//     "Supper Admin",
+//     "Admin",
+//     "CTO ",
+//     "CEO",
 
-  ];
+//   ];
 
   const statuses = [
-    'Active',
-    "Inactive",
+    'active',
+    "inactive",
   ]
+  
+
+  type Role = {
+    id: number;
+    name: string;
+  };
   
 
 
 type FilterType = {
-    lga: string;
     role: string;
-    date?: string; // Make date optional
     status: string;
-    startDate?: string;
-    endDate?: string;
+  
   };
 
   interface SearchResult {
@@ -69,11 +72,7 @@ type FilterType = {
 
 export default function Main() {
   const { user } = useContext(UserContext);
-  const { clients, clientDispatch } = useContext(PullClientContext);
-
   const [openModal, setOpenModal] = useState(false);
-
-  const [clientList, setClientList] = useState<any[]>([]);
 
   const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false);
   const deleteButtonRef = useRef(null);
@@ -81,12 +80,10 @@ export default function Main() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [userList, setUserList] = useState<any[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
 
-  const [selectedLGA, setSelectedLGA] = useState<string>('');
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
-
-  const [selectedUser, setSelectedUser] = useState<string>("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -99,12 +96,9 @@ export default function Main() {
 >("Location");
 
   const [filterState, setFilterState] = useState<FilterType>({
-    lga: selectedLGA,
     role: selectedRole,
-    date: dateRange,
     status: selectedStatus,
-    startDate: startDate,
-    endDate: endDate,
+  
   });
 
   const [searchDropdown, setSearchDropdown] = useState(false);
@@ -120,19 +114,44 @@ useEffect(() => {
 }, []);
 
 
-  const cancelButtonRef = useRef(null);
-  const isInitialMount = useRef(true);
-
-
-
 const [query, setQuery] = useState('');
 const [results, setResults] = useState<SearchResult>({
 
   users: [],
 });
 
+useEffect(() => {
+  fetchRole(); 
+}, []);
 
+const fetchRole = () => {
+  setLoading(true);
 
+  API(
+    "get",
+    "get-roles",
+    {},
+    (response: any) => {
+      // Build Role objects directly from the API
+      const fetchedRoles: Role[] = response.map((r: any) => ({
+        id: r.id,
+        name: r.name,
+      }));
+
+      setRoles(fetchedRoles);
+      // setActiveRole(fetchedRoles[0] || null);
+
+      // Now initialize privileges *after* we have the real Role[]
+      // setRolePrivileges(initializePrivileges(fetchedRoles));
+      setLoading(false);
+    },
+    (error: any) => {
+      console.error("Error fetching roles:", error);
+      setLoading(false);
+    },
+    user?.token
+  );
+};
 
 
 const performSearch = async (searchQuery: string) => {
@@ -234,7 +253,7 @@ const hideSearchDropdown = () => {
     if (user?.token) {
         fetchUserData();
     }
-  }, [user?.token]);
+  }, [user?.token, selectedRole, selectedStatus]);
 
   const fetchUserData = () => {
 
@@ -337,12 +356,7 @@ const hideSearchDropdown = () => {
               setSelectedRole('');
               newFilters.role = '';
       
-            } else if (filter === 'Date') {
-              setDateRange('');
-              newFilters.startDate = '';
-              newFilters.endDate = '';
-      
-            }else if (filter === 'Status') {
+            } else if (filter === 'Status') {
               setSelectedStatus('');
               newFilters.status = '';
             }
@@ -718,7 +732,7 @@ onClick={() => { setOpenModal(true); setActiveFilter("LGA"); }}
          
 
           <div className="grid grid-cols-12 gap-6 ">
-            <div className="col-span-12 intro-y text-black  bg-white  lg:px-0">
+            {/* <div className="col-span-12 intro-y text-black  bg-white  lg:px-0">
               <div className="flex flex-col lg:flex-row w-full gap-y-2 text-primary items-center space-x-3">
                 {datepickerModalPreview && (
                   <Dialog
@@ -732,7 +746,6 @@ onClick={() => { setOpenModal(true); setActiveFilter("LGA"); }}
                     <Dialog.Panel
                       className=""
                     >
-                      {/* BEGIN: Modal Header */}
                       <Dialog.Title>
                         <div className="flex justify-center items-center">
                           <div className="bg-customColor/20 fill-customColor text-customColor mr-2 rounded-lg p-1.5">
@@ -748,8 +761,7 @@ onClick={() => { setOpenModal(true); setActiveFilter("LGA"); }}
                           </div>
                         </div>
                       </Dialog.Title>
-                      {/* END: Modal Header */}
-                      {/* BEGIN: Modal Body */}
+                     
                       <Dialog.Description className="grid grid-cols-12 gap-x gap-y-6">
                         <div className="col-span-12 relative">
                           <FormLabel htmlFor="modal-datepicker-1">
@@ -799,8 +811,7 @@ onClick={() => { setOpenModal(true); setActiveFilter("LGA"); }}
                           </div>
                         </div>
                       </Dialog.Description>
-                      {/* END: Modal Body */}
-                      {/* BEGIN: Modal Footer */}
+                  
                       <Dialog.Footer className="text-right">
                         <Button
                           variant="outline-secondary"
@@ -813,14 +824,12 @@ onClick={() => { setOpenModal(true); setActiveFilter("LGA"); }}
                           Cancel
                         </Button>
                         <Button
-                          // variant="primary"
                           type="button"
                           className="w-autos bg-customColor text-secondary"
                           ref={cancelButtonRef}
                           onClick={() => {
                             setDateRange(`${startDate}-${endDate}`);
-                            // const dateString = date.toString(); // Convert date object to string
-                            // handleAddFilter('Date', dateString);
+                          
                             handleFilterChange(
                               "Date",
                               `${startDate} - ${endDate}`
@@ -831,14 +840,13 @@ onClick={() => { setOpenModal(true); setActiveFilter("LGA"); }}
                           Apply Filter
                         </Button>
                       </Dialog.Footer>
-                      {/* END: Modal Footer */}
                     </Dialog.Panel>
                   </Dialog>
                 )}
 
           
               </div>
-            </div>
+            </div> */}
 
             {/* Data List or Loading Indicator */}
          <DisplayTable userList={userList} loading={loading} />

@@ -9,7 +9,7 @@ type Privilege =
 |'create_campaigns'
 |'approve_campaign'
 |'download_campaign'
-|'delivered_campaign'
+|'end_campaign'
 |'update_campaign_status'
 |'approve_campaign_order'
 |'mark_campaign_as_paid'
@@ -41,9 +41,9 @@ import { Switch } from "../../../../components/ui/switch";
 // (1) List out exactly which Privilege keys this section cares about:
 const clientPermissionsConfig: { key: Privilege; label: string }[] = [
   { key: 'create_campaigns', label: "Create Campaign" },
-  { key: 'approve_campaign', label: "Approve Campaign"},
+  // { key: 'approve_campaign', label: "Approve Campaign"},
   { key: 'download_campaign', label: "Decline Campaign"},
-  { key: 'delivered_campaign', label: "Cancel Campaign"},
+  { key: 'end_campaign', label: "End Campaign"},
   { key: 'update_campaign_status', label: "Download Campaign"},
   { key: 'approve_campaign_order', label: "Approved Campaign"},
   { key: 'mark_campaign_as_paid', label: "Mark Order Paid"},

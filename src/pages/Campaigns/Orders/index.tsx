@@ -412,9 +412,14 @@ export default function Main() {
                 </Tab.Button>
               </Tab>
               <Tab fullWidth={false}>
-                <Tab.Button className="flex items-center  cursor-pointer">
+                <Tab.Button className="flex items-center space-x-2  cursor-pointer">
                   {/* <Lucide icon="Shield" className="w-4 h-4 mr-2" /> */}
-                  Pending
+                  <div>Pending</div>
+
+                  {orderList.filter(order => order.status === "pending").length > 0 && (
+                      <div className="bg-red-500 text-white rounded-full px-2 py-1">{orderList.filter(order => order.status === "pending").length}</div>
+                 )}
+
                 </Tab.Button>
               </Tab>
               <Tab fullWidth={false}>

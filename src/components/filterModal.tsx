@@ -10,6 +10,12 @@ import Lucide from "../base-components/Lucide";
 import { Menu, Tab, Dialog } from "../base-components/Headless";
 import Litepicker from "../base-components/Litepicker";
 
+type Role = {
+  id: number;
+  name: string;
+};
+
+
 // Define props interface for the component
 interface FilterModalProps {
   open: boolean;
@@ -18,7 +24,7 @@ interface FilterModalProps {
 
   locations: any[];
   industries: any[];
-  roles: any[],
+  roles: Role[],
   clientTypes: any[];
   statuses: any[];
   orientations: any[];
@@ -436,9 +442,9 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 <option value="" disabled>
                   All Roles
                 </option>
-                {roles.map((role, index) => (
-                  <option key={index} value={role}>
-                    {role}
+                {roles?.map((role) => (
+                  <option key={role.id} value={role.id}>
+                    {role.name}
                   </option>
                 ))}
               </FormSelect>
@@ -478,9 +484,9 @@ const FilterModal: React.FC<FilterModalProps> = ({
               : activeFilter === "Status"
               ? applyStatusFilter
               : activeFilter === "BillboardType"
-              ? applyStatusFilter
-              : activeFilter === "Role"
               ? applyBillboardTypeFilter
+              : activeFilter === "Role"
+              ? applyRoleFilter
              
               : () => {}
             }

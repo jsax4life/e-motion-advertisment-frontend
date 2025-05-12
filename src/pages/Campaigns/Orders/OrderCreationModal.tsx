@@ -16,9 +16,10 @@ import LoadingIcon from "../../../base-components/LoadingIcon";
 import Litepicker from "../../../base-components/Litepicker";
 import API from "../../../utils/API";
 import { UserContext } from "../../../stores/UserContext";
-import { formatCurrency } from "../../../utils/utils";
+import { formatCurrency, formatDate } from "../../../utils/utils";
 import { useFetchStates } from "../../../lib/Hook";
 import PdfUploadSection from "./PdfUploadSection";
+import { DateTime } from "litepicker/dist/types/datetime";
 
 interface BillboardCreationModalProps {
   isOpen: boolean;
@@ -54,6 +55,7 @@ type OrderDetails = {
   campaign_duration: number;
   campaign_start_date: string;
   campaign_end_date: string;
+  payment_due_date: string;
   payment_option: string;
   media_purchase_order: File | null;
   total_order_amount: number;
@@ -102,6 +104,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
   const [duration, setDuration] = useState<string>("");
   const [startDate, setStartDate] = useState<string>("");
   const [dateRange, setDateRange] = useState<string>("");
+  const [paymentPeriod, setPaymentPeriod] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const { user } = useContext(UserContext);
   const [selectedBillboard, setSelectedBillboard] = useState<AvailableBillboard>();
@@ -162,6 +165,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     campaign_duration: 0,
     campaign_start_date: "",
     campaign_end_date: "",
+    payment_due_date: "",
     payment_option: "",
     media_purchase_order: null,
     total_order_amount: 0,
@@ -225,6 +229,19 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
    
     }
   }, [startDate, endDate, formData.billboard_id, availableBillboards]);
+
+
+  useEffect(() => {
+    if (orderDetails?.payment_option === "prepaid" && paymentPeriod) {
+    
+      setOrderDetails((prev) => ({...prev, 
+        payment_due_date: paymentPeriod,
+    
+      }));
+   
+    }
+  }, [paymentPeriod]);
+
 
   // Handle form field changes
   const handleChange = (
@@ -405,6 +422,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       )
     };
 
+    // console.log(payload)
         // Submit the order
         onSubmit(payload, formData);
 
@@ -418,6 +436,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       campaign_duration: 0,
       campaign_start_date: "", 
       campaign_end_date: "", 
+      payment_due_date: "",
       payment_option: "",
       media_purchase_order: null,
       total_order_amount: 0,
@@ -447,7 +466,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
           </Dialog.Title>
 
-          <Dialog.Description className="grid grid-cols-12  gap-y-3 max-h-[90vh] overflow-y-auto ">
+          <Dialog.Description className="grid grid-cols-12  gap-y-3  ">
             <form
               onSubmit={handleSubmit(handleSubmitOrder)}
               className="col-span-12 rounded-lg w-full max-w-2xl  md:p-4 space-y-8 "
@@ -472,20 +491,44 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                       value={dateRange}
                       onChange={setDateRange}
                     
-
                       options={{
-                        autoApply: false,
                         singleMode: false,
+                        numberOfMonths: 3, // 2–3 is ideal for UX
                         numberOfColumns: 2,
-                        numberOfMonths: 2,
+                        allowRepick: true,
+                        selectForward: true, // <- this prevents auto-adjusting issue
                         showWeekNumbers: true,
+                        // minDate: "",
+                        // maxDays: 20,
+                        autoApply: false,
                         dropdowns: {
                           minYear: 1999,
                           maxYear: null,
                           months: true,
                           years: true,
                         },
+                        // format: "YYYY-MM-DD"
                       }}
+
+                      // options={{
+                      //   autoApply: false,
+                      //   singleMode: false,
+                      //   numberOfColumns: 2,
+                      //   numberOfMonths: 6,
+                      //   allowRepick: true, // allows user to change date range easily
+                      //   // autoApply: false,  // only apply when user confirms (optional)
+                      //   // numberOfMonths: 2
+                      //   showWeekNumbers: true,
+                      //   selectForward: true, // <- this prevents auto-adjusting issue
+                      //   // minDate: null,
+                      //   // maxDays: null,
+                      //   dropdowns: {
+                      //     minYear: 1999,
+                      //     maxYear: null,
+                      //     months: true,
+                      //     years: true,
+                      //   },
+                      // }}
                       className="block py-3 pl-8 mx-auto"
                     />
                     <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
@@ -922,6 +965,38 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   </p>
                 )}
               </div>   
+
+
+              {orderDetails?.payment_option === 'prepaid' && (
+               
+
+<div className="col-span-12 relative">
+<FormLabel className="lg:text-[16px]" htmlFor="dob">Payment Date</FormLabel>
+<Litepicker
+  id="dob"
+  value={paymentPeriod}
+ 
+  // onChange={setDateOfBirth}
+
+  onChange={setPaymentPeriod}
+  
+  
+  options={{
+    autoApply: false,
+    showWeekNumbers: true,
+    dropdowns: {
+      minYear: new Date().getFullYear(),
+      maxYear: new Date().getFullYear() + 1,
+      months: true,
+      years: true,
+    },
+  }}
+/>
+<div className="absolute flex items-center justify-center w-8 h-8 right-0 bottom-1 text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+  <Lucide icon="Calendar" className="w-4 h-4" />
+</div>
+</div>
+              )}
 
                   {/* media purchase  uploaded as pdf */}
               
