@@ -28,6 +28,7 @@ interface Billboard {
     internalCode: string;
     billboardName: string;
     billboardType: "static" | "digital" | "bespoke";
+    mediaType: string;
     numberOfSlotsOrFaces: number;
     numberOfFaces: number;
     pricePerDay: number;
@@ -66,8 +67,8 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
   const [formData, setFormData] = useState<any>(billboard);
 
   const validationSchema = yup.object().shape({
-    internalCode: yup.string().required("Billboard Code is required"),
-    billboardName: yup.string().required("Billboard Name is required"),
+    // internalCode: yup.string().required("Billboard Code is required"),
+    // billboardName: yup.string().required("Billboard Name is required"),
     state: yup.string().required("State is required"),
     lga: yup.string().required("LGA is required"),
     address: yup.string().required("Adddress is required"),
@@ -81,7 +82,9 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
     // pricePerMonth: yup.string().required("Price Per Month is required"),
     // status : yup.string().required("Status is required"),
     // activeStatus: yup.string().required("Active Status is required"),
-    boardOrientation: yup.string().required("Board Orientation is required"),
+    orientation: yup.string().required("Board Orientation is required"),
+    mediaType: yup.string().required("Media Type is required"),
+
       
   });
 
@@ -197,6 +200,7 @@ if (name === "billboardType") {
 
 
   const handleEditillboard = async  (data: any) => {
+    console.log('true')
     const base64Images = await convertImagesToBase64(uploadedImages);
 
        // Prepare the payload
@@ -304,7 +308,7 @@ if (name === "billboardType") {
           
 
 
-              <div className="col-span-12">
+              {/* <div className="col-span-12">
                 <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="lga">Local Government Area</FormLabel>
                 <FormInput
                 formInputSize="lg"
@@ -315,7 +319,7 @@ if (name === "billboardType") {
                   {...register("lga")}
                 />
                 {errors.lga && ( <p className="text-red-500">{errors.lga.message?.toString()}</p>)}
-              </div>
+              </div> */}
 
               <div className=" col-span-12 flex space-x-4">
                 <div className=" w-1/2 relative intro-y">
@@ -467,23 +471,91 @@ if (name === "billboardType") {
 
                   {/* board orientation */}
                   <div className="col-span-12">
-                    <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="boardOrientation">Board Orientation</FormLabel>
+                    <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="orientation">Board Orientation</FormLabel>
                     <FormSelect
-                    // name="boardOrientation"
+                    // name="orientation"
                     formSelectSize="lg"
                     defaultValue={billboard?.orientation}
 
-                    {...register("boardOrientation", {
+                    {...register("orientation", {
                       onChange: (e) => {
                         handleChange(e);
                       },})}
+
+                      onChange={(e) =>
+                        setValue("orientation", e.target.value, {
+                          shouldValidate: true,
+                        })
+                      }
                     className="w-full p-2 border rounded"
                     >
                     <option value="landscape">Landscape</option>
                     <option value="portrait">Portrait</option>
                     </FormSelect>  
-                    {errors.boardOrientation && ( <p className="text-red-500">{errors.boardOrientation.message?.toString()}</p>)}
+                    {errors.orientation && ( <p className="text-red-500">{errors.orientation.message?.toString()}</p>)}
                 </div>
+
+                {/* media type */}
+
+ <div className="col-span-12">
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="mediaType"
+                >
+                  Media Type
+                </FormLabel>
+                <FormSelect
+                  id="mediaType"
+                  formSelectSize="lg"
+                  defaultValue={billboard?.mediaType}
+
+                  {...register("mediaType", {
+                    onChange: (e) => {
+                      handleChange(e);
+                    },
+                  })}
+
+                  onChange={(e) =>
+                    setValue("mediaType", e.target.value, {
+                      shouldValidate: true,
+                    })
+                  }
+                  className="w-full p-2 border rounded"
+                >
+                  <option disabled selected value="">
+                    --Select--
+                  </option>
+
+                  <option value="48sheet">48Sheet</option>
+                  <option value="Bridge panel">Bridge panel</option>
+                  <option value="Bulletin">Bulletin</option>
+                  <option value="Eye catcher">Eye catcher</option>
+                  <option value="Full gantry">Full gantry</option>
+                  <option value="Half gantry">Half gantry</option>
+                  <option value="Half ring">Half ring</option>
+                  <option value="Long Banner">Long Banner</option>
+                  <option value="Long Banner">Long Banner</option>
+                  <option value="Megaboard">Megaboard</option>
+                  <option value="Pillars">Pillars</option>
+                  <option value="Portrait">Portrait</option>
+                  <option value="Rooftop">Rooftop</option>
+                  <option value="Standalone">Standalone</option>
+                  <option value="Static">Static</option>
+                  <option value="Triple static">Triple static</option>
+                  <option value="Unipole">Unipole</option>
+                  <option value="Wallmount">Wallmount</option>
+                  <option value="Lampole">Lampole</option>
+                  <option value="Standalone LED">Standalone LED</option>
+                  <option value="LED">LED</option>
+
+
+                </FormSelect>
+                {errors.mediaType && (
+                  <p className="text-red-500">
+                    {errors.mediaType.message?.toString()}
+                  </p>
+                )}
+              </div> 
 
                 {/* dimension */}
 

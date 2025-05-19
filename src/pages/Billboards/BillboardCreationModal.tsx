@@ -71,6 +71,8 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     orientation: yup.string().required("Board Orientation is required"),
     dimension: yup.string().required("Dimension is required"),  
     billboardType: yup.string().required("Billboard Type is required"),
+    mediaType: yup.string().required("media Type is required"),
+
   });
 
   const {
@@ -95,6 +97,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     height: "",
     width: "",
     billboardType: "Static",
+    mediaType: "",
     numberOfSlotsOrFaces: "",
     // numberOfSlots: "",
     // numberOfFaces: "",
@@ -557,6 +560,58 @@ console.log(formData);
                   </div>
                 </div>
               )} */}
+
+ <div className="col-span-12">
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="mediaType"
+                >
+                  Media Type
+                </FormLabel>
+                <FormSelect
+                  id="mediaType"
+                  formSelectSize="lg"
+                  {...register("mediaType", {
+                    onChange: (e) => {
+                      handleChange(e);
+                    },
+                  })}
+                  className="w-full p-2 border rounded"
+                >
+                  <option disabled selected value="">
+                    --Select--
+                  </option>
+
+                  <option value="48sheet">48Sheet</option>
+                  <option value="Bridge panel">Bridge panel</option>
+                  <option value="Bulletin">Bulletin</option>
+                  <option value="Eye catcher">Eye catcher</option>
+                  <option value="Full gantry">Full gantry</option>
+                  <option value="Half gantry">Half gantry</option>
+                  <option value="Half ring">Half ring</option>
+                  <option value="Long Banner">Long Banner</option>
+                  <option value="Long Banner">Long Banner</option>
+                  <option value="Megaboard">Megaboard</option>
+                  <option value="Pillars">Pillars</option>
+                  <option value="Portrait">Portrait</option>
+                  <option value="Rooftop">Rooftop</option>
+                  <option value="Standalone">Standalone</option>
+                  <option value="Static">Static</option>
+                  <option value="Triple static">Triple static</option>
+                  <option value="Unipole">Unipole</option>
+                  <option value="Wallmount">Wallmount</option>
+                  <option value="Lampole">Lampole</option>
+                  <option value="Standalone LED">Standalone LED</option>
+                  <option value="LED">LED</option>
+
+
+                </FormSelect>
+                {errors.mediaType && (
+                  <p className="text-red-500">
+                    {errors.mediaType.message?.toString()}
+                  </p>
+                )}
+              </div> 
 
 <div className="col-span-12">
   <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="billboardType">

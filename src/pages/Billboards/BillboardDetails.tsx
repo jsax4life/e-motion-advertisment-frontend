@@ -71,9 +71,13 @@ const {id} = useParams<{id: any}>();
       `billboards/${billboard?.id}`,
 
       data,
-      function (reponse: any) {
-        console.log(reponse);
-        setBillboard((prev: any) => [ reponse.data, ...prev]);
+      function (response: any) {
+        console.log(response);
+        // setBillboard((prev: any) =>  reponse.data);
+        setBillboard((prev: any) => ({
+          ...prev,
+          ...response.data
+        }));
         setLoading(false);
         setIsModalOpen(false);
 
