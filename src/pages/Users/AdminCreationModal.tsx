@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Dialog } from "../../base-components/Headless";
 import { FormInput, FormLabel, FormSelect, FormTextarea } from "../../base-components/Form";
@@ -11,6 +11,8 @@ import LoadingIcon from "../../base-components/LoadingIcon";
 import Litepicker from "../../base-components/Litepicker";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import ImageUploadSection from "./ImageUpoadSection";
+import API from "../../utils/API";
+import { UserContext } from "../../stores/UserContext";
 
 
 interface AdminCreationModalProps {
@@ -19,23 +21,27 @@ interface AdminCreationModalProps {
   onClose: () => void;
   onSubmit: (data: any) => void;
 }
+type Role = {
+  id: number;
+  name: string;
+};
 
 interface StateData {
   name: string;
   lgas: string[];
 }
 
-const roles = [
-  { name: "Admin", value: "admin" },
-  { name: "Client", value: "client" },
-  { name: "Agency", value: "agency" },
-  { name: "Super Admin", value: "super_admin" },
-  { name: "CTO", value: "cto"},
-  { name: "Account Manager", value: "account_manager" },
-  { name: "CEO", value: "ceo" },
-  { name: "Finance", value: "finance" },
+// const roles = [
+//   { name: "Admin", value: "admin" },
+//   { name: "Client", value: "client" },
+//   { name: "Agency", value: "agency" },
+//   { name: "Super Admin", value: "super_admin" },
+//   { name: "CTO", value: "cto"},
+//   { name: "Account Manager", value: "account_manager" },
+//   { name: "CEO", value: "ceo" },
+//   { name: "Finance", value: "finance" },
 
-]
+// ]
 
 const AdminCreationModal: React.FC<AdminCreationModalProps> = ({
   isOpen,
@@ -45,12 +51,21 @@ const AdminCreationModal: React.FC<AdminCreationModalProps> = ({
 }) => {
   const [sendButtonRef] = useState(React.createRef<HTMLButtonElement>());
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
+  const { user } = useContext(UserContext);
+
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(false);
 
   const [states, setStates] = useState<StateData[]>([]);
   const [lgas, setLGA] = useState<string[]>([]);
   const [dateOfBirth, setDateOfBirth] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
   const toggleShowPasswd = () => setShowPassword(!showPassword);
+
+  useEffect(() => {
+    fetchRole(); // Will also initialize rolePrivileges
+  }, []);
+
 
 const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     return Promise.all(
@@ -92,6 +107,9 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     resolver: yupResolver(validationSchema),
   });
 
+
+  
+
   const [formData, setFormData] = useState({
     name: "",
     firstName: "",
@@ -109,6 +127,34 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
    
   });
 
+
+
+
+  const fetchRole = () => {
+    setIsLoadingRoles(true);
+
+    API(
+      "get",
+      "get-roles",
+      {},
+      (response: any) => {
+        // Build Role objects directly from the API
+        const fetchedRoles: Role[] = response.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+        }));
+
+        setRoles(fetchedRoles);
+       
+        setIsLoadingRoles(false);
+      },
+      (error: any) => {
+        console.error("Error fetching roles:", error);
+        setIsLoadingRoles(false);
+      },
+      user?.token
+    );
+  };
 
 
   const handleChange = (
@@ -238,7 +284,7 @@ const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
                                           <option disabled value="">--Select--</option>
 
                       {roles.map((role, index) => (
-                        <option key={index} value={role.value}>
+                        <option key={index} value={role.name}>
                           {role.name}
                         </option>
                       ))}

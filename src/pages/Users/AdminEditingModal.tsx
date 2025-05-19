@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Dialog } from "../../base-components/Headless";
 import { FormInput, FormLabel, FormSelect, FormTextarea } from "../../base-components/Form";
@@ -11,6 +11,8 @@ import LoadingIcon from "../../base-components/LoadingIcon";
 import { formatCurrency } from "../../utils/utils";
 import Litepicker from "../../base-components/Litepicker";
 import { useFetchStates } from "../../lib/Hook";
+import API from "../../utils/API";
+import { UserContext } from "../../stores/UserContext";
 
 interface BillboardCreationModalProps {
   isOpen: boolean;
@@ -20,6 +22,10 @@ interface BillboardCreationModalProps {
   onClose: () => void;
   onSubmit: (data: any) => void;
 }
+type Role = {
+  id: number;
+  name: string;
+};
 
 interface Admin {
   id: number;
@@ -41,6 +47,19 @@ interface Admin {
 
 }
 
+
+// const roles = [
+//   { name: "Admin", value: "admin" },
+//   { name: "Client", value: "client" },
+//   { name: "Agency", value: "agency" },
+//   { name: "Super Admin", value: "super_admin" },
+//   { name: "CTO", value: "cto"},
+//   { name: "Account Manager", value: "account_manager" },
+//   { name: "CEO", value: "ceo" },
+//   { name: "Finance", value: "finance" },
+
+// ]
+
 const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
   isOpen,
   isLoading,
@@ -50,12 +69,15 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
 }) => {
   const [sendButtonRef] = useState(React.createRef<HTMLButtonElement>());
   const [updatedFields, setUpdatedFields] = useState({});
+  const { user } = useContext(UserContext);
 
   const [formData, setFormData] = useState<any>(admin);
   const { states, loading, error } = useFetchStates();
   const [lgas, setLGA] = useState<string[]>([]);
   const [dateOfBirth, setDateOfBirth] = useState<string>(admin?.dob);
+  const [roles, setRoles] = useState<Role[]>([]);
 
+  const [isLoadingRoles, setIsLoadingRoles] = useState(false);
 
   const validationSchema = yup.object().shape({
     first_name: yup.string().required("First name is required"),
@@ -117,7 +139,35 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
   }, [ watchedData]);
 
 
+  useEffect(() => {
+    fetchRole(); // Will also initialize rolePrivileges
+  }, []);
 
+  const fetchRole = () => {
+    setIsLoadingRoles(true);
+
+    API(
+      "get",
+      "get-roles",
+      {},
+      (response: any) => {
+        // Build Role objects directly from the API
+        const fetchedRoles: Role[] = response.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+        }));
+
+        setRoles(fetchedRoles);
+       
+        setIsLoadingRoles(false);
+      },
+      (error: any) => {
+        console.error("Error fetching roles:", error);
+        setIsLoadingRoles(false);
+      },
+      user?.token
+    );
+  };
 
   console.log(admin);
   
@@ -260,7 +310,7 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
                 )}
               </div>
 
-              <div className="lg:col-span-6 col-span-12">
+              {/* <div className="lg:col-span-6 col-span-12">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
                   htmlFor="role"
@@ -286,8 +336,33 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
                     {errors.role.message?.toString()}
                   </p>
                 )}
-              </div>
+              </div> */}
 
+              <div className=" lg:col-span-6 col-span-12">
+                    <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="client_type">Role</FormLabel>
+                    <FormSelect
+                      id = "role"
+                      defaultValue={admin.name}
+                    formSelectSize="lg"
+                     
+                   {...register("role", {
+                    onChange: (e) => {
+                      handleChange(e);
+                    },
+                  })}
+                    className="w-full"
+                    >
+                                          <option disabled value="">--Select--</option>
+
+                      {roles.map((role, index) => (
+                        <option key={index} value={role.name}>
+                          {role.name}
+                        </option>
+                      ))}
+
+                    </FormSelect>
+                    {errors.role && ( <p className="text-red-500">{errors.role.message?.toString()}</p>)}
+                </div>
             
 
               <div className="lg:col-span-6 col-span-12">
