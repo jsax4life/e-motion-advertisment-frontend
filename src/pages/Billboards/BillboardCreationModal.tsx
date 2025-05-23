@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useDropzone } from "react-dropzone";
 import { Dialog } from "../../base-components/Headless";
 import {
   FormInput,
@@ -34,6 +33,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const { states, loading, error } = useFetchStates();
   const [lgas, setLGA] = useState<string[]>([]);
+  const [showFaceSelector, setShowFaceSelector] = useState(false);
 
   const convertImagesToBase64 = (files: File[]): Promise<string[]> => {
     return Promise.all(
@@ -72,6 +72,11 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     dimension: yup.string().required("Dimension is required"),  
     billboardType: yup.string().required("Billboard Type is required"),
     mediaType: yup.string().required("media Type is required"),
+    faceDescriptions: yup.array().when('billboardType', {
+      is: 'static',
+      then: yup.array().of(yup.string().optional()),
+      otherwise: yup.array().notRequired()
+    })
 
   });
 
@@ -99,6 +104,11 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     billboardType: "Static",
     mediaType: "",
     numberOfSlotsOrFaces: "",
+    // faceDescriptions: [] as string[], // for storing descriptions
+    faceDescriptions: {} as Record<number, string>, // Store descriptions by face number
+  showDescriptionInputFor: null as any, // Track which face is being described
+
+
     // numberOfSlots: "",
     // numberOfFaces: "",
     pricePerDay: "",
@@ -115,6 +125,15 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     const { name, value } = e.target;
 
     setValue(name, value); // Ensure React Hook Form tracks this change
+
+    // if (name === "numberOfSlotsOrFaces") {
+    //   const numFaces = parseInt(value);
+    //   setFormData(prev => ({
+    //     ...prev,
+    //     [name]: value,
+    //     faceDescriptions: Array(numFaces).fill("") // Initialize empty descriptions
+    //   }));
+    // } 
 
     if (name === "pricePerMonth") {
       const pricePerMonth = parseFloat(value);
@@ -177,12 +196,31 @@ console.log(formData);
   const handleAddBillboard = async (data: any) => {
     const base64Images = await convertImagesToBase64(uploadedImages);
 
+     // Prepare faces data for static billboards
+  // const faces = formData.billboardType === "static" 
+  // ? Array.from({ length: parseInt(formData.numberOfSlotsOrFaces) }).map((_, index) => ({
+  //     number: index + 1,
+  //     description: formData.faceDescriptions[index] || ""
+  //   }))
+  // : [];
+
+    // Format faces data
+    const faces = formData.billboardType === "static" 
+    ? Object.entries(formData.faceDescriptions).map(([number, description]) => ({
+        number: parseInt(number),
+        description
+      }))
+    : [];
+
     // Prepare the payload
     const payload = {
       // Other form fields...
       ...data,
+
       // serialNumber: "6768702",
       images: base64Images, // Include Base64 images
+      faceDescriptions: formData.billboardType === "static" ? faces : undefined,
+
     };
 
     console.log(payload);
@@ -213,19 +251,7 @@ console.log(formData);
               onSubmit={handleSubmit(handleAddBillboard)}
               className="col-span-12 rounded-lg w-full max-w-2xl  md:p-4 space-y-8 "
             >
-              {/* image */}
-              {/* <div className="col-span-12">
-              <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="images">Images</FormLabel>
-              <input
-                type="file"
-                id="images"
-                name="images"
-                multiple
-                accept="image/*"
-                onChange={handleFileChange}
-                className="w-full p-2 border rounded"
-              />
-            </div> */}
+            
 
               <ImageUploadSection
                 uploadedImages={uploadedImages}
@@ -293,30 +319,6 @@ console.log(formData);
                 )}
               </div>
 
-              {/* <div className="col-span-12">
-                <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="state">State</FormLabel>
-                <FormInput
-                formInputSize="lg"
-                  id="state"
-                  type="text"
-                  placeholder="Type here"
-                  {...register("state")}
-                />
-
-                {errors.state && ( <p className="text-red-500">{errors.state.message?.toString()}</p>)}
-              </div> */}
-
-              {/* <div className="col-span-12">
-                <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="lga">Local Government Area</FormLabel>
-                <FormInput
-                formInputSize="lg"
-                  id="lga"
-                  type="text"
-                  placeholder="Type here"
-                  {...register("lga")}
-                />
-                {errors.lga && ( <p className="text-red-500">{errors.lga.message?.toString()}</p>)}
-              </div> */}
 
               <div className=" col-span-12 flex space-x-4">
                 <div className=" w-1/2 relative intro-y">
@@ -450,116 +452,10 @@ console.log(formData);
                     placeholder="Longitude"
                   />
                 </div>
-                {/* { errors.lat  && ( <p className="text-red-500">{errors.lat.message?.toString()} </p>)}
-                { errors.lng  && ( <p className="text-red-500">{errors.lng.message?.toString()} </p>)} */}
+      
               </div>
 
-                          {/* Billboard Type */}
-
-              {/* <div className="col-span-12">
-                <FormLabel
-                  className="font-medium lg:text-[16px] text-black"
-                  htmlFor="billboardType"
-                >
-                  Billboard Type
-                </FormLabel>
-                <FormSelect
-                  id="billboardType"
-                  formSelectSize="lg"
-                  {...register("billboardType", {
-                    onChange: (e) => {
-                      handleChange(e);
-                    },
-                  })}
-                  className="w-full p-2 border rounded"
-                >
-                  <option disabled selected value="">
-                    --Select--
-                  </option>
-
-                  <option value="static">Static</option>
-                  <option value="digital">Digital</option>
-                  <option value="bespoke">Bespoke (Innovative)</option>
-                </FormSelect>
-                {errors.billboardType && (
-                  <p className="text-red-500">
-                    {errors.billboardType.message?.toString()}
-                  </p>
-                )}
-              </div> */}
-
-
-              {/* dimension */}              
-
-              {/* <div className="col-span-12">
-                <FormLabel
-                  className="font-medium lg:text-[16px] text-black"
-                  htmlFor="dimension"
-                >
-                  Dimension
-                </FormLabel>
-                <FormSelect
-                  formSelectSize="lg"
-                  {...register("dimension", {
-                    onChange: (e) => {
-                      handleChange(e);
-                    },
-                  })}
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="" disabled selected>
-                    --select--
-                  </option>
-
-                  <option value="Standard">Standard</option>
-                  <option value="Custom">Custom</option>
-                </FormSelect>
-                {errors.dimension && (
-                  <p className="text-red-500">
-                    {errors.dimension.message?.toString()}
-                  </p>
-                )}
-              </div> */}
-
-              {/* specifications */}
-
-              {/* {formData.dimension === "Custom" && (
-                <div className="col-span-12 flex space-x-2">
-                  <div className="w-1/2 ">
-                    <FormLabel
-                      className="font-medium lg:text-[16px] text-black"
-                      htmlFor="width"
-                    >
-                      Width(Mt)
-                    </FormLabel>
-                    <FormInput
-                      formInputSize="lg"
-                      id="width"
-                      type="text"
-                      placeholder="Width"
-                      {...register("width")}
-                      className="p-2 border rounded"
-                    />
-                  </div>
-
-                  <div className="w-1/2 ">
-                    <FormLabel
-                      className="font-medium lg:text-[16px] text-black"
-                      htmlFor="height"
-                    >
-                      Height(Mt)
-                    </FormLabel>
-                    <FormInput
-                      formInputSize="lg"
-                      id="height"
-                      type="text"
-                      placeholder="Height"
-                      {...register("height")}
-                      className=" p-2 border rounded"
-                    />
-                  </div>
-                </div>
-              )} */}
+               
 
  <div className="col-span-12">
                 <FormLabel
@@ -771,6 +667,9 @@ console.log(formData);
                     })}
                     className="w-full p-2 border rounded"
                   >
+                      <option value=""  selected>
+                            --Select-- 
+                          </option>
                     {formData.billboardType === "digital"
                       ? [...Array(8)].map((_, i) => (
                           <option key={i + 1} value={i + 1}>
@@ -786,30 +685,205 @@ console.log(formData);
                 </div>
               )}
 
-              {/* Number of Faces for Static selection only*/}
+{/* face description */}
 
-              {/* {formData.billboardType === "static" && (
-                <div className="col-span-12">
-                  <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="numberOfFaces">Number of Faces</FormLabel>
-                  <FormSelect
-                    formSelectSize="lg"
+{/* {(formData.billboardType === "static" && formData.numberOfSlotsOrFaces) && (
+  <div className="col-span-12 space-y-4">
+    <h4 className="font-medium">Face Descriptions</h4>
+    <div className="col-span-12 text-sm text-gray-500 mt-1">
+  {formData.billboardType === "static" && 
+   "Add descriptions to help identify each face's location/direction"}
+</div>
+    {Array.from({ length: parseInt(formData.numberOfSlotsOrFaces) }).map((_, index) => (
+      <div key={index} className="space-y-2">
+        <FormLabel
+          className="font-medium text-sm"
+          htmlFor={`faceDescription-${index}`}
+        >
+          Description for Face {index + 1}
+        </FormLabel>
+        <FormInput
+          formInputSize="lg"
+          id={`faceDescription-${index}`}
+          type="text"
+          placeholder="E.g., 'Facing northbound traffic'"
+          value={formData.faceDescriptions[index] || ""}
+          onChange={(e) => {
+            const newDescriptions = [...formData.faceDescriptions];
+            newDescriptions[index] = e.target.value;
+            setFormData(prev => ({ ...prev, faceDescriptions: newDescriptions }));
+          }}
+          className="w-full p-2 border rounded"
+        />
+      </div>
+    ))}
+  </div>
+)} */}
 
-                    // name="numberOfFaces"
-                    value={formData.numberOfSlotsOrFaces}
-                    {...register("numberOfSlotsOrFaces", {
-                      onChange: (e) => {
-                        handleChange(e);
-                      },})}
-                    className="w-full p-2 border rounded"
-                  >
-                    {[...Array(4)].map((_, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        Face {i + 1}
-                      </option>
-                    ))}
-                  </FormSelect>
-                </div>
-              )} */}
+
+
+{formData.billboardType === "static" && formData.numberOfSlotsOrFaces && (
+  <div className="col-span-12 space-y-3">
+    <div className="flex items-center justify-between">
+      <h4 className="font-medium">Face Descriptions</h4>
+      {Object.keys(formData.faceDescriptions).length < parseInt(formData.numberOfSlotsOrFaces) && (
+        <button
+          type="button"
+          onClick={() => setShowFaceSelector(true)}
+          className="text-sm text-blue-600 hover:text-blue-800"
+        >
+          + Add Description
+        </button>
+      )}
+    </div>
+
+    {/* Face selector modal */}
+    {showFaceSelector && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg max-w-sm w-full">
+          <h3 className="font-medium mb-4">Select Face to Describe</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {Array.from({ length: parseInt(formData.numberOfSlotsOrFaces) })
+              .map((_, index) => index + 1)
+              .filter(faceNum => !formData.faceDescriptions[faceNum])
+              .map(faceNum => (
+                <button
+                  key={faceNum}
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      showDescriptionInputFor: faceNum
+                    }));
+                    setShowFaceSelector(false);
+                  }}
+                  className="p-2 border rounded hover:bg-gray-50"
+                >
+                  Face {faceNum}
+                </button>
+              ))}
+          </div>
+          <button
+            onClick={() => setShowFaceSelector(false)}
+            className="mt-4 text-sm text-gray-500 hover:text-gray-700"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* Description inputs for selected faces */}
+    {Object.entries(formData.faceDescriptions).map(([faceNum, description]) => (
+      // <div key={faceNum} className="space-y-2 border p-3 rounded-lg bg-slate-100">
+      //   <div className="flex justify-between items-center ">
+      //     <div className="font-medium text-customColor  max-w-3/4 ">Face {faceNum} - <span className="font-normal text-black">{ description}</span> </div>
+      //     <button
+      //       type="button"
+      //       onClick={() => {
+      //         const newDescriptions = { ...formData.faceDescriptions };
+      //         delete newDescriptions[parseInt(faceNum)];
+      //         setFormData(prev => ({
+      //           ...prev,
+      //           faceDescriptions: newDescriptions
+      //         }));
+      //       }}
+      //       className="text-red-500 hover:text-red-700 text-sm"
+      //     >
+      //       Remove
+      //     </button>
+      //   </div>
+        
+      //   <FormInput
+      //     formInputSize="lg"
+      //     value={description}
+      //     onChange={(e) => {
+      //       setFormData(prev => ({
+      //         ...prev,
+      //         faceDescriptions: {
+      //           ...prev.faceDescriptions,
+      //           [faceNum]: e.target.value
+      //         }
+      //       }));
+      //     }}
+      //     placeholder="E.g., 'Facing northbound traffic'"
+      //     className="w-full p-2 border rounded"
+      //   />
+      // </div>
+
+<div key={faceNum} className="space-y-2 border p-3 rounded-lg bg-slate-100">
+<div className="flex justify-between items-start gap-2"> {/* Changed to items-start and added gap */}
+  <div className="font-medium text-customColor flex-1 min-w-0"> {/* Added flex-1 and min-w-0 */}
+    <span className="whitespace-nowrap">Face {faceNum} - </span> {/* Prevent number from wrapping */}
+    <span className="font-normal text-black break-words"> {/* Added break-words */}
+      {description}
+    </span>
+  </div>
+  <button
+    type="button"
+    onClick={() => {
+      const newDescriptions = { ...formData.faceDescriptions };
+      delete newDescriptions[parseInt(faceNum)];
+      setFormData(prev => ({
+        ...prev,
+        faceDescriptions: newDescriptions
+      }));
+    }}
+    className="text-red-500 hover:text-red-700 text-sm flex-shrink-0" 
+  >
+    Remove
+  </button>
+</div>
+</div>
+
+
+    ))}
+
+    {/* Input for newly selected face */}
+    {formData.showDescriptionInputFor && (
+      <div className="space-y-2 border p-3 rounded-lg">
+        <div className="flex justify-between items-center">
+          <span className="font-medium">Face {formData.showDescriptionInputFor}</span>
+          <button
+            type="button"
+            onClick={() => {
+              setFormData(prev => ({
+                ...prev,
+                showDescriptionInputFor: null
+              }));
+            }}
+            className="text-blue-500 hover:text-red-700 text-sm"
+          >
+            Done
+          </button>
+        </div>
+        <FormInput
+          formInputSize="lg"
+          value={formData.faceDescriptions[formData.showDescriptionInputFor] || ""}
+          onChange={(e) => {
+            setFormData(prev => ({
+              ...prev,
+              faceDescriptions: {
+                ...prev.faceDescriptions,
+                [formData.showDescriptionInputFor]: e.target.value
+              }
+            }));
+          }}
+          onBlur={() => {
+            if (!formData.faceDescriptions[formData.showDescriptionInputFor]) {
+              setFormData(prev => ({
+                ...prev,
+                showDescriptionInputFor: null
+              }));
+            }
+          }}
+          placeholder="E.g., 'Facing northbound traffic'"
+          className="w-full p-2 border rounded"
+        />
+      </div>
+    )}
+  </div>
+)}
+         
 
                {/* Price Per Month */}
               <div className="col-span-12">
@@ -895,34 +969,6 @@ console.log(formData);
                 )}
               </div>
 
-              {/* active status */}
-              {/* <div className="col-span-12">
-                <FormLabel
-                  className="font-medium lg:text-[16px] text-black"
-                  htmlFor="activeStatus"
-                >
-                  Active Status
-                </FormLabel>
-                <FormSelect
-                  formSelectSize="lg"
-                  // name="activeStatus"
-                  value={formData.activeStatus}
-                  {...register("activeStatus", {
-                    onChange: (e) => {
-                      handleChange(e);
-                    },
-                  })}
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="vacant">Vacant</option>
-                  <option value="occupied">Occupied</option>
-                </FormSelect>
-                {errors.activeStatus && (
-                  <p className="text-red-500">
-                    {errors.activeStatus.message?.toString()}
-                  </p>
-                )}
-              </div> */}
 
               {/* board orientation */}
               <div className="col-span-12">
@@ -993,26 +1039,7 @@ console.log(formData);
           </Dialog.Description>
 
           <Dialog.Footer className="text-right">
-            {/* <Button
-              type="button"
-              variant="outline-secondary"
-              onClick={onClose}
-              className="w-20 mr-1 border-customColor text-customColor"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              type="button"
-              className="lg:w-25 bg-customColor"
-              ref={sendButtonRef}
-              onClick={handleSubmit((data) => {
-                onSubmit(data);
-                onClose();
-              })}
-            >
-              Apply Filter
-            </Button> */}
+       
           </Dialog.Footer>
         </Dialog.Panel>
       </Dialog>

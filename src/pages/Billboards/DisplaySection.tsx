@@ -6,6 +6,12 @@ import { Menu, Tab } from "../../base-components/Headless";
 import Table from "../../base-components/Table";
 import { formatCurrency, formatDate } from "../../utils/utils";
 
+
+interface BillboardFace {
+  face_number: number;
+  description: string | null; // or `string` if description is always required
+}
+
 interface Billboard {
   slot_available: any;
   face_available: any;
@@ -27,7 +33,7 @@ interface Billboard {
   height: string;
   width: string;
   available_slots: number[];
-  available_faces: number[];
+  available_faces: BillboardFace[]; // <- updated structure
 
   pricePerMonth: string;
   status: string;
@@ -50,6 +56,9 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
   }
 
   console.log(billboard);
+
+  const availableFaceNumbers = billboard.available_faces.map(face => face.face_number);
+
 
   return (
     // <div className="col-span-7 bg-blue-500 flex space-x-4 border rounded-2xl px-5 sm:px-6 intro-y">
@@ -210,13 +219,18 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
               <div className="font-semibold text-xs">{slot}</div>
             </div>
           ))
-      : Array.from({ length: billboard.numberOfSlotsOrFaces }, (_, i) => i + 1)
-          .filter((face) => !billboard.available_faces.includes(face)) // Filter out available faces
+      :  Array.from({ length: billboard.numberOfSlotsOrFaces }, (_, i) => i + 1)
+          .filter(face => !availableFaceNumbers.includes(face)) // Filter out available faces
           .map((face, index) => (
-            <div key={index} className="flex justify-center items-center rounded-lg bg-red-100 text-red-500 p-2 w-7 h-7">
+            <div
+              key={index}
+              className="flex justify-center items-center rounded-lg bg-red-100 text-red-500 p-2 w-7 h-7"
+            >
               <div className="font-semibold text-xs">{face}</div>
             </div>
-          ))}
+          ))
+
+          }
 
     {/* Available Slots/Faces */}
     {billboard.billboardType === "digital"
@@ -227,7 +241,8 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
         ))
       : billboard?.available_faces.map((face, index) => (
           <div key={index} className="flex justify-center items-center rounded-lg bg-green-100 text-green-500 p-2 w-7 h-7">
-            <div className="font-semibold text-xs">{face}</div>
+            <div className="font-semibold text-xs">{face.face_number}</div>
+            {/* <strong>Face {face.face_number}:</strong> {face.description} */}
           </div>
         ))}
 

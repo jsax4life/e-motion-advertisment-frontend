@@ -30,6 +30,12 @@ interface Client {
   company_name: string;
 }
 
+
+interface BillboardFace {
+  face_number: number;
+  description: string | null; // or `string` if description is always required
+}
+
 interface AvailableBillboard {
   id: string;
   serialNumber: string,
@@ -37,7 +43,7 @@ interface AvailableBillboard {
   billboardName: string;
   billboardType: "static" | "digital" | "bespoke";
   numberOfSlotsOrFaces: number;
-  available_faces: number[];
+  available_faces: BillboardFace[];
   available_slots: number[];
   pricePerDay: number;
     state: string,

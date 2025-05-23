@@ -63,6 +63,10 @@ type OrderDetails = {
   description: string;
 };
 
+interface BillboardFace {
+  face_number: number;
+  description: string | null; // or `string` if description is always required
+}
 
 interface AvailableBillboard {
   id: string;
@@ -82,7 +86,7 @@ interface AvailableBillboard {
   height: string;
   width: string;
   available_slots: number[];
-  available_faces: number[];
+  available_faces: BillboardFace[];
 
   pricePerMonth: string;
   status: string;
@@ -326,7 +330,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     //   ...prev,
     //   [formData.billboard_id]: [...(prev[formData.billboard_id] || []), formData.slotOrFace],
     // }));
-
+console.log(formData);
       // Update the used slots and faces
     setUsedSlotsFaces((prev) => {
       const updated = { ...prev };
@@ -337,6 +341,9 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       }
       return updated;
     });
+
+    console.log(formData);
+
 
     // Clear the selected billboard
     setSelectedBillboard(undefined);
@@ -447,7 +454,9 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // onClose();
   };
 
-// console.log(orderDetails)
+
+
+console.log(selectedBillboard)
   if (!isOpen) return null;
 
   return (
@@ -714,10 +723,13 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           <option key={slot} value={slot}>Slot {slot}</option>
         ))
     : selectedBillboard?.available_faces
-        .filter(face => !usedSlotsFaces[selectedBillboard?.id]?.includes(face.toString())) // Filter used faces
+        .filter(face => !usedSlotsFaces[selectedBillboard?.id]?.includes(face.face_number.toString())) // Filter used faces
         .map(face => (
-          <option key={face} value={face}>Face {face}</option>
+          <option key={face.face_number} value={face.face_number}>Face {face.face_number}{face.description? ' -' : ''} {face.description}</option>
         ))
+
+
+        
   }
                     </FormSelect>
                 </div>

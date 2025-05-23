@@ -17,6 +17,7 @@ import { formatCurrency } from "../../../utils/utils";
 import Litepicker from "../../../base-components/Litepicker";
 import { PullBillboardContext } from "../../../stores/BillboardDataContext";
 import { set } from "lodash";
+import PdfUploadSection from "./PdfUploadSection";
 
 interface OrderCreationModalProps {
   isOpen: boolean;
@@ -24,7 +25,9 @@ interface OrderCreationModalProps {
 
   isLoading: boolean;
   onClose: () => void;
-  onSubmit: (data: any) => void;
+  // onSubmit: (data: any) => void;
+  onSubmit: (data: any, fileForm: any) => void;
+
 }
 
 type SlotsFacesResponse = {
@@ -98,6 +101,7 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
   const [usedSlotsFaces, setUsedSlotsFaces] = useState<
     Record<string, string[]>
   >({});
+  const [mediaPurchaseOrder, setMediaPurchaseOrder] = useState<File | null>(null);
 
   const validationSchema = yup.object().shape({});
 
@@ -352,13 +356,26 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
       !orderDetails.payment_option ||
       !orderDetails.media_purchase_order ||
       !orderDetails.total_order_amount ||
-      billboards.length === 0
+      billboards.length === 0 
     ) {
       alert(
         "Please fill all required order fields and add at least one billboard."
       );
       return;
     }
+
+    const formData = new FormData();
+
+    if (mediaPurchaseOrder) {
+      formData.append("media_purchase_order", mediaPurchaseOrder);
+
+    }
+
+     // ✅ Conditionally add campaign_order_id if updating
+  if (orderToEdit?.id) {
+    formData.append("campaign_order_id", orderToEdit.id.toString());
+  }
+
 
     // Prepare the payload
     const payload = {
@@ -371,8 +388,11 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
       ),
     };
 
+    onSubmit(payload, formData);
+
+
     // Submit the order
-    onSubmit(payload);
+    // onSubmit(payload);
 
     console.log(payload);
 
@@ -936,7 +956,7 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
               </div>
 
               {/* media purchase input */}
-              <div className="col-span-12">
+              {/* <div className="col-span-12">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
                   htmlFor="media_purchase_order"
@@ -958,7 +978,12 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
                     {errors.media_purchase_order.message?.toString()}
                   </p>
                 )}
-              </div>
+              </div> */}
+
+              <PdfUploadSection
+  uploadedPdf={mediaPurchaseOrder}
+  setUploadedPdf={setMediaPurchaseOrder}
+/>
 
               {/* description */}
               <div className="col-span-12">
