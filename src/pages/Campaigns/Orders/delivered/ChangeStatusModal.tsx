@@ -26,8 +26,6 @@ interface BillboardCreationModalProps {
   onSubmit: (data: any) => void;
 }
 
-
-
 const ChangeDeliveryStatusModal: React.FC<BillboardCreationModalProps> = ({
   isOpen,
   isLoading,
@@ -42,15 +40,16 @@ const ChangeDeliveryStatusModal: React.FC<BillboardCreationModalProps> = ({
   const [freezeStartDate, setFreezeStartDate] = useState<any>();
   const [unfreezeDate, setUnfreezeDate] = useState<any>(
     campaign?.campaign_freeze_start_date
-    );
-
+  );
+  const [newCampaignEndDate, setNewCampaignEndDate] = useState<any>();
   // const [freezeEndDate, setFreezeEndDate] = useState<any>();
-const [numberOfDays, setNumberOfDays] = useState<any>();
-const [numberOfDaysFrozen, setNumberOfDaysFrozen] = useState<any>();
+  const [numberOfDays, setNumberOfDays] = useState<any>();
+  const [numberOfDaysTillEnd, setNumberOfDaysTillEnd] = useState<any>();
 
-const [isNumberOfDaysNegative, setIsNumberOfDaysNegative] = useState<boolean>(false);
-const [isNumberOfFrozenDaysNegative, setIsNumberOfFrozenDaysNegative] = useState<boolean>(false);
-
+  const [isNumberOfDaysNegative, setIsNumberOfDaysNegative] =
+    useState<boolean>(false);
+  const [isNumberOfFrozenDaysNegative, setIsNumberOfFrozenDaysNegative] =
+    useState<boolean>(false);
 
   const validationSchema = yup.object().shape({
     status: yup.string().required("Status Code is required"),
@@ -67,30 +66,53 @@ const [isNumberOfFrozenDaysNegative, setIsNumberOfFrozenDaysNegative] = useState
     resolver: yupResolver(validationSchema),
   });
 
- 
-  useEffect(() => {
-    if (campaign?.campaign_freeze_start_date) {
-      setUnfreezeDate(campaign.campaign_freeze_start_date);
-    }
-  }, [campaign]);
-  
+  // useEffect(() => {
+  //   if (campaign?.campaign_freeze_start_date) {
+  //     setUnfreezeDate(campaign.campaign_freeze_start_date);
+  //   }
+  // }, [campaign]);
 
   useEffect(() => {
-   const calcNumberOfDays =  calculateNumberOfDays(freezeStartDate, campaign?.campaign_end_date);
+    const calcNumberOfDays = calculateNumberOfDays(
+      freezeStartDate,
+      campaign?.campaign_end_date
+    );
     setNumberOfDays(calcNumberOfDays);
-    calcNumberOfDays < 0 ? setIsNumberOfDaysNegative(true) : setIsNumberOfDaysNegative(false);
-  
-  } , [freezeStartDate, campaign?.campaign_end_date]);
+    calcNumberOfDays < 0
+      ? setIsNumberOfDaysNegative(true)
+      : setIsNumberOfDaysNegative(false);
+  }, [freezeStartDate, campaign?.campaign_end_date]);
 
   useEffect(() => {
-    const calcNumberOfDaysFrozen =  calculateNumberOfDays(campaign?.campaign_freeze_start_date, unfreezeDate);
-     setNumberOfDaysFrozen(calcNumberOfDaysFrozen);
-     calcNumberOfDaysFrozen < 0 ? setIsNumberOfFrozenDaysNegative(true) : setIsNumberOfFrozenDaysNegative(false);
+    const calcNumberOfDaysTillEnd = calculateNumberOfDays(
+      campaign?.campaign_freeze_start_date,
+      campaign?.campaign_end_date
+    );
+    setNumberOfDaysTillEnd(calcNumberOfDaysTillEnd);
+    // calcNumberOfDaysTillEnd < 0 ? setIsNumberOfFrozenDaysNegative(true) : setIsNumberOfFrozenDaysNegative(false);
 
-     
+    const newEndDate = addDays(unfreezeDate, calcNumberOfDaysTillEnd);
+
+    console.log(newEndDate)
+
    
-   } , [unfreezeDate, campaign?.campaign_freeze_start_date]);
+  if (newEndDate.includes('NaN')) {
+    setNewCampaignEndDate(undefined); 
+  } else {
+    setNewCampaignEndDate(newEndDate);
+  }
+    
+  }, [unfreezeDate, campaign?.campaign_freeze_start_date]);
   //   console.log(uploadedImages);
+
+  function addDays(dateStr: string, daysToAdd: number): string {
+    const date = new Date(dateStr);
+    date.setDate(date.getDate() + daysToAdd);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -106,17 +128,19 @@ const [isNumberOfFrozenDaysNegative, setIsNumberOfFrozenDaysNegative] = useState
       [name]: value,
     }));
   };
-// check  if number of days is negative 
+  // check  if number of days is negative
   // numberOfDays < 0 ? setIsNumberOfDaysNegative(true) : setIsNumberOfDaysNegative(false);
 
   const handleChangeStatus = async (data: any) => {
     // Prepare the payload
-   const payload = {
+    const payload = {
       // Other form fields...
       ...data,
-   
+
       campaign_freeze_start_date: freezeStartDate,
       campaign_unfreeze_date: unfreezeDate,
+      new_campaign_end_date: newCampaignEndDate,
+      old_campaign_end_date: newCampaignEndDate? campaign?.campaign_end_date : undefined,
       // end_date: data.end_date,
     };
 
@@ -127,13 +151,13 @@ const [isNumberOfFrozenDaysNegative, setIsNumberOfFrozenDaysNegative] = useState
     // onClose();
   };
 
-    // console.log(campaign);
+  // console.log(campaign);
 
   //   console.log(formData);
 
   if (!isOpen) return null;
 
-  console.log(unfreezeDate);
+  // console.log(unfreezeDate);
 
   return (
     <>
@@ -166,9 +190,9 @@ const [isNumberOfFrozenDaysNegative, setIsNumberOfFrozenDaysNegative] = useState
               onSubmit={handleSubmit(handleChangeStatus)}
               className="col-span-12 rounded-lg w-full max-w-2xl  md:p-4 space-y-8 "
             >
-              <div className="col-span-12">
+              <div className="col-span-12 ">
                 <FormLabel
-                  className="font-medium lg:text-[16px] text-black"
+                  className="font-medium lg:text-[16px] text-black " 
                   htmlFor="status"
                 >
                   Status
@@ -186,10 +210,14 @@ const [isNumberOfFrozenDaysNegative, setIsNumberOfFrozenDaysNegative] = useState
                 >
                   <option value="end">End</option>
                   {/* <option value="frozen">Freeze</option> */}
-                  {campaign.status === "frozen" && campaign.campaign_freeze_start_date ?  (<option value="delivered">Unfreeze</option>)  : (<option value="frozen">Freeze</option>) }
+                  {campaign.status === "frozen" &&
+                  campaign.campaign_freeze_start_date ? (
+                    <option value="unfreeze">Unfreeze</option>
+                  ) : (
+                    <option value="frozen">Freeze</option>
+                  )}
                   {/* <option value="paid">Paid</option>
                   <option value="delivered">Delivered</option> */}
-
                 </FormSelect>
                 {errors.status && (
                   <p className="text-red-500">
@@ -198,150 +226,114 @@ const [isNumberOfFrozenDaysNegative, setIsNumberOfFrozenDaysNegative] = useState
                 )}
               </div>
 
+              <div className="col-span-12 border-b border-slate-200">
+                  </div>
+
               {/* set freezing duration (sstart and end) if uption is freeze */}
               {formData?.status === "frozen" && (
                 <>
-                  {/* <div className="col-span-12">
-                    <FormLabel
-                      className="font-medium lg:text-[16px] text-black"
-                      htmlFor="start_date"
-                    >
-                      Start Date
-                    </FormLabel>
-                    <input
-                      type="date"
-                      className="w-full p-2 border rounded-lg py-3.5"
-                      {...register("start_date")}
-                    />
-                  </div>
-                  <div className="col-span-12">
-                    <FormLabel
-                      className="font-medium lg:text-[16px] text-black"
-                      htmlFor="end_date"
-                    >
-                      End Date
-                    </FormLabel>
-                    <input
-                      type="date"
-                      className="w-full p-2 border rounded-lg py-3.5"
-                      {...register("end_date")}
-                    />
-                  </div> */}
-                   <div className="col-span-12   ">
-                <div className="col-span-12  flex justify-center items-center lg:space-x-8 space-x-2">
-                  <div className="w-full relative">
-                    <FormLabel
-                      className="text-xs font-medium lg:text-[16px] text-black"
-                      htmlFor="duration"
-                    >
-                      Freeze  Date
-                    </FormLabel>
-
-                    <Litepicker
-                      id="campaign-duration"
-                      // value={`${orderToEdit?.campaign_start_date} - ${orderToEdit?.campaign_end_date}`}
-                      // onChange={setDaterange}
-                      value={freezeStartDate}
-                      onChange={setFreezeStartDate}
-                      options={{
-                        autoApply: false,
-                        showWeekNumbers: true,
-                        dropdowns: {
-                          minYear: new Date().getFullYear() , //set to current year
-                          maxYear: null,
-                          months: true,
-                          years: true,
-                        },
-                      }}
-                      className="block py-3 pl-8 mx-auto"
-
-
-                                    // onChange={setDateOfBirth}
-
-                  // onChange={(e:any) => {
-                  //   const newValue = e;
-                  //   // Call your custom function
-                  //   setDateOfBirth(newValue);                  
-                  //   setValue("birthday", newValue, {
-                  //     shouldValidate: true,
-                  //   });
-                  // }}
                   
-            
-                    />
-                    <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
-                      <Lucide icon="Calendar" className="w-4 h-4" />
+                  <div className="col-span-12   ">
+                    <div className="col-span-12  flex justify-center items-center lg:space-x-8 space-x-2">
+                      <div className="w-full relative">
+                        <FormLabel
+                          className="text-xs font-medium lg:text-[16px] text-black"
+                          htmlFor="duration"
+                        >
+                          Freeze Date
+                        </FormLabel>
+
+                        <Litepicker
+                          id="campaign-duration"
+                          // value={`${orderToEdit?.campaign_start_date} - ${orderToEdit?.campaign_end_date}`}
+                          // onChange={setDaterange}
+                          value={freezeStartDate}
+                          onChange={setFreezeStartDate}
+                          options={{
+                            autoApply: false,
+                            showWeekNumbers: true,
+                            dropdowns: {
+                              minYear: new Date().getFullYear(), //set to current year
+                              maxYear: null,
+                              months: true,
+                              years: true,
+                            },
+                          }}
+                          className="block py-3 pl-8 mx-auto"
+
+                        
+                        />
+                        <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+                          <Lucide icon="Calendar" className="w-4 h-4" />
+                        </div>
+                      </div>
+
+                      <div className="w-full relative">
+                        <FormLabel
+                          className="text-xs font-medium lg:text-[16px] text-black"
+                          htmlFor="duration"
+                        >
+                          Campaign End Date
+                        </FormLabel>
+
+                        <Litepicker
+                          id="campaign-duration"
+                          // value={`${orderToEdit?.campaign_start_date} - ${orderToEdit?.campaign_end_date}`}
+                          // onChange={setDaterange}
+                          value={campaign?.campaign_end_date}
+                          disabled
+                          onChange={(e: any) => {}}
+                          options={{
+                            autoApply: false,
+                            showWeekNumbers: true,
+                            dropdowns: {
+                              minYear: new Date().getFullYear(), //set to current year
+                              maxYear: null,
+                              months: true,
+                              years: true,
+                            },
+                          }}
+                          className="block py-3 pl-8 mx-auto "
+                        />
+                        <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+                          <Lucide icon="Calendar" className="w-4 h-4" />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="w-full relative">
-                    <FormLabel
-                      className="text-xs font-medium lg:text-[16px] text-black"
-                      htmlFor="duration"
-                    >
-                      Campaign End Date 
-                    </FormLabel>
 
-                    <Litepicker
-                      id="campaign-duration"
-                      // value={`${orderToEdit?.campaign_start_date} - ${orderToEdit?.campaign_end_date}`}
-                      // onChange={setDaterange}
-                      value={campaign?.campaign_end_date}
-                      disabled
-                      onChange={(e:any) => {}}
-                      options={{
-                        autoApply: false,
-                        showWeekNumbers: true,
-                        dropdowns: {
-                          minYear: new Date().getFullYear() , //set to current year
-                          maxYear: null,
-                          months: true,
-                          years: true,
-                          
-                        },
-                      }}
-                      
-                      className="block py-3 pl-8 mx-auto "
-                    />
-                    <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
-                      <Lucide icon="Calendar" className="w-4 h-4" />
+                  <div className="col-span-12 flex  space-x-8 ">
+                    <div className="col-span-6 w-1/2 ">
+                      <FormLabel
+                        className="font-medium text-xs lg:text-[16px] text-black"
+                        htmlFor="duration"
+                      >
+                        Number of Days
+                      </FormLabel>
+                      <FormInput
+                        formInputSize="lg"
+                        type="text"
+                        name="numberOfDays"
+                        value={`${numberOfDays} Days`}
+                        readOnly
+                        className="w-full text-sm  border rounded bg-gray-100 cursor-not-allowed"
+                      />
+
+                      {isNumberOfDaysNegative && (
+                        <div className="col-span-12">
+                          <p className="text-red-500">
+                            Number of days cannot be negative
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
-                
-                </div>
-              </div>
-              <div className="col-span-6 lg:w-1/2">
-                    <FormLabel
-                      className="font-medium text-xs lg:text-[16px] text-black"
-                      htmlFor="duration"
-                    >
-                      Number of Days
-                    </FormLabel>
-                    <FormInput
-                      formInputSize="lg"
-                      type="text"
-                      name="numberOfDays"
-                      value={ `${numberOfDays} Days`}
-                      readOnly
-                      className="w-full text-sm  border rounded bg-gray-100 cursor-not-allowed"
-                    />
 
-                    
-                    {isNumberOfDaysNegative && (
-                <div className="col-span-12">
-                  <p className="text-red-500">
-                    Number of days cannot be negative
-                  </p>  
-                </div>
-              )}
-                  </div>
-              {/* display error if number of days is negative */}
-            
+                  {/* display error if number of days is negative */}
                 </>
-              )
-              } 
+              )}
 
-
-{formData?.status === "delivered" && (
+              {formData?.status === "unfreeze" && (
                 <>
                   {/* <div className="col-span-12">
                     <FormLabel
@@ -369,128 +361,155 @@ const [isNumberOfFrozenDaysNegative, setIsNumberOfFrozenDaysNegative] = useState
                       {...register("end_date")}
                     />
                   </div> */}
-                   <div className="col-span-12   ">
-                <div className="col-span-12  flex justify-center items-center lg:space-x-8 space-x-2">
-                  <div className="w-full relative">
-                    <FormLabel
-                      className="text-xs font-medium lg:text-[16px] text-black"
-                      htmlFor="duration"
-                    >
-                      Unfreeze  Date
-                    </FormLabel>
+                  <div className="col-span-12   ">
+                    <div className="col-span-12  flex justify-center items-center lg:space-x-8 space-x-2">
+                      <div className="w-full relative">
+                        <FormLabel
+                          className="text-xs font-medium lg:text-[16px] text-customColor"
+                          htmlFor="duration"
+                        >
+                         Set Unfreeze Date
+                        </FormLabel>
 
-                    <Litepicker
-                      id="campaign-duration"
-                      // value={`${orderToEdit?.campaign_start_date} - ${orderToEdit?.campaign_end_date}`}
-                      // onChange={setDaterange}
-                      value={unfreezeDate}
-                      onChange={setUnfreezeDate}
-                      options={{
-                        autoApply: false,
-                        showWeekNumbers: true,
-                        dropdowns: {
-                          minYear: new Date().getFullYear() , //set to current year
-                          maxYear: null,
-                          // months:  new Date().getMonth(),
-                          months: true,
-                          years: true,
-                        },
-                      }}
-                      className="block py-3 pl-8 mx-auto"
+                        <Litepicker
+                          id="campaign-duration"
+                          // value={`${orderToEdit?.campaign_start_date} - ${orderToEdit?.campaign_end_date}`}
+                          // onChange={setDaterange}
+                          value={unfreezeDate}
+                          onChange={setUnfreezeDate}
+                          options={{
+                            autoApply: false,
+                            showWeekNumbers: true,
+                            dropdowns: {
+                              minYear: new Date().getFullYear(), //set to current year
+                              maxYear: null,
+                              // months:  new Date().getMonth(),
+                              months: true,
+                              years: true,
+                            },
+                          }}
+                          className="block py-3 pl-8 mx-auto"
 
+                          // onChange={setDateOfBirth}
 
-                                    // onChange={setDateOfBirth}
+                          // onChange={(e:any) => {
+                          //   const newValue = e;
+                          //   // Call your custom function
+                          //   setDateOfBirth(newValue);
+                          //   setValue("birthday", newValue, {
+                          //     shouldValidate: true,
+                          //   });
+                          // }}
+                        />
+                        <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+                          <Lucide icon="Calendar" className="w-4 h-4" />
+                        </div>
+                      </div>
 
-                  // onChange={(e:any) => {
-                  //   const newValue = e;
-                  //   // Call your custom function
-                  //   setDateOfBirth(newValue);                  
-                  //   setValue("birthday", newValue, {
-                  //     shouldValidate: true,
-                  //   });
-                  // }}
-                  
-            
-                    />
-                    <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
-                      <Lucide icon="Calendar" className="w-4 h-4" />
+                   
                     </div>
                   </div>
-               
 
-                  <div className="w-full relative">
-                    <FormLabel
-                      className="font-medium text-xs lg:text-[16px] text-black"
-                      htmlFor="duration"
-                    >
-                      Number of Days Frozen
-                    </FormLabel>
-                    <FormInput
-                      formInputSize="lg"
-                      type="text"
-                      name="numberOfDays"
-                      value={ `${numberOfDaysFrozen} Days`}
-                      readOnly
-                      className="w-full text-sm  border rounded bg-gray-100 cursor-not-allowed"
-                    />
+                  <div className="col-span-12">
+<div className="w-full relative">
+                        <FormLabel
+                          className="font-medium text-xs lg:text-[16px] text-black"
+                          htmlFor="duration"
+                        >
+                          Number of Days Left
+                        </FormLabel>
+                        <FormInput
+                          formInputSize="lg"
+                          type="text"
+                          name="numberOfDays"
+                          value={`${numberOfDaysTillEnd} Days`}
+                          readOnly
+                          className="w-full text-sm  border rounded bg-gray-100 cursor-not-allowed"
+                        />
 
-                    
-                    {isNumberOfFrozenDaysNegative && (
-                <div className="col-span-12">
-                  <p className="text-red-500">
-                    Number of days cannot be negative
-                  </p>  
-                </div>
-              )}
-                  </div>
-                
-                </div>
-              </div>
-             
+                        {isNumberOfFrozenDaysNegative && (
+                          <div className="col-span-12">
+                            <p className="text-red-500">
+                              Number of days cannot be negative
+                            </p>
+                          </div>
+                        )}
+                      </div>
+</div>
 
-                  <div className="col-span-6 lg:w-1/2 relative">
-                    <FormLabel
-                      className="text-xs font-medium lg:text-[16px] text-black"
-                      htmlFor="duration"
-                    >
-                      Campaign End Date 
-                    </FormLabel>
+                  <div className="col-span-12 flex space-x-2 lg:space-x-8  ">
+                    <div className="col-span-6 lg:w-1/2 relative">
+                      <FormLabel
+                        className="text-xs font-medium lg:text-[16px] text-black"
+                        htmlFor="duration"
+                      >
+                       Initial Campaign End Date
+                      </FormLabel>
 
-                    <Litepicker
-                      id="campaign-duration"
-                      // value={`${orderToEdit?.campaign_start_date} - ${orderToEdit?.campaign_end_date}`}
-                      // onChange={setDaterange}
-                      value={campaign?.campaign_end_date}
-
-                      disabled
-                      onChange={(e:any) => {}}
-                      options={{
-
-                        autoApply: false,
-                        showWeekNumbers: true,
-                        dropdowns: {
-                          minYear: new Date().getFullYear() , //set to current year
-                          maxYear: null,
-                          months: true,
-                          years: true,
-                          
-                        },
-                      }}
-                      
-                      className="block py-3 pl-8 mx-auto "
-                    />
-                    <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
-                      <Lucide icon="Calendar" className="w-4 h-4" />
+                      <Litepicker
+                        id="campaign-duration"
+                        // value={`${orderToEdit?.campaign_start_date} - ${orderToEdit?.campaign_end_date}`}
+                        // onChange={setDaterange}
+                        value={campaign?.campaign_end_date}
+                        disabled
+                        onChange={(e: any) => {}}
+                        options={{
+                          autoApply: false,
+                          showWeekNumbers: true,
+                          dropdowns: {
+                            minYear: new Date().getFullYear(), //set to current year
+                            maxYear: null,
+                            months: true,
+                            years: true,
+                          },
+                        }}
+                        className="block py-3 pl-8 mx-auto "
+                      />
+                      <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+                        <Lucide icon="Calendar" className="w-4 h-4" />
+                      </div>
                     </div>
+
+                    {newCampaignEndDate && (
+                      <div className="col-span-6  relative">
+                        <FormLabel
+                          className="text-xs font-medium lg:text-[16px] text-green-500"
+                          htmlFor="duration"
+                        >
+                          New Campaign End Date
+                        </FormLabel>
+
+                        <Litepicker
+                          id="campaign-duration"
+                          // value={`${orderToEdit?.campaign_start_date} - ${orderToEdit?.campaign_end_date}`}
+                          // onChange={setDaterange}
+                          value={newCampaignEndDate}
+                          disabled
+                          onChange={(e: any) => {}}
+                          options={{
+                            autoApply: false,
+                            showWeekNumbers: true,
+                            dropdowns: {
+                              minYear: new Date().getFullYear(), //set to current year
+                              maxYear: null,
+                              months: true,
+                              years: true,
+                            },
+                          }}
+                          className="block py-3 pl-8 mx-auto "
+                        />
+                        <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+                          <Lucide icon="Calendar" className="w-4 h-4" />
+                        </div>
+                      </div>
+                    )}
                   </div>
-              {/* display error if number of days is negative */}
-            
+                  {/* display error if number of days is negative */}
+
+    
                 </>
-              )
-              } 
+              )}
 
-
-              
 
               <div className="col-span-12">
                 <FormLabel
@@ -508,13 +527,12 @@ const [isNumberOfFrozenDaysNegative, setIsNumberOfFrozenDaysNegative] = useState
                   onChange={handleChange}
                   placeholder="Add comment..."
                 />
-                 {errors.remarks && (
+                {errors.remarks && (
                   <p className="text-red-500">
                     {errors.remarks.message?.toString()}
                   </p>
                 )}
               </div>
-             
 
               <div className="flex justify-end space-x-2 lg:text-lg text-sm">
                 <Button
@@ -555,9 +573,7 @@ const [isNumberOfFrozenDaysNegative, setIsNumberOfFrozenDaysNegative] = useState
             </form>
           </Dialog.Description>
 
-          <Dialog.Footer className="text-right">
-        
-          </Dialog.Footer>
+          <Dialog.Footer className="text-right"></Dialog.Footer>
         </Dialog.Panel>
       </Dialog>
     </>

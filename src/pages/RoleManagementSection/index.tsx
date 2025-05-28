@@ -8,6 +8,7 @@ import Table from "../../base-components/Table";
 import { Separator } from "../../components/ui/separator";
 import { ActiveRoleSection } from "./sections/ActiveRoleSection";
 import { UserPermissionSection } from "./sections/UserPermissionSection/UserPermissionSection";
+import { EmailPermissionSection } from "./sections/EmailPermissionSection/EmailPermissionSection";
 import { PaymentPermissionSection } from "./sections/PaymentPermissionSection";
 import { NewRoleSection } from "./sections/NewRoleSection";
 import { ClientPermissionsSection } from "./sections/PermissionsSection/ClientPermissionsSection";
@@ -58,7 +59,11 @@ type Privilege =
   | "delete_user"
   | "add_user_role"
   | "delete_role"
-  | "update_user_role";
+  | "update_user_role"
+  |'campaign_end_reminder'
+|'campaign_start_reminder'
+|'campaign_approval_notice'
+|'campaign_delivered_notice'
 
 // Initial privileges for each role (can be fetched from backend)
 
@@ -95,6 +100,11 @@ const privileges: Privilege[] = [
   "add_user_role",
   "delete_role",
   "update_user_role",
+
+  'campaign_end_reminder',
+'campaign_start_reminder',
+'campaign_approval_notice',
+'campaign_delivered_notice',
 ];
 
 const privilegeMapping: Record<Privilege, number> = {
@@ -131,7 +141,12 @@ const privilegeMapping: Record<Privilege, number> = {
   add_user_role: 26,
   delete_role: 27,
   update_user_role: 28,
-  end_campaign: 29
+  end_campaign: 29,
+
+  campaign_end_reminder: 30,
+campaign_start_reminder: 31,
+campaign_approval_notice : 32,
+campaign_delivered_notice: 33,
 };
 
 // const initialPrivileges = roles.reduce((acc, role) => {
@@ -534,6 +549,8 @@ const ErpRoleManagement: React.FC = () => {
                     }))
                   }
                 />
+
+                
                 {/* …other sections as needed… */}
               </div>
             </Dialog.Description>
@@ -663,6 +680,15 @@ const ErpRoleManagement: React.FC = () => {
 
                     {activeRole && rolePrivileges[activeRole.id] && (
                       <UserPermissionSection
+                        privileges={rolePrivileges[activeRole.id]}
+                        onToggle={handleCheckboxChange}
+                      />
+                    )}
+                    <Separator className="w-full" />
+
+
+                    {activeRole && rolePrivileges[activeRole.id] && (
+                      <EmailPermissionSection
                         privileges={rolePrivileges[activeRole.id]}
                         onToggle={handleCheckboxChange}
                       />

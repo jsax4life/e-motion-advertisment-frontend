@@ -66,78 +66,196 @@ const location = useLocation();
 
   const navigate = useNavigate();
 
-  const handleUpdateOrder = (data: any) => {
+  // const handleUpdateOrder = (data: any) => {
+    const handleUpdateOrder = (data: any, fileForm: any) => {
+
     console.log(data);
     // setIsModalOpen(false);
     setLoading(true);
 
-    API(
-      "patch",
-      `campaign-orders/${campaign?.id}`,
+    // API(
+    //   "patch",
+    //   `campaign-orders/${campaign?.id}`,
 
-      data,
-      function (reponse: any) {
-        console.log(reponse);
-        setCampaign((prev: any) => ({
-          ...prev,  
-          ...reponse.data,
-          billboards: reponse.data.billboards, 
-        }));
-        setLoading(false);
-        setEditModalOpen(false);
-        const successEl = document
-        .querySelectorAll("#success-notification-content")[0]
-        .cloneNode(true) as HTMLElement;
+    //   data,
+    //   function (reponse: any) {
+    //     console.log(reponse);
+    //     setCampaign((prev: any) => ({
+    //       ...prev,  
+    //       ...reponse.data,
+    //       billboards: reponse.data.billboards, 
+    //     }));
+    //     setLoading(false);
+    //     setEditModalOpen(false);
+    //     const successEl = document
+    //     .querySelectorAll("#success-notification-content")[0]
+    //     .cloneNode(true) as HTMLElement;
   
-      successEl.classList.remove("hidden");
-      Toastify({
-        node: successEl,
-        duration: 8000,
-        newWindow: true,
-        close: true,
-        gravity: "top",
-        position: "right",
-        stopOnFocus: true,
-      }).showToast();
+    //   successEl.classList.remove("hidden");
+    //   Toastify({
+    //     node: successEl,
+    //     duration: 8000,
+    //     newWindow: true,
+    //     close: true,
+    //     gravity: "top",
+    //     position: "right",
+    //     stopOnFocus: true,
+    //   }).showToast();
 
       
       
-      API(
-        "get",
-        `billboard-data`,
-        {},
-        // {lga: 'Alimosho'},
-        function (data: any) {
-          billboardDispatch({ type: "STORE_BILLBOARD_DATA", billboard: data.registered_billboards });
-        },
-        function (error: any) {
-          console.error("Error fetching recent searches:", error);
-        },
-        user?.token && user.token
-      );
+    //   API(
+    //     "get",
+    //     `billboard-data`,
+    //     {},
+    //     // {lga: 'Alimosho'},
+    //     function (data: any) {
+    //       billboardDispatch({ type: "STORE_BILLBOARD_DATA", billboard: data.registered_billboards });
+    //     },
+    //     function (error: any) {
+    //       console.error("Error fetching recent searches:", error);
+    //     },
+    //     user?.token && user.token
+    //   );
 
-        // console.log(responseData);
+    //     // console.log(responseData);
+    //   },
+
+    //   function (error: any) {
+    //     console.error("Error fetching recent searches:", error);
+    //     setLoading(false);
+
+
+    //     setErrorMessage(error);
+    //     const failedEl = document
+    //     .querySelectorAll("#failed-notification-content")[0]
+    //     .cloneNode(true) as HTMLElement;
+    //   failedEl.classList.remove("hidden");
+    //   Toastify({
+    //     node: failedEl,
+    //     duration: 8000,
+    //     newWindow: true,
+    //     close: true,
+    //     gravity: "top",
+    //     position: "right",
+    //     stopOnFocus: true,
+    //   }).showToast();
+    //   },
+    //   user?.token && user.token
+    // );
+
+
+
+    API(
+      "post",
+      `upload-purchase-order`,
+
+  fileForm,
+      function (res: any) {
+          // Expecting a response with path or filename
+          const uploadedFilePath = res.path || res.filename;
+          console.log(uploadedFilePath);
+  
+          // STEP 2: Submit full order with the uploaded file path
+          const fullPayload = {
+            ...data,
+            media_purchase_order: uploadedFilePath,
+            
+          };
+
+        
+
+          API(
+            "patch",
+            `campaign-orders/${campaign?.id}`,
+      
+            fullPayload,
+            function (reponse: any) {
+              console.log(reponse);
+              setCampaign((prev: any) => ({
+                ...prev,  
+                ...reponse.data,
+                billboards: reponse.data.billboards, 
+              }));
+              setLoading(false);
+              setEditModalOpen(false);
+              const successEl = document
+              .querySelectorAll("#success-notification-content")[0]
+              .cloneNode(true) as HTMLElement;
+        
+            successEl.classList.remove("hidden");
+            Toastify({
+              node: successEl,
+              duration: 8000,
+              newWindow: true,
+              close: true,
+              gravity: "top",
+              position: "right",
+              stopOnFocus: true,
+            }).showToast();
+      
+            
+            
+            API(
+              "get",
+              `billboard-data`,
+              {},
+              // {lga: 'Alimosho'},
+              function (data: any) {
+                billboardDispatch({ type: "STORE_BILLBOARD_DATA", billboard: data.registered_billboards });
+              },
+              function (error: any) {
+                console.error("Error fetching recent searches:", error);
+              },
+              user?.token && user.token
+            );
+      
+              // console.log(responseData);
+            },
+      
+            function (error: any) {
+              console.error("Error fetching recent searches:", error);
+              setLoading(false);
+      
+      
+              setErrorMessage(error);
+              const failedEl = document
+              .querySelectorAll("#failed-notification-content")[0]
+              .cloneNode(true) as HTMLElement;
+            failedEl.classList.remove("hidden");
+            Toastify({
+              node: failedEl,
+              duration: 8000,
+              newWindow: true,
+              close: true,
+              gravity: "top",
+              position: "right",
+              stopOnFocus: true,
+            }).showToast();
+            },
+            user?.token && user.token
+          );
+
       },
 
       function (error: any) {
-        console.error("Error fetching recent searches:", error);
+        alert("File upload failed: " + error);
         setLoading(false);
-
 
         setErrorMessage(error);
         const failedEl = document
-        .querySelectorAll("#failed-notification-content")[0]
-        .cloneNode(true) as HTMLElement;
-      failedEl.classList.remove("hidden");
-      Toastify({
-        node: failedEl,
-        duration: 8000,
-        newWindow: true,
-        close: true,
-        gravity: "top",
-        position: "right",
-        stopOnFocus: true,
-      }).showToast();
+          .querySelectorAll("#failed-notification-content")[0]
+          .cloneNode(true) as HTMLElement;
+        failedEl.classList.remove("hidden");
+        Toastify({
+          node: failedEl,
+          duration: 8000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
       },
       user?.token && user.token
     );

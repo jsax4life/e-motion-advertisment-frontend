@@ -95,7 +95,7 @@ interface AvailableBillboard {
   orientation: string;
 }
 
-const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
+const OrderCreationModal: React.FC<BillboardCreationModalProps> = ({
   isOpen,
   isLoading,
   clients,
@@ -1184,4 +1184,4 @@ console.log(selectedBillboard)
   );
 };
 
-export default BillboardCreationModal;
+export default OrderCreationModal;
