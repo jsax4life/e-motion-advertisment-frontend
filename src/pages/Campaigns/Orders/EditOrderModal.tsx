@@ -30,6 +30,19 @@ interface OrderCreationModalProps {
 
 }
 
+type Face = { face_number: number; description?: string };
+
+// type Billboard = {
+//   id: string;
+//   available_faces: Face[];
+//   available_slots: number[];
+// };
+
+// type SlotsFacesResponse = {
+//   option: string[];
+//   value: (number | string)[];
+// };
+
 type SlotsFacesResponse = {
   option: string[];
   value: number[];
@@ -243,39 +256,93 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
   console.log(orderToEdit);
 
   // Get available slots/faces for the selected billboard
+  // const availableSlotsFaces = (
+  //   billboardId: string,
+  //   type: string
+  // ): SlotsFacesResponse => {
+  //   const billboard = availableBillboards.find(
+  //     (b: { id: string }) => b.id == billboardId
+  //   );
+  //   if (!billboard) return { option: [], value: [] };
+
+  //   const used = usedSlotsFaces[billboardId] || [];
+
+  //   const availableFace = billboard.available_faces.map((face: { face_number: any; description: string;}) => face);
+
+  //   const total =
+  //     type === "digital"
+  //       ? billboard.available_slots
+  //       : availableFace;
+
+  //       console.log(total)
+
+  //   const slotOrFaceUi = total
+  //     .filter((slotOrFace: any) => !used?.includes(`${type === 'digital'? slotOrFace.toString() : slotOrFace.face_number.toString()}`)) // Filter used slots
+  //     .map((slotOrFace: any) => {
+  //       console.log(slotOrFace)
+  //       return `${type === "digital" ? "Slot" : "Face"} ${type === 'digital'? slotOrFace : slotOrFace.face_number } ${type === 'digital'? '' : slotOrFace.description?? '' }`;
+  //     });
+
+     
+
+  //   const slotOrFaceValue = total
+  //     .filter((slotOrFace: any) => !used?.includes(`${type === 'digital'? slotOrFace.toString() : slotOrFace.face_number.toString()}`)) // Filter used slots
+  //     .map((slotOrFace: any) => type === "digital" ? slotOrFace : slotOrFace.face_number);
+
+  //   return {
+  //     option: slotOrFaceUi,
+  //     value: slotOrFaceValue,
+  //   };
+  // };
+
+
+
   const availableSlotsFaces = (
     billboardId: string,
     type: string
   ): SlotsFacesResponse => {
-    const billboard = availableBillboards.find(
-      (b: { id: string }) => b.id == billboardId
-    );
+
+    const billboard = availableBillboards.find((b: { id: string; }) => b.id == billboardId);
     if (!billboard) return { option: [], value: [] };
+    
 
     const used = usedSlotsFaces[billboardId] || [];
+  
+    const isDigital = type === 'digital';
+  
+    // Determine total options (slots or faces)
+    const totalOptions = isDigital
+      ? billboard.available_slots
+      : billboard.available_faces;
+  
+      console.log(totalOptions);
+    // Filter available (not used) options
+    const availableOptions = totalOptions.filter((item: any) => {
+      const id = isDigital ? item.toString() : item.face_number.toString();
+      return !used.includes(id);
+    });
+  
+    // Generate display strings
+    const option = availableOptions.map((item: any) => {
+      if (isDigital) {
+        return `Slot ${item}`;
+      } else {
+        return `Face ${item.face_number} ${item.description ?? ''}`.trim();
+      }
+    });
+  
+    // Generate values
+    const value = availableOptions.map((item: any) =>
+      isDigital ? item : item.face_number
+    );
 
-    const total =
-      type === "digital"
-        ? billboard.available_slots
-        : billboard.available_faces;
-
-    const slotOrFaceUi = total
-      .filter((slot: any) => !used?.includes(slot.toString())) // Filter used slots
-      .map((slot: any) => {
-        return `${type === "digital" ? "Slot" : "Face"} ${slot}`;
-      });
-
-    const slotOrFaceValue = total
-      .filter((slot: any) => !used?.includes(slot.toString())) // Filter used slots
-      .map((slot: any) => slot);
-
-    return {
-      option: slotOrFaceUi,
-      value: slotOrFaceValue,
-    };
+    console.log(option)
+    console.log(value)
+  
+    return { option, value };
   };
 
-  console.log(orderDetails);
+  console.log(formData);
   console.log(availableBillboards);
 
   // console.log(availableSlotsFaces( formData.billboard_id,

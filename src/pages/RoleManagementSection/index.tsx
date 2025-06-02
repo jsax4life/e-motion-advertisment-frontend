@@ -60,10 +60,8 @@ type Privilege =
   | "add_user_role"
   | "delete_role"
   | "update_user_role"
-  |'campaign_end_reminder'
-|'campaign_start_reminder'
-|'campaign_approval_notice'
-|'campaign_delivered_notice'
+
+
 
 // Initial privileges for each role (can be fetched from backend)
 
@@ -101,10 +99,32 @@ const privileges: Privilege[] = [
   "delete_role",
   "update_user_role",
 
+
+];
+
+type EmailPrivilege =
+  |'campaign_end_reminder'
+|'campaign_start_reminder'
+|'campaign_approval_notice'
+|'campaign_delivered_notice'
+|'payment_notification'
+|'campaign_approval_reminder'
+|'campaign_approved_notification'
+|'campaign_delivered_notification'
+|'campaign_creation_notification'
+
+
+const emailPrivileges: EmailPrivilege[] = [
+ 
   'campaign_end_reminder',
 'campaign_start_reminder',
 'campaign_approval_notice',
 'campaign_delivered_notice',
+'payment_notification',
+'campaign_approval_reminder',
+'campaign_approved_notification',
+'campaign_delivered_notification',
+'campaign_creation_notification',
 ];
 
 const privilegeMapping: Record<Privilege, number> = {
@@ -143,10 +163,18 @@ const privilegeMapping: Record<Privilege, number> = {
   update_user_role: 28,
   end_campaign: 29,
 
-  campaign_end_reminder: 30,
-campaign_start_reminder: 31,
-campaign_approval_notice : 32,
-campaign_delivered_notice: 33,
+};
+
+const emailPrivilegeMapping: Record<EmailPrivilege, number> = {
+  campaign_start_reminder: 1,
+  campaign_end_reminder: 2,
+campaign_approval_notice : 3,
+campaign_delivered_notice: 4,
+payment_notification: 5,
+campaign_approval_reminder : 6,
+campaign_approved_notification: 7,
+campaign_delivered_notification : 8,
+campaign_creation_notification: 9
 };
 
 // const initialPrivileges = roles.reduce((acc, role) => {
@@ -180,6 +208,10 @@ const ErpRoleManagement: React.FC = () => {
     Record<number, Record<Privilege, boolean>>
   >({});
 
+  const [roleEmailPrivileges, setRoleEmailPrivileges] = useState<
+  Record<number, Record<EmailPrivilege, boolean>>
+>({});
+
   const { user } = useContext(UserContext);
   const [activeRole, setActiveRole] = useState<Role | null>(null);
 
@@ -202,6 +234,16 @@ const ErpRoleManagement: React.FC = () => {
         boolean
       >
   );
+
+  const [newRoleEmailPrivileges, setNewRoleEmailPrivileges] = useState<
+  Record<EmailPrivilege, boolean>
+>(
+  () =>
+    Object.fromEntries(emailPrivileges.map((p) => [p, false])) as Record<
+      EmailPrivilege,
+      boolean
+    >
+);
 
   useEffect(() => {
     fetchRole(); // Will also initialize rolePrivileges
@@ -229,6 +271,19 @@ const ErpRoleManagement: React.FC = () => {
     }, {} as Record<number, Record<Privilege, boolean>>);
   };
 
+  const initializeEmailPrivileges = (
+    roles: Role[]
+  ): Record<number, Record<EmailPrivilege, boolean>> => {
+    const defaultPrivileges = Object.fromEntries(
+      emailPrivileges.map((emailPriv) => [emailPriv, false])
+    ) as Record<EmailPrivilege, boolean>;
+
+    return roles.reduce((acc, role) => {
+      acc[role.id] = { ...defaultPrivileges };
+      return acc;
+    }, {} as Record<number, Record<EmailPrivilege, boolean>>);
+  };
+
   
 
   const fetchRolePrivileges = () => {
@@ -244,20 +299,30 @@ const ErpRoleManagement: React.FC = () => {
         console.log(response);
         // Initialize all privileges to false for each role
         const updatedPrivileges = initializePrivileges(roles);
+        const updatedEmailPrivileges = initializeEmailPrivileges(roles);
 
         // Assume each item in the response looks like: { role_id: number, privileges: number[] }
         response.forEach(
-          (roleData: { role_id: number; privileges: number[] }) => {
+          (roleData: { role_id: number; privileges: number[]; email_notification_types: number[] }) => {
             roleData.privileges.forEach((privilegeId: number) => {
               const privilegeKey = privileges[privilegeId - 1]; // assuming privilege IDs are 1-based and map directly by index
               if (privilegeKey && updatedPrivileges[roleData.role_id]) {
                 updatedPrivileges[roleData.role_id][privilegeKey] = true;
               }
             });
+
+            roleData.email_notification_types.forEach((emailPrivilegeId: number) => {
+              const privilegeKey = emailPrivileges[emailPrivilegeId - 1]; // assuming privilege IDs are 1-based and map directly by index
+              if (privilegeKey && updatedEmailPrivileges[roleData.role_id]) {
+                updatedEmailPrivileges[roleData.role_id][privilegeKey] = true;
+              }
+            });
           }
         );
 
         setRolePrivileges(updatedPrivileges);
+        setRoleEmailPrivileges(updatedEmailPrivileges);
+        
         setLoading(false);
       },
       function (error: any) {
@@ -267,6 +332,43 @@ const ErpRoleManagement: React.FC = () => {
       user?.token && user.token
     );
   };
+
+  // const fetchEmailRolePrivileges = () => {
+  //   if (!roles.length) return;
+
+  //   setLoading(true);
+
+  //   API(
+  //     "get",
+  //     "get-role-privileges",
+  //     {},
+  //     function (response: any) {
+  //       console.log(response);
+  //       // Initialize all privileges to false for each role
+  //       const updatedPrivileges = initializePrivileges(roles);
+
+  //       // Assume each item in the response looks like: { role_id: number, privileges: number[] }
+  //       response.forEach(
+  //         (roleData: { role_id: number; privileges: number[] }) => {
+  //           roleData.privileges.forEach((privilegeId: number) => {
+  //             const privilegeKey = privileges[privilegeId - 1]; // assuming privilege IDs are 1-based and map directly by index
+  //             if (privilegeKey && updatedPrivileges[roleData.role_id]) {
+  //               updatedPrivileges[roleData.role_id][privilegeKey] = true;
+  //             }
+  //           });
+  //         }
+  //       );
+
+  //       setRolePrivileges(updatedPrivileges);
+  //       setLoading(false);
+  //     },
+  //     function (error: any) {
+  //       console.error("Error fetching role privileges:", error);
+  //       setLoading(false);
+  //     },
+  //     user?.token && user.token
+  //   );
+  // };
 
   const handleRoleClick = (role: Role) => {
     setActiveRole(role);
@@ -293,6 +395,7 @@ const ErpRoleManagement: React.FC = () => {
 
         // Now initialize privileges *after* we have the real Role[]
         setRolePrivileges(initializePrivileges(fetchedRoles));
+        setRoleEmailPrivileges(initializeEmailPrivileges(fetchedRoles));
         setLoading(false);
       },
       (error: any) => {
@@ -313,15 +416,20 @@ const ErpRoleManagement: React.FC = () => {
       .map(([p]) => privilegeMapping[p as Privilege]);
     console.log(selected);
 
-    const test = {
-      roles: [{ role_id: activeRole?.id, privilege_ids: selected }],
+    const selectedEmailPriviledgeIds = Object.entries(roleEmailPrivileges[activeRole.id])
+    .filter(([_, v]) => v)
+    .map(([p]) => emailPrivilegeMapping[p as EmailPrivilege]);
+
+
+    const payload = {
+      roles: [{ role_id: activeRole?.id, privilege_ids: selected, email_notification_type_ids: selectedEmailPriviledgeIds }],
     };
-    console.log(test);
+    console.log(payload);
 
     API(
       "post",
       `roles/batch-update-privileges`,
-      { roles: [{ role_id: activeRole?.id, privilege_ids: selected }] },
+      payload,
       function (response: any) {
         console.log(response);
         setMessage(response?.message);
@@ -373,34 +481,60 @@ const ErpRoleManagement: React.FC = () => {
         [privilege]: !prev[activeRole.id][privilege],
       },
     }));
+
+  
+  };
+
+
+  const handleEmailCheckboxChange = (emailPrivilege: EmailPrivilege) => {
+    if (!activeRole) return;
+
+   
+
+    setRoleEmailPrivileges((prev) => ({
+      ...prev,
+      [activeRole.id]: {
+        ...prev[activeRole.id],
+        [emailPrivilege]: !prev[activeRole.id][emailPrivilege],
+      },
+    }));
   };
 
   const handleCreateRole = () => {
     if (!newRoleName.trim()) return;
     setLoading(true);
 
+    const selectedIds = Object.entries(newRolePrivileges)
+    .filter(([_, v]) => v)
+    .map(([key]) => privilegeMapping[key as Privilege]);
+
+    const selectedEmailPriviledgeIds = Object.entries(newRoleEmailPrivileges)
+    .filter(([_, v]) => v)
+    .map(([key]) => emailPrivilegeMapping[key as EmailPrivilege]);
+
     // 1) Create the role
-    API(
-      "post",
-      "create-new-role", // your endpoint to create a role
-      { name: newRoleName }, // payload
-      (res: any) => {
-        console.log(res);
-        const createdRole: Role = res.role; // assume backend returns { role: { id, name } }
+    // API(
+    //   "post",
+    //   "create-new-role", // your endpoint to create a role
+    //   { name: newRoleName, privilege_ids: selectedIds, }, // payload
+    //   (res: any) => {
+    //     console.log(res);
+    //     const createdRole: Role = res.role; // assume backend returns { role: { id, name } }
 
         // 2) Now assign the privileges for that new role
-        const selectedIds = Object.entries(newRolePrivileges)
-          .filter(([_, v]) => v)
-          .map(([key]) => privilegeMapping[key as Privilege]);
+        // const selectedIds = Object.entries(newRolePrivileges)
+        //   .filter(([_, v]) => v)
+        //   .map(([key]) => privilegeMapping[key as Privilege]);
 
         API(
           "post",
           "roles/batch-update-privileges",
           {
             roles: [
-              {
-                role_id: createdRole.id,
+              {name: newRoleName,
+                // role_id: createdRole.id,
                 privilege_ids: selectedIds,
+                email_notification_type_ids: selectedEmailPriviledgeIds
               },
             ],
           },
@@ -419,14 +553,14 @@ const ErpRoleManagement: React.FC = () => {
           },
           user?.token
         );
-      },
-      (err: any) => {
-        console.error("Failed to create role:", err);
-        setLoading(false);
-        showToast(false);
-      },
-      user?.token
-    );
+      // },
+      // (err: any) => {
+      //   console.error("Failed to create role:", err);
+      //   setLoading(false);
+      //   showToast(false);
+      // },
+      // user?.token
+    // );
   };
 
   //   const navigate = useNavigate();
@@ -549,6 +683,19 @@ const ErpRoleManagement: React.FC = () => {
                     }))
                   }
                 />
+                <Separator />
+
+
+                      <EmailPermissionSection
+                        privileges={newRoleEmailPrivileges}
+                        onToggle={(priv) =>
+                          setNewRoleEmailPrivileges((prev) => ({
+                            ...prev,
+                            [priv]: !prev[priv],
+                          }))
+                        }
+                      />
+                    <Separator className="w-full" />
 
                 
                 {/* …other sections as needed… */}
@@ -687,10 +834,10 @@ const ErpRoleManagement: React.FC = () => {
                     <Separator className="w-full" />
 
 
-                    {activeRole && rolePrivileges[activeRole.id] && (
+                    {activeRole && roleEmailPrivileges[activeRole.id] && (
                       <EmailPermissionSection
-                        privileges={rolePrivileges[activeRole.id]}
-                        onToggle={handleCheckboxChange}
+                        privileges={roleEmailPrivileges[activeRole.id]}
+                        onToggle={handleEmailCheckboxChange}
                       />
                     )}
                     <Separator className="w-full" />

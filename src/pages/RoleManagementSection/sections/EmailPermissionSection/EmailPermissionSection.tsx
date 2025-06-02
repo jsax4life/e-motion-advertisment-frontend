@@ -4,6 +4,12 @@ type Privilege =
 |'campaign_start_reminder'
 |'campaign_approval_notice'
 |'campaign_delivered_notice'
+|'payment_notification'
+|'campaign_approval_reminder'
+|'campaign_approved_notification'
+|'campaign_delivered_notification'
+|'campaign_creation_notification'
+
 
 
 import React from "react";
@@ -15,6 +21,16 @@ const userPermissionsConfig: { key: Privilege; label: string }[] = [
   { key: 'campaign_start_reminder', label: "Campaign Start Reminder", },
   { key: 'campaign_approval_notice', label: "Campaign Approval Notice", },
   { key: 'campaign_delivered_notice', label: "Campaign Delivered Notice", },
+  { key: 'payment_notification', label: "Payment Notification", },
+  { key: 'campaign_approval_reminder', label: "Campaign Approval Notice", },
+  { key: 'campaign_approved_notification', label: "Campaign Approved Notice", },
+  { key: 'campaign_delivered_notification', label: "Campaign Delivered Notice", },
+  { key: 'campaign_creation_notification', label: "Campaign Creation Notice", },
+
+
+
+
+
  
 ];
 
@@ -36,7 +52,7 @@ export const EmailPermissionSection: React.FC<EmailPermissionsSectionProps> = ({
       <div className="flex items-end gap-[120px] w-full">
         <div className="flex flex-col items-start gap-4 flex-1">
           <h3 className="w-full font-['Poppins',Helvetica] font-semibold text-colorsneutralgray-3 text-xs tracking-[0] leading-[20.5px]">
-            Email
+            Email Notification Settings
           </h3>
 
 
