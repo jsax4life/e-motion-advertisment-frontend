@@ -77,8 +77,8 @@ const API = (method: any, url: any, data: any, callback: any, failback: any, tok
     // const api = 'http://127.0.0.1:8000/api/admin/';
     //    const api = 'https://api.bullageontech.com/api/user/'; 
         // const api = 'http://159.223.1.96/api/user/';
-        // const api = 'https://api.billpoint.com.ng/api/user/';
-        const api = 'https://lostardapi.lagrev.net/api/admin/';
+     const api = 'https://api.loatsadpromomedia.com/api/admin/';
+        // const api = 'https://lostardapi.lagrev.net/api/admin/';
     
 
     let parameter = '';

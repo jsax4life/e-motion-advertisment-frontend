@@ -1,11 +1,20 @@
 const plugin = require("tailwindcss/plugin");
 const colors = require("tailwindcss/colors");
 const { parseColor } = require("tailwindcss/lib/util/color");
+require("dotenv").config(); // 👈 Load .env variables
 
 /** Converts HEX color to RGB */
 const toRGB = (value) => {
   return parseColor(value).color.join(" ");
 };
+
+// Dynamically assign color based on environment
+const brand = process.env.BRAND || "emotion";
+console.log(brand);
+
+const customColor = brand === "loatsard" ? "#B11F15" : "#2775FF"; // red or default blue
+
+
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -28,7 +37,7 @@ module.exports = {
         danger: "rgb(var(--color-danger) / <alpha-value>)",
         light: "rgb(var(--color-light) / <alpha-value>)",
         dark: "rgb(var(--color-dark) / <alpha-value>)",
-        customColor: "#2775FF",
+        customColor: customColor,
         darkmode: {
           50: "rgb(var(--color-darkmode-50) / <alpha-value>)",
           100: "rgb(var(--color-darkmode-100) / <alpha-value>)",

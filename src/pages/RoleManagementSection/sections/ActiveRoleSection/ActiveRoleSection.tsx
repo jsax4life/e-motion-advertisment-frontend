@@ -47,7 +47,7 @@ export const ActiveRoleSection: React.FC<ActiveRoleSectionProps> = ({
                 variant={isActive ? "default" : "ghost"}
                 className={`lg:w-full justify-start p-4 py-2.5 rounded-lg 
                   ${isActive 
-                    ? "bg-[#2774ff] hover:bg-[#2774ff]/90"
+                    ? "bg-customColor hover:bg-customColor/90"
                     : "bg-white hover:bg-gray-100"
                   }`}
               >
