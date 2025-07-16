@@ -144,6 +144,7 @@ const {id} = useParams<{id: any}>();
       const billboard = billboards.find((b: { id: number; }) => b.id === billboardId);
       if (billboard) {
         setBillboard(billboard);
+        console.log("Billboard found in context:", billboard);
         setLoading(false);
         return;
       }
@@ -152,10 +153,15 @@ const {id} = useParams<{id: any}>();
 
 
     API('get', `billboards/${billboardId}`, {}, 
-    (response: { data: any; }) => {
-        setBillboard(response?.data);
+    (response: { billboard: any; }) => {
+        setBillboard(response?.billboard);
         setLoading(false);
-        billboardDispatch({ type: 'STORE_BILLBOARD_DATA', billboard: response.data });
+        // add the fetched billboard to the context
+        billboardDispatch({
+          type: "ADD_BILLBOARD",
+          payload: response?.billboard,
+        });
+      
     }
     , (error: any) => {
         setLoading(false);
@@ -164,7 +170,7 @@ const {id} = useParams<{id: any}>();
   };
 
 
-// console.log(billboard)
+console.log(billboard)
  
   return (
     <>
@@ -177,8 +183,8 @@ const {id} = useParams<{id: any}>();
             <p className="mt-4 text-xs text-black intro-y">View, Edit and Delete users</p>
           </div> */}
           <div className=" hidden mr-auto md:block capitalize">
-            <div className="flex justify-center items-center">
-            <h2 className="mr-5 text-3xl font-bold truncate ">{billboard?.billboardName}</h2>
+            <div className="flex justify-center items-center ">
+            <h2 className="mr-5 text-3xl font-bold truncate lg:max-w-md md:max-w-sm ">{billboard?.billboardName}</h2>
             <div className="w-2 h-2 border rounded-full bg-green-400 mr-2"></div>
             <div className="font-normal text-sm"> {billboard?.status}</div>
             </div>

@@ -57,7 +57,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
 
   console.log(billboard);
 
-  const availableFaceNumbers = billboard.available_faces.map(face => face.face_number);
+  const availableFaceNumbers = billboard?.available_faces.map(face => face.face_number);
 
 
   return (
@@ -157,7 +157,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
           </div>
         </div>
 
-        {billboard.dimension === "Custom" && (
+        {billboard?.dimension === "Custom" && (
           <div className="grid grid-cols-2 gap-4 uppercase ">
             <div className="col-span-1 ">
               <div className=" md:text-[12px] text-slate-500 fo4t-bold mb-1 ">
@@ -211,15 +211,15 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
 
   <div className="flex flex-wrap gap-2">
        {/* Booked Slots/Faces */}
-       {billboard.billboardType === "digital"
-      ? Array.from({ length: billboard.numberOfSlotsOrFaces }, (_, i) => i + 1)
+       {billboard?.billboardType === "digital"
+      ? Array.from({ length: billboard?.numberOfSlotsOrFaces }, (_, i) => i + 1)
           .filter((slot) => !billboard?.available_slots.includes(slot)) // Filter out available slots
           .map((slot, index) => (
             <div key={index} className="flex justify-center items-center rounded-lg bg-red-100 text-red-500 p-2 w-7 h-7">
               <div className="font-semibold text-xs">{slot}</div>
             </div>
           ))
-      :  Array.from({ length: billboard.numberOfSlotsOrFaces }, (_, i) => i + 1)
+      :  Array.from({ length: billboard?.numberOfSlotsOrFaces }, (_, i) => i + 1)
           .filter(face => !availableFaceNumbers.includes(face)) // Filter out available faces
           .map((face, index) => (
             <div
@@ -233,7 +233,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
           }
 
     {/* Available Slots/Faces */}
-    {billboard.billboardType === "digital"
+    {billboard?.billboardType === "digital"
       ? billboard?.available_slots.map((slot, index) => (
           <div key={index} className="flex justify-center items-center rounded-lg bg-green-100 text-green-500 p-2 w-7 h-7">
             <div className="font-semibold text-xs">{slot}</div>
@@ -257,7 +257,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
           Billboard Images
         </div>
         <div className="grid grid-cols-3 gap-4 uppercase lg:mb-8 ">
-          {billboard.images.map((image, index) => (
+          {billboard?.images.map((image, index) => (
             <div
               key={index}
               className="col-span-1 rounded-2xl border max-w-1/3 "

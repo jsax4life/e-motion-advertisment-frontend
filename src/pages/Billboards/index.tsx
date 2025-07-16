@@ -179,6 +179,10 @@ export default function Main() {
       function (reponse: any) {
         console.log(reponse);
         setBillboardList((prev) => [reponse.data, ...prev]);
+        billboardDispatch({
+          type: "ADD_BILLBOARD",
+          payload: reponse.data,
+        });
         setLoading(false);
         setIsModalOpen(false);
 
@@ -528,9 +532,7 @@ export default function Main() {
                       <Table.Th className="   whitespace-nowrap">
                         SPECIFICATION
                       </Table.Th>
-                      {/* <Table.Th className="text-right border-b-0   whitespace-nowrap">
-                  <div className="pr-16">TOTAL TRANSACTION</div>
-                </Table.Th> */}
+                 
                       <Table.Th className="text-center    whitespace-nowrap">
                         ACTION
                       </Table.Th>
@@ -581,7 +583,7 @@ export default function Main() {
 
                           <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white  dark:bg-darkmode-600 border-slate-200 border-b">
                             <>
-                              <div className="whitespace-nowrap">
+                              <div className="whitespace-nowrap truncate max-w-md">
                                 {billboard?.billboardName}
                               </div>
                             </>

@@ -3,10 +3,14 @@ import React, { createContext, useReducer, useEffect, useContext } from 'react';
 
 export const PullBillboardContext = createContext<ApContext>({});
 
-const pullBillboardReducer = (state: any, action: { type: any; billboard: any }) => {
+const pullBillboardReducer = (state: any, action: { type: any; billboard: any; payload: any; }) => {
     switch (action.type) {
         case 'STORE_BILLBOARD_DATA': {
             return action.billboard;
+        }
+        case 'ADD_BILLBOARD': {
+            const updatedBillboards = [...state, action.payload];
+            return updatedBillboards;
         }
         default:
             return state;

@@ -223,8 +223,35 @@ console.log(formData);
 
     };
 
-    console.log(payload);
+    // console.log(payload);
     onSubmit(payload);
+    // Reset form data after submission
+    setFormData({
+      serialNumber: "",
+      internalCode: "",
+      billboardName: "",
+      state: "",
+      lga: "",
+      address: "",
+      geolocation: { lat: "", lng: "" },
+      dimension: "", 
+      height: "",
+      width: "",
+      billboardType: "Static",
+      mediaType: "",
+      numberOfSlotsOrFaces: "",
+      faceDescriptions: {},
+      showDescriptionInputFor: null,
+      pricePerDay: "",
+      pricePerMonth: "",
+      status: "Active",
+      activeStatus: "Vacant",
+      images: [],
+      orientation: "Landscape",
+    });
+    setUploadedImages([]); // Reset uploaded images
+    // clear data from react-hook-form register
+
     // onClose();s
   };
 
@@ -575,11 +602,16 @@ console.log(formData);
     >
       <option value="" disabled selected>--Select Size--</option>
       <option value="8 X 10">8M X 10M</option>
+      <option value="15 X 2.5">15M X 2.5M</option>
       <option value="43 X 2">43M X 2M</option>
       <option value="20 X 1.9">20M X 1.9M</option>
       <option value="36 X 1.9">36M X 1.9M</option>
       <option value="46 X 3M">46M X 3M</option>
       <option value="18 X 2.4">18M X 2.4M</option>
+      <option value="60 X 10">60M X 10M</option>
+      <option value="23 X 7">23M X 7M</option>
+      <option value="30 X 5">30M X 5M</option>
+      
     </FormSelect>
   </div>
 )}

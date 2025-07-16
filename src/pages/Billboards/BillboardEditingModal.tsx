@@ -220,7 +220,7 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
     // Prepare the payload
     const payload = {
       // Other form fields...
-      ...data,
+      ...updatedFields,
       // serialNumber: "6768702",
       images: base64Images, // Include Base64 images
     };
@@ -235,8 +235,8 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
     }
     
 
-    console.log(updatedFields);
-    onSubmit(updatedFields);
+    // console.log(updatedFields);
+    onSubmit(payload);
     // onClose();s
   };
 
