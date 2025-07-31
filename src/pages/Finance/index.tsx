@@ -86,7 +86,12 @@ export default function AllCampaigns() {
 >("Date");
 
   const [loading, setLoading] = useState(true);
-
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+    per_page: 10,
+    total: 0,
+  });
   // console.log(vehicleList)
 
   const navigate = useNavigate();
@@ -108,7 +113,7 @@ export default function AllCampaigns() {
   }, [user?.token]);
 
 
-  const fetchOrderData = () => {
+  const fetchOrderData = (page = 1, perPage = pagination?.per_page ) => {
     const [startDate, endDate] = dateRange?.split(" - ") || [null, null];
 
     setError("");
@@ -121,6 +126,8 @@ export default function AllCampaigns() {
       params.end_date = endDate.trim();
     }
     if (selectedUser) params.user = selectedUser;
+    params.page = page;
+    params.per_page = perPage;
 
     API(
       "get",
@@ -128,7 +135,14 @@ export default function AllCampaigns() {
       params,
       // {lga: 'Alimosho'},
       function (orderData: any) {
-        setOrderList(orderData?.data);
+        setOrderList(orderData?.data?.data);
+        setPagination({
+          current_page: orderData?.data?.current_page,
+          last_page: orderData?.data?.last_page,
+          per_page: orderData?.data?.per_page,
+          total: orderData?.data?.total,
+        });
+
         // campaignDispatch({ type: "STORE_CAMPAIGN_DATA", campaign: orderData?.data });
         setLoading(false);
         console.log(orderData);
@@ -351,22 +365,39 @@ if (filter === "Date") {
 
              {/* All Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList} />
+      <DisplayTable loading={loading} orderList={orderList} 
+        fetchFinanceData={fetchOrderData}
+        pagination={pagination}
+         setPagination={setPagination}
+      />
     </Tab.Panel>
 
     {/* paid Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.payment_status === "paid")} />
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.payment_status === "paid")} 
+      fetchFinanceData={fetchOrderData}
+      pagination={pagination}
+       setPagination={setPagination}
+      />
     </Tab.Panel>
 
     {/* pending Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.payment_status === "pending")} />
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.payment_status === "pending")}
+      
+      fetchFinanceData={fetchOrderData}
+        pagination={pagination}
+         setPagination={setPagination}
+      />
     </Tab.Panel>
 
     {/* overdue Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.payment_status === "overdue")} />
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.payment_status === "overdue")} 
+      fetchFinanceData={fetchOrderData}
+      pagination={pagination}
+       setPagination={setPagination}
+      />
     </Tab.Panel>
 
   

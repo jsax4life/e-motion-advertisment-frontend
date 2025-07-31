@@ -742,34 +742,16 @@ onClick={() => { setOpenModal(true); setActiveFilter("LGA"); }}
           )}
 
           {/* Pagination */}
-          <div className="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap">
-            {/* Pagination component */}
-            <Pagination className="w-full sm:w-auto sm:mr-auto">
-            <Pagination.Link>
-              <Lucide icon="ChevronsLeft" className="w-4 h-4" />
-            </Pagination.Link>
-            <Pagination.Link>
-              <Lucide icon="ChevronLeft" className="w-4 h-4" />
-            </Pagination.Link>
-            <Pagination.Link>...</Pagination.Link>
-            <Pagination.Link>1</Pagination.Link>
-            <Pagination.Link active>2</Pagination.Link>
-            <Pagination.Link>3</Pagination.Link>
-            <Pagination.Link>...</Pagination.Link>
-            <Pagination.Link>
-              <Lucide icon="ChevronRight" className="w-4 h-4" />
-            </Pagination.Link>
-            <Pagination.Link>
-              <Lucide icon="ChevronsRight" className="w-4 h-4" />
-            </Pagination.Link>
-          </Pagination>
-          <FormSelect className="w-20 mt-3 !box sm:mt-0">
-            <option>10</option>
-            <option>25</option>
-            <option>35</option>
-            <option>50</option>
-          </FormSelect>
-          </div>
+            {/* <Pagination
+  totalPages={pagination.last_page}  // Use last_page as total pages
+  currentPage={pagination.current_page}  // Track current page
+  onPageChange={(page) => {
+    setPagination((prev) => ({ ...prev, current_page: page }));
+    fetchClientData(page);  // Call API to fetch new page data
+  }}
+  pagination={pagination}
+  fetchData={fetchClientData}
+/> */}
 
           {/* Delete Confirmation Modal */}
           <Dialog

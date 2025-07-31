@@ -89,6 +89,12 @@ export default function DeliveredCampaign() {
 >("Date");
 
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+    per_page: 10,
+    total: 0,
+  });
 
   // console.log(vehicleList)
 
@@ -96,12 +102,12 @@ export default function DeliveredCampaign() {
 
   useEffect(() => {
     if (user?.token) {
-      fetchOrderData();
+      fetchOrderData(pagination?.current_page);
      
     }
   }, [user?.token, dateRange]);
 
-  const fetchOrderData = () => {
+  const fetchOrderData = (papage = 1, perPage = pagination?.per_page) => {
     const [startDate, endDate] = dateRange?.split(" - ") || [null, null];
 
     setError("");
@@ -113,6 +119,9 @@ console.log(startDate, endDate)
       params.start_date = startDate.trim();
       params.end_date = endDate.trim();
     }
+
+    params.page = papage;
+    params.per_page = perPage;
     
 
     API(
@@ -121,8 +130,15 @@ console.log(startDate, endDate)
       params,
       // {lga: 'Alimosho'},
       function (orderData: any) {
-        setOrderList(orderData?.data);
-        campaignDispatch({ type: "STORE_CAMPAIGN_DATA", campaign: orderData?.data });
+        setOrderList(orderData?.data?.data || []);
+        setPagination({
+          current_page: orderData?.data?.current_page || 1,
+          last_page: orderData?.data?.last_page || 1,
+          per_page: orderData?.data?.per_page || 10,
+          total: orderData?.data?.total || 0,
+        });
+
+        campaignDispatch({ type: "STORE_CAMPAIGN_DATA", campaign: orderData?.data?.data || [] });
         setLoading(false);
         console.log(orderData);
       },
@@ -410,27 +426,52 @@ console.log(startDate, endDate)
 
              {/* All Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList} />
+      <DisplayTable loading={loading} orderList={orderList}
+  pagination={pagination}
+   setPagination={setPagination}
+   fetchCampaignData={fetchOrderData}
+
+      />
     </Tab.Panel>
 
     {/* Running Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "delivered")} />
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "delivered")}
+      pagination={pagination}
+      setPagination={setPagination}
+      fetchCampaignData={fetchOrderData}
+   
+      />
     </Tab.Panel>
 
     {/* Ended Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "end")} />
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "end")}
+      pagination={pagination}
+      setPagination={setPagination}
+      fetchCampaignData={fetchOrderData}
+   
+      />
     </Tab.Panel>
 
     {/* Frozen Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "frozen")} />
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "frozen")} 
+      pagination={pagination}
+      setPagination={setPagination}
+      fetchCampaignData={fetchOrderData}
+   
+      />
     </Tab.Panel>
 
     {/* Finished Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "finished")} />
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "finished")} 
+      pagination={pagination}
+      setPagination={setPagination}
+      fetchCampaignData={fetchOrderData}
+   
+      />
     </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
