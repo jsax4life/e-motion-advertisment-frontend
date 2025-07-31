@@ -93,6 +93,13 @@ export default function Main() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1, // Total pages
+    per_page: 10,
+    total: 0,
+  });
+
   const [activeFilter, setActiveFilter] = useState<
     | "Location"
     | "Date"
@@ -122,16 +129,16 @@ export default function Main() {
       return;
     }
 
-    fetchBillboardData();
+    fetchBillboardData( pagination?.current_page);
   }, [user?.token]);
 
   useEffect(() => {
     if (user?.token) {
-      fetchBillboardData();
+      fetchBillboardData(pagination?.current_page);
     }
   }, [user?.token, selectedBillboardType, selectedOrientation, selectedStatus, selectedLocation]);
 
-  const fetchBillboardData = () => {
+  const fetchBillboardData = (page = 1, perPage = pagination?.per_page) => {
 
     setError("");
     setLoading(true);
@@ -143,6 +150,9 @@ export default function Main() {
     if (selectedStatus) params.status = selectedStatus;
     if (selectedLocation) params.location = selectedLocation;
 
+    params.page = page;
+    params.per_page = perPage;
+
 
     API(
       "get",
@@ -150,10 +160,17 @@ export default function Main() {
       params,
       // {lga: 'Alimosho'},
       function (bbListData: any) {
-        setBillboardList(bbListData.registered_billboards);
+        setBillboardList(bbListData.registered_billboards?.data);
+        setPagination({
+          current_page: bbListData?.registered_billboards?.current_page,
+          last_page: bbListData?.registered_billboards?.last_page,
+          per_page: bbListData?.registered_billboards?.per_page,
+          total: bbListData?.registered_billboards?.total
+        });
+        // Update the billboard context
         billboardDispatch({
           type: "STORE_BILLBOARD_DATA",
-          billboard: bbListData.registered_billboards,
+          billboard: bbListData.registered_billboards.data,
         });
         setLoading(false);
         console.log(bbListData);
@@ -165,6 +182,8 @@ export default function Main() {
       user?.token && user.token
     );
   };
+
+
 
   const handleAddBillboard = (data: any) => {
     console.log(data);
@@ -697,35 +716,21 @@ export default function Main() {
               </div>
             )}
 
-            {/* Pagination */}
-            <div className="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap">
               {/* Pagination component */}
-              <Pagination className="w-full sm:w-auto sm:mr-auto">
-                <Pagination.Link>
-                  <Lucide icon="ChevronsLeft" className="w-4 h-4" />
-                </Pagination.Link>
-                <Pagination.Link>
-                  <Lucide icon="ChevronLeft" className="w-4 h-4" />
-                </Pagination.Link>
-                <Pagination.Link>...</Pagination.Link>
-                <Pagination.Link>1</Pagination.Link>
-                <Pagination.Link active>2</Pagination.Link>
-                <Pagination.Link>3</Pagination.Link>
-                <Pagination.Link>...</Pagination.Link>
-                <Pagination.Link>
-                  <Lucide icon="ChevronRight" className="w-4 h-4" />
-                </Pagination.Link>
-                <Pagination.Link>
-                  <Lucide icon="ChevronsRight" className="w-4 h-4" />
-                </Pagination.Link>
-              </Pagination>
-              <FormSelect className="w-20 mt-3 !box sm:mt-0">
-                <option>10</option>
-                <option>25</option>
-                <option>35</option>
-                <option>50</option>
-              </FormSelect>
-            </div>
+              <Pagination
+  totalPages={pagination.last_page}  // Use last_page as total pages
+  currentPage={pagination.current_page}  // Track current page
+  onPageChange={(page) => {
+    setPagination((prev) => ({ ...prev, current_page: page }));
+    fetchBillboardData(page);  // Call API to fetch new page data
+  }}
+  pagination={pagination}
+  fetchData={fetchBillboardData}
+/>
+             
+
+           
+
 
             {/* Delete Confirmation Modal */}
             <Dialog

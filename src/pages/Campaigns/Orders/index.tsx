@@ -95,6 +95,12 @@ export default function Main() {
 >("Date");
 
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1, // Total pages
+    per_page: 10,
+    total: 0,
+  });
 
   // console.log(vehicleList)
 
@@ -115,7 +121,7 @@ export default function Main() {
     }
   }, [user?.token, dateRange]);
 
-  const fetchOrderData = () => {
+  const fetchOrderData = (  page = 1, perPage = pagination?.per_page ) => {
     const [startDate, endDate] = dateRange?.split(" - ") || [null, null];
 
     setError("");
@@ -126,6 +132,8 @@ export default function Main() {
       params.start_date = startDate.trim();
       params.end_date = endDate.trim();
     }
+    params.page = page;
+    params.per_page = perPage;
  
     API(
       "get",
@@ -133,8 +141,14 @@ export default function Main() {
       params,
       // {lga: 'Alimosho'},
       function (orderData: any) {
-        setOrderList(orderData?.data);
-        campaignDispatch({ type: "STORE_CAMPAIGN_DATA", campaign: orderData?.data });
+        setOrderList(orderData?.data.data || []);
+        setPagination({
+          current_page: orderData?.data?.current_page || 1,
+          last_page: orderData?.data?.last_page || 1,
+          per_page: orderData?.data?.per_page || 10,
+          total: orderData?.data?.total || 0,
+        });
+        campaignDispatch({ type: "STORE_CAMPAIGN_DATA", campaign: orderData?.data?.data });
         setLoading(false);
         console.log(orderData);
       },
@@ -468,20 +482,36 @@ export default function Main() {
             )}
 
             <Tab.Panel>
-              <DisplaySection loading={loading} orderList={orderList} />
+              <DisplaySection loading={loading} orderList={orderList} 
+              fetchCampaignData={fetchOrderData}
+              pagination={pagination}
+              setPagination={setPagination}
+              />
             </Tab.Panel>
 
             <Tab.Panel>
-              <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "pending")} />
+              <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "pending")} 
+                 fetchCampaignData={fetchOrderData}
+                 pagination={pagination}
+                 setPagination={setPagination}
+              />
 
             </Tab.Panel>
 
             <Tab.Panel>
-            <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "approved")} />
+            <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "approved")} 
+             fetchCampaignData={fetchOrderData}
+             pagination={pagination}
+             setPagination={setPagination}
+            />
             </Tab.Panel>
 
             <Tab.Panel>
-            <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "delivered")} />
+            <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "delivered")}
+             fetchCampaignData={fetchOrderData}
+             pagination={pagination}
+             setPagination={setPagination}
+            />
             </Tab.Panel>
 
           </Tab.Panels>

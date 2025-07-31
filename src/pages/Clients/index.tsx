@@ -112,6 +112,12 @@ export default function Main() {
   >("Location");
   const cancelButtonRef = useRef(null);
   const isInitialMount = useRef(true);
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1, // Total pages
+    per_page: 10,
+    total: 0,
+  });
 
   // console.log(vehicleList)
 
@@ -120,12 +126,11 @@ export default function Main() {
  
   useEffect(() => {
     if (user?.token) {
-      fetchClientData();
+      fetchClientData(pagination.current_page);
     }
   }, [user?.token, selectedClientType, selectedIndustry, selectedLocation]);
 
-  const fetchClientData = () => {
-    const [startDate, endDate] = dateRange?.split(" - ") || [null, null];
+  const fetchClientData = ( page = 1, perPage = pagination?.per_page    ) => {
 
     setError("");
     setLoading(true);
@@ -136,6 +141,8 @@ export default function Main() {
 
     if (selectedIndustry) params.industry = selectedIndustry;
     if (selectedLocation) params.location = selectedLocation;
+    params.page = page;
+    params.per_page = perPage;
 
     console.log(params);
 
@@ -145,12 +152,19 @@ export default function Main() {
       params,
       // {lga: 'Alimosho'},
       function (clientData: any) {
-        clientDispatch({ type: "STORE_CLIENT_DATA", client: clientData.registered_clients });
+        console.log(clientData)
+        clientDispatch({ type: "STORE_CLIENT_DATA", client: clientData.registered_clients.data });
 
-        setClientList(clientData.registered_clients);
+        setClientList(clientData.registered_clients?.data || []); 
+        setPagination({
+          current_page: clientData?.registered_clients?.current_page,
+          last_page: clientData?.registered_clients?.last_page,
+          per_page: clientData?.registered_clients?.per_page,
+          total: clientData?.registered_clients?.total,
+        });
 
         setLoading(false);
-        console.log(clientData);
+        // console.log(clientData);
       },
       function (error: any) {
         console.error("Error fetching recent searches:", error);
@@ -159,6 +173,8 @@ export default function Main() {
       user?.token && user.token
     );
   };
+
+  console.log(pagination)
 
   const handleAddBillboard = (data: any) => {
     console.log(data);
@@ -558,7 +574,12 @@ statuses={[]}
             </div>
 
             {/* Data List or Loading Indicator */}
-         <DisplayTable clientList={clientList} loading={loading} />
+         <DisplayTable clientList={clientList} loading={loading} 
+         fetchClientData={fetchClientData}
+         pagination={pagination}
+          setPagination={setPagination}
+
+         />
 
           
 

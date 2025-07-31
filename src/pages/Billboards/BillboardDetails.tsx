@@ -57,6 +57,8 @@ const {id} = useParams<{id: any}>();
   const cancelButtonRef = useRef(null);
   const isInitialMount = useRef(true);
 
+  console.log(id)
+
   // console.log(vehicleList)
 
   const navigate = useNavigate();
