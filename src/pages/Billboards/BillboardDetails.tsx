@@ -313,9 +313,9 @@ console.log(billboard)
             >
               <Lucide icon="CheckCircle" className="text-success" />
               <div className="ml-4 mr-4">
-                <div className="font-medium">Billboard Added!</div>
+                <div className="font-medium">Billboard Updated!</div>
                 <div className="mt-1 text-slate-500">
-                Successfully  added new billboard
+                Successfully  updateds billboard
                 </div>
               </div>
             </Notification>

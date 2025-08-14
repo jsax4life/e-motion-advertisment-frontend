@@ -157,7 +157,7 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
     }
   }, [formData, watchedData]);
 
-  //   console.log(uploadedImages);
+    console.log(formData);
 
   const handleStateChange = (stateName: string) => {
     const selectedState = states.find((state) => state.name === stateName);
@@ -240,6 +240,8 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
     // onClose();s
   };
 
+
+  console.log(billboard)
  
 
   if (!isOpen) return null;
