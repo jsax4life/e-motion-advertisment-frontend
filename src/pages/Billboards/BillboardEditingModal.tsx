@@ -77,8 +77,8 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
     // width: yup.string().required("Width is required"),
     // numberOfSlots: yup.string().required("Number of Slots is required"),
     // numberOfFaces: yup.string().required("Number of Faces is required"),
-    pricePerDay: yup.string().required("Price Per Day is required"),
-    // pricePerMonth: yup.string().required("Price Per Month is required"),
+    // pricePerDay: yup.string().required("Price Per Day is required"),
+    pricePerMonth: yup.string().required("Price Per Month is required"),
     // status : yup.string().required("Status is required"),
     // activeStatus: yup.string().required("Active Status is required"),
     orientation: yup.string().required("Board Orientation is required"),
@@ -138,6 +138,11 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
             changes = updated; // Include only changed fields
           }
         });
+        // Object.keys(updated).forEach((key) => {
+        //   if (original[key as keyof FormData] !== updated[key as keyof FormData]) {
+        //     changes[key as keyof FormData] = updated[key as keyof FormData];
+        //   }
+        // });
         return changes;
       };
 
@@ -157,7 +162,7 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
   }, [formData, watchedData]);
 
     console.log(formData);
-    console.log(watchedData);
+    // console.log(watchedData);
 
   const handleStateChange = (stateName: string) => {
     const selectedState = states.find((state) => state.name === stateName);
@@ -173,14 +178,14 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
 
     setValue(name, value); // Ensure React Hook Form tracks this change
 
-    if (name === "pricePerDay") {
-      const pricePerDay = parseFloat(value);
-      const pricePerMonth = pricePerDay * 30; // Assuming 30 days in a month
-
+    if (name === "pricePerMonth") {
+      const pricePerMonth = parseFloat(value);
+      const pricePerDay = pricePerMonth / 30; // Assuming 30 days in a month
+        console.log(pricePerDay)
       setFormData((prevFormData: any) => ({
         ...prevFormData,
         [name]: value,
-        pricePerMonth: pricePerMonth.toFixed(2), // Round to 2 decimal places
+        pricePerDay: pricePerDay.toFixed(2), // Round to 2 decimal places
       }));
     } else {
       setFormData((prevFormData: any) => ({
@@ -220,7 +225,8 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
     // Prepare the payload
     const payload = {
       // Other form fields...
-      ...updatedFields,
+      // ...updatedFields,
+      ...formData,
       // serialNumber: "6768702",
       images: base64Images, // Include Base64 images
     };
@@ -798,13 +804,16 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
                 <FormInput
                   formInputSize="lg"
                   // name="pricePerDay"
+                  // disabled
+                  readOnly
+                  defaultValue={billboard?.pricePerDay} 
                   type="number"
-                  defaultValue={billboard?.pricePerDay}
-                  {...register("pricePerDay", {
-                    onChange: (e) => {
-                      handleChange(e);
-                    },
-                  })}
+                  value={formData?.pricePerDay}
+                  // {...register("pricePerDay", {
+                  //   onChange: (e) => {
+                  //     handleChange(e);
+                  //   },
+                  // })}
                   className="w-full p-2 border rounded"
                 />
                 {errors.pricePerDay && (
@@ -824,13 +833,10 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
                 </FormLabel>
                 <FormInput
                   formInputSize="lg"
-                  disabled
-                  type="text"
-                  value={formatCurrency(
-                    Number(
-                       billboard?.pricePerMonth
-                    )
-                  )}
+                  type="number"
+                  value = {formData?.pricePerMonth ? formData?.pricePerMonth : billboard?.pricePerMonth}
+                    
+                
                   {...register("pricePerMonth", {
                     onChange: (e) => {
                       handleChange(e);
