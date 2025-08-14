@@ -102,7 +102,6 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
     //   setFormData(watchedData); // Update local state on change
     // }, [watchedData]);
 
-  
 
     useEffect(() => {
     // Initialize lga data with the billboard data
@@ -158,6 +157,7 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
   }, [formData, watchedData]);
 
     console.log(formData);
+    console.log(watchedData);
 
   const handleStateChange = (stateName: string) => {
     const selectedState = states.find((state) => state.name === stateName);
@@ -828,9 +828,7 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
                   type="text"
                   value={formatCurrency(
                     Number(
-                      formData.pricePerMonth
-                        ? formData.pricePerMonth
-                        : billboard.pricePerMonth
+                       billboard?.pricePerMonth
                     )
                   )}
                   {...register("pricePerMonth", {
