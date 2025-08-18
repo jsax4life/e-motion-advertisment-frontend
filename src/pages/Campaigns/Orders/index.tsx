@@ -186,13 +186,16 @@ export default function Main() {
 
     setLoading(true);
 
+    console.log('started')
+
 
     API(
       "get",
       `billboard-data`,
       {},
       function (data: any) {
-        setBillboards(data?.registered_billboards);
+        console.log(data)
+        setBillboards(data?.registered_billboards?.data);
         setLoading(false);
       },
       function (error: any) {

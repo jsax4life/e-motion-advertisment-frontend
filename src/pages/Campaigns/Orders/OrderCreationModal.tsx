@@ -209,7 +209,7 @@ const OrderCreationModal: React.FC<BillboardCreationModalProps> = ({
     
       }));
 
-      if(formData.billboard_id){
+      if ( formData.billboard_id ){
         const selectedBillboard = availableBillboards.find(
           (b) => b.id == formData.billboard_id
         );
@@ -455,6 +455,7 @@ console.log(formData);
   };
 
 
+  console.log(availableBillboards);
 
 console.log(selectedBillboard)
   if (!isOpen) return null;
@@ -580,18 +581,12 @@ console.log(selectedBillboard)
                   onChange={handleBillboardChange}
                   formSelectSize="lg"
                   value={formData.billboard_id}
-
-                  // {...register("bilboard_name", {
-                  //   onChange: (e) => {
-                  //     handleBillboardChange(e);
-                  //   },
-                  // })}
                   className="w-full"
                 >
                   <option disabled selected value="">
                     --select--
                   </option>
-                  {availableBillboards.map((billboard) => (
+                  {availableBillboards?.map((billboard) => (
                     <option
                       key={billboard.id}
                       value={billboard.id}
@@ -1011,49 +1006,7 @@ console.log(selectedBillboard)
               )}
 
                   {/* media purchase  uploaded as pdf */}
-              
-
-                  {/* <div className="col-span-12">
-                <FormLabel
-                  className="font-medium lg:text-[16px] text-black"
-                  htmlFor="media_purchase_order"
-                >
-                  Media Purchase Order Document
-                </FormLabel>
-                <FormInput
-                  formInputSize="lg"
-                  id="media_purchase_order"
-                  type="file"
-                  accept=".pdf"
-                  value={orderDetails.media_purchase_order}
-                  name="media_purchase_order"
-                  onChange={handleOrderDetailsChange}
-                  placeholder="Type here"
-                  // {...register("media_purchase_order")}
-                />
-                {errors.media_purchase_order && (
-                  <p className="text-red-500">
-                    {errors.media_purchase_order.message?.toString()}
-                  </p>
-                )}
-              </div> */}
-
-              {/* <FormInput
-  formInputSize="lg"
-  id="media_purchase_order"
-  type="file"
-  accept=".pdf"
-  name="media_purchase_order"
-  onChange={(e) => {
-    const file = e.target.files?.[0] || null;
-    setOrderDetails((prev) => ({
-      ...prev,
-      media_purchase_order: file,
-    }));
-  }}
-  className="p-2 border rounded"
-/> */}
-
+        
 
 <PdfUploadSection
   uploadedPdf={mediaPurchaseOrder}
