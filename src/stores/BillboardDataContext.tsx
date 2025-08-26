@@ -12,6 +12,10 @@ const pullBillboardReducer = (state: any, action: { type: any; billboard: any; p
             const updatedBillboards = [...state, action.payload];
             return updatedBillboards;
         }
+        case 'DELETE_BILLBOARD': {
+            const updatedBillboards = state.filter((billboard: any) => billboard.id !== action.payload);
+            return updatedBillboards;
+        }
         default:
             return state;
     }

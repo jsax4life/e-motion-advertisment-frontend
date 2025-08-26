@@ -30,7 +30,7 @@ interface Billboard {
   mediaType: string;
   numberOfSlotsOrFaces: number;
   numberOfFaces: number;
-  pricePerDay: number;
+  // pricePerDay: number;
   state: string;
   lga: string;
   address: string;
@@ -43,7 +43,7 @@ interface Billboard {
   available_faces: number[];
   faces: { faceNumber: number; description: string }[];
 
-  pricePerMonth: string;
+  // pricePerMonth: string;
   status: string;
   activeStatus: string;
   images: [];
@@ -78,7 +78,7 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
     // numberOfSlots: yup.string().required("Number of Slots is required"),
     // numberOfFaces: yup.string().required("Number of Faces is required"),
     // pricePerDay: yup.string().required("Price Per Day is required"),
-    pricePerMonth: yup.string().required("Price Per Month is required"),
+    // pricePerMonth: yup.string().required("Price Per Month is required"),
     // status : yup.string().required("Status is required"),
     // activeStatus: yup.string().required("Active Status is required"),
     orientation: yup.string().required("Board Orientation is required"),
@@ -178,21 +178,10 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
 
     setValue(name, value); // Ensure React Hook Form tracks this change
 
-    if (name === "pricePerMonth") {
-      const pricePerMonth = parseFloat(value);
-      const pricePerDay = pricePerMonth / 30; // Assuming 30 days in a month
-        console.log(pricePerDay)
-      setFormData((prevFormData: any) => ({
-        ...prevFormData,
-        [name]: value,
-        pricePerDay: pricePerDay.toFixed(2), // Round to 2 decimal places
-      }));
-    } else {
-      setFormData((prevFormData: any) => ({
-        ...prevFormData,
-        [name]: value,
-      }));
-    }
+    setFormData((prevFormData: any) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
 
     // Handle logic for resetting dependent fields
     if (name === "billboardType") {
@@ -273,19 +262,7 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
               onSubmit={handleSubmit(handleEditillboard)}
               className="col-span-12 rounded-lg w-full max-w-2xl  md:p-4 space-y-8 "
             >
-              {/* image */}
-              {/* <div className="col-span-12">
-              <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="images">Images</FormLabel>
-              <input
-                type="file"
-                id="images"
-                name="images"
-                multiple
-                accept="image/*"
-                onChange={handleFileChange}
-                className="w-full p-2 border rounded"
-              />
-            </div> */}
+         
 
               <ImageUploadSection
                 uploadedImages={uploadedImages}
@@ -333,6 +310,30 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
                   </p>
                 )}
               </div>
+
+              {/* billboard name */}
+              <div className="col-span-12">
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="name"
+                >
+                  Billboard Name
+                </FormLabel>
+                <FormInput
+                  formInputSize="lg"
+                  defaultValue={billboard?.billboardName}
+                  id="billboardName"
+                  type="text"
+                  placeholder="Type here"
+                  {...register("billboardName")}
+                />
+                {errors.billboardName && (
+                  <p className="text-red-500">
+                    {errors.billboardName.message?.toString()}
+                  </p>
+                )}
+              </div>
+              
 
               {/* <div className="col-span-12">
                 <FormLabel className="font-medium lg:text-[16px] text-black" htmlFor="lga">Local Government Area</FormLabel>
@@ -793,58 +794,6 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
 
               
 
-              {/* Price Per Day */}
-              <div className="col-span-12">
-                <FormLabel
-                  className="font-medium lg:text-[16px] text-black"
-                  htmlFor="pricePerDay"
-                >
-                  Amount (Per Day)
-                </FormLabel>
-                <FormInput
-                  formInputSize="lg"
-                  // name="pricePerDay"
-                  // disabled
-                  readOnly
-                  defaultValue={billboard?.pricePerDay} 
-                  type="number"
-                  value={formData?.pricePerDay}
-                  // {...register("pricePerDay", {
-                  //   onChange: (e) => {
-                  //     handleChange(e);
-                  //   },
-                  // })}
-                  className="w-full p-2 border rounded"
-                />
-                {errors.pricePerDay && (
-                  <p className="text-red-500">
-                    {errors.pricePerDay.message?.toString()}
-                  </p>
-                )}
-              </div>
-
-              {/* Price Per Month */}
-              <div className="col-span-12">
-                <FormLabel
-                  className="font-medium lg:text-[16px] text-black"
-                  htmlFor="pricePerMonth"
-                >
-                  Amount (Per Month)
-                </FormLabel>
-                <FormInput
-                  formInputSize="lg"
-                  type="number"
-                  value = {formData?.pricePerMonth ? formData?.pricePerMonth : billboard?.pricePerMonth}
-                    
-                
-                  {...register("pricePerMonth", {
-                    onChange: (e) => {
-                      handleChange(e);
-                    },
-                  })}
-                  className="w-full p-2 border rounded"
-                />
-              </div>
 
               <div className="flex space-x-2 lg:text-lg text-sm">
                 <Button

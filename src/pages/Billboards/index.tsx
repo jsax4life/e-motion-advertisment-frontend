@@ -88,6 +88,7 @@ export default function Main() {
   const [isStatusModalOpen, setStatusModalOpen] = useState(false);
 
   const [selectedBillboard, setSelectedBillboard] = useState();
+  const [billboardToDelete, setBillboardToDelete] = useState<any>(null);
 
   const [error, setError] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -297,6 +298,52 @@ export default function Main() {
     // Optionally update your data based on the filters being removed
   };
 
+  // Function to handle delete billboard click
+  const handleDeleteBillboardClick = (billboard: any) => {
+    setBillboardToDelete(billboard);
+    console.log(billboard);
+    setDeleteConfirmationModal(true);
+  };
+
+  // Function to handle delete billboard confirmation
+  const handleDeleteBillboard = () => {
+    if (!billboardToDelete) return;
+
+    setLoading(true);
+    API(
+      "delete",
+      `billboards/${billboardToDelete.id}`,
+      {},
+      function (response: any) {
+        console.log(response);
+        setLoading(false);
+        setDeleteConfirmationModal(false);
+        setBillboardToDelete(null);
+
+        // Remove the deleted billboard from the list
+        setBillboardList((prev) => 
+          prev.filter((billboard) => billboard.id !== billboardToDelete.id)
+        );
+
+        // Update the billboard context
+        billboardDispatch({
+          type: "DELETE_BILLBOARD",
+          payload: billboardToDelete.id,
+        });
+
+        toast.success("Billboard deleted successfully");
+      },
+      function (error: any) {
+        console.error("Error deleting billboard:", error);
+        setLoading(false);
+        setDeleteConfirmationModal(false);
+        setBillboardToDelete(null);
+        toast.error(error || "Failed to delete billboard");
+      },
+      user?.token && user.token
+    );
+  };
+
   // Function to handle filter changes
   const handleFilterChange = (filter: string, value: string) => {
     const newFilters = {
@@ -440,13 +487,7 @@ export default function Main() {
             <Menu.Items className="w-40 text-xs">
               <Menu.Header className="">Filter Categories</Menu.Header>
 
-              {/* <Menu.Item>
-            <Lucide icon="Home" className="w-4 h-4 mr-2" />
-            LGA
-
-            <Lucide icon="ChevronRight" className="w-4 h-4 ml-auto" />
-
-        </Menu.Item> */}
+           
 
               <Menu.Item
                 onClick={() => {
@@ -573,32 +614,7 @@ export default function Main() {
                             </div>
                           </Table.Td>
 
-                          {/* <Table.Td className="first:rounded-l-md last:rounded-r-md  bg-white border-b-0 dark:bg-darkmode-600  border-slate-200 border-b">
-                            <div
-                              className="flex items-center"
-                              onClick={() => navigate(`/profile/${billboard.id}`)}
-                            >
-                              <div className="w-9 h-9 image-fit zoom-in">
-                                <Tippy
-                                  as="img"
-                                  alt="Profile"
-                                  className="border-white rounded-lg shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]"
-                                  src={billboard?.rider?.profile_picture_url}
-                                  content={`Uploaded at ${billboard.created_at}`}
-                                />
-                              </div>
-                              <div className="ml-4">
-                                <a
-                                  href=""
-                                  className="font-medium whitespace-nowrap"
-                                >
-                                  {billboard?.rider?.first_name}{" "}
-                                  {billboard?.rider?.last_name}
-                                </a>
-                          
-                              </div>
-                            </div>
-                          </Table.Td> */}
+                      
 
                           <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white  dark:bg-darkmode-600 border-slate-200 border-b">
                             <>
@@ -654,17 +670,7 @@ export default function Main() {
                           </Table.Td>
 
                           <Table.Td className="first:rounded-l-md last:rounded-r-md bg-white border-slate-200 border-b   dark:bg-darkmode-600  py-0 relative before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400">
-                            {/* <div className="flex items-center justify-center">
-                              <button
-                                className="flex items-center  text-customColor whitespace-nowrap"
-                                onClick={() =>
-                                  navigate(`/profile/${billboard.id}`)
-                                }
-                              >
-                                <Lucide icon="CheckSquare" className="w-4 h-4 mr-1" />{" "}
-                                View Profile
-                              </button>
-                            </div> */}
+                           
                             <Menu className="ml-3">
                               <Menu.Button
                                 //   tag="p"
@@ -698,11 +704,14 @@ export default function Main() {
                                   />{" "}
                                   Change Status
                                 </Menu.Item>
-                                <Menu.Item className="text-red-500">
+                                <Menu.Item 
+                                  className="text-red-500"
+                                  onClick={() => handleDeleteBillboardClick(billboard)}
+                                >
                                   <Lucide
                                     icon="Trash"
                                     className="w-4 h-4 mr-2 "
-                                  />{" "}
+                                  />
                                   Delete
                                 </Menu.Item>
                               </Menu.Items>
@@ -735,10 +744,53 @@ export default function Main() {
             {/* Delete Confirmation Modal */}
             <Dialog
               open={deleteConfirmationModal}
-              onClose={() => setDeleteConfirmationModal(false)}
+              onClose={() => {
+                setDeleteConfirmationModal(false);
+                setBillboardToDelete(null);
+              }}
               initialFocus={deleteButtonRef}
             >
-              {/* Dialog content */}
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Title
+                  as="h3"
+                  className="text-lg font-medium leading-6 text-gray-900"
+                >
+                  Delete Billboard
+                </Dialog.Title>
+                <div className="mt-2">
+                  <p className="text-sm text-gray-500">
+                    Are you sure you want to delete the billboard "{billboardToDelete?.internalCode || billboardToDelete?.id}"? 
+                    This action cannot be undone.
+                  </p>
+                </div>
+
+                <div className="mt-4 flex justify-end space-x-3">
+                  <Button
+                    variant="outline-secondary"
+                    onClick={() => {
+                      setDeleteConfirmationModal(false);
+                      setBillboardToDelete(null);
+                    }}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={handleDeleteBillboard}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <LoadingIcon icon="oval" className="w-4 h-4 mr-2" />
+                        Deleting...
+                      </>
+                    ) : (
+                      "Delete"
+                    )}
+                  </Button>
+                </div>
+              </Dialog.Panel>
             </Dialog>
           </div>
         </div>
@@ -762,6 +814,32 @@ export default function Main() {
           <div className="mt-1 text-slate-500">{errorMessage}</div>
         </div>
       </Notification>
+      
+      {/* Toast notifications */}
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </>
   );
 }

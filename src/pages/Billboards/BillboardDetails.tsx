@@ -34,6 +34,7 @@ import { PullBillboardContext } from "../../stores/BillboardDataContext";
 import DisplaySection from "./DisplaySection";
 import { formatDate } from "../../utils/utils";
 import BillboardEditingModal from "./BillboardEditingModal";
+import PriceEditingModal from "./PriceEditingModal";
 
 
 export default function Main() {
@@ -44,7 +45,8 @@ export default function Main() {
   const [billboard, setBillboard] = useState<any>();
   const { billboards, billboardDispatch } = useContext(PullBillboardContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
-    const [billboardList, setBillboardList] = useState<any>([]);
+  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
+  const [billboardList, setBillboardList] = useState<any>([]);
 
 const {id} = useParams<{id: any}>();
 
@@ -127,12 +129,79 @@ const {id} = useParams<{id: any}>();
     // Call your API to add a new billboard here
   };
 
+  const handleUpdatePrice = (data: { pricePerMonth: number; pricePerDay: number }) => {
+    console.log("Updating price:", data);
+    setLoading(true);
+
+    API(
+      "patch",
+      `billboards/${billboard?.id}/price`,
+      data,
+      function (response: any) {
+        console.log(response);
+        setBillboard((prev: any) => ({
+          ...prev,
+          ...response.data
+        }));
+        setLoading(false);
+        setIsPriceModalOpen(false);
+
+        const successEl = document
+          .querySelectorAll("#success-notification-content")[0]
+          .cloneNode(true) as HTMLElement;
+
+        successEl.classList.remove("hidden");
+        Toastify({
+          node: successEl,
+          duration: 8000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
+      },
+      function (error: any) {
+        console.error("Error updating price:", error);
+        setLoading(false);
+        setErrorMessage(error);
+        const failedEl = document
+          .querySelectorAll("#failed-notification-content")[0]
+          .cloneNode(true) as HTMLElement;
+        failedEl.classList.remove("hidden");
+        Toastify({
+          node: failedEl,
+          duration: 8000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
+      },
+      user?.token && user.token
+    );
+  };
+
 
   useEffect(() => {
     if (user?.token) {
       fetchDashboardData();
     }
   }, [user?.token]);
+
+  // Add event listener for edit price button
+  useEffect(() => {
+    const handleEditPrice = (event: CustomEvent) => {
+      setIsPriceModalOpen(true);
+    };
+
+    window.addEventListener('editPrice', handleEditPrice as EventListener);
+
+    return () => {
+      window.removeEventListener('editPrice', handleEditPrice as EventListener);
+    };
+  }, []);
 
   const fetchDashboardData = () => {
     if(!id) {
@@ -225,6 +294,14 @@ console.log(billboard)
         onSubmit={handleUpdateBillboard}
       />
 
+      <PriceEditingModal
+        isOpen={isPriceModalOpen}
+        billboard={billboard}
+        isLoading={loading}
+        onClose={() => setIsPriceModalOpen(false)}
+        onSubmit={handleUpdatePrice}
+      />
+
         </div>
 
 
@@ -315,7 +392,7 @@ console.log(billboard)
               <div className="ml-4 mr-4">
                 <div className="font-medium">Billboard Updated!</div>
                 <div className="mt-1 text-slate-500">
-                Successfully  updateds billboard
+                Successfully updated billboard
                 </div>
               </div>
             </Notification>

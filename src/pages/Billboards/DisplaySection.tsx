@@ -177,6 +177,39 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
             </div>
           </div>
         )}
+
+        {/* Price Section */}
+        <div className="border-t border-slate-200 pt-4">
+          <div className="flex justify-between items-center mb-4">
+            <div className="text-lg font-bold text-black">Pricing Information</div>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('editPrice', { detail: billboard }))}
+              className="flex items-center justify-center font-medium shadow-sm bg-customColor rounded-lg px-3 py-2 text-white text-sm hover:bg-customColor/90 transition-colors"
+            >
+              <Lucide icon="Edit" className="w-4 h-4 mr-2" />
+              Edit Price
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <div className="col-span-1">
+              <div className="md:text-[12px] text-slate-500 font-bold mb-2">
+                Price Per Month
+              </div>
+              <div className="font-bold lg:text-[18px] text-slate-800">
+                ₦{formatCurrency(Number(billboard?.pricePerMonth) || 0)}
+              </div>
+            </div>
+            <div className="col-span-1">
+              <div className="md:text-[12px] text-slate-500 font-bold mb-2">
+                Price Per Day
+              </div>
+              <div className="font-bold lg:text-[18px] text-slate-800">
+                ₦{formatCurrency(Number(billboard?.pricePerDay) || 0)}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
 
