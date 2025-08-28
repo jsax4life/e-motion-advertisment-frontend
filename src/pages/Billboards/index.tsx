@@ -211,6 +211,12 @@ export default function Main() {
           .querySelectorAll("#success-notification-content")[0]
           .cloneNode(true) as HTMLElement;
 
+        // Update the notification content for billboard creation action
+        const titleEl = successEl.querySelector('.font-medium');
+        const messageEl = successEl.querySelector('.text-slate-500');
+        if (titleEl) titleEl.textContent = "Billboard Added!";
+        if (messageEl) messageEl.textContent = "Successfully added new billboard";
+
         successEl.classList.remove("hidden");
         Toastify({
           node: successEl,
@@ -225,13 +231,20 @@ export default function Main() {
       },
 
       function (error: any) {
-        console.error("Error fetching recent searches:", error);
+        console.error("Error creating billboard:", error);
         setLoading(false);
 
         setErrorMessage(error);
         const failedEl = document
           .querySelectorAll("#failed-notification-content")[0]
           .cloneNode(true) as HTMLElement;
+        
+        // Update the notification content for billboard creation error
+        const titleEl = failedEl.querySelector('.font-medium');
+        const messageEl = failedEl.querySelector('.text-slate-500');
+        if (titleEl) titleEl.textContent = "Failed to Create!";
+        if (messageEl) messageEl.textContent = error || "Failed to create billboard";
+        
         failedEl.classList.remove("hidden");
         Toastify({
           node: failedEl,
@@ -268,15 +281,53 @@ export default function Main() {
         setStatusModalOpen(false);
 
         setLoading(false);
-        toast.success("Status updated successfully");
+        const successEl = document
+          .querySelectorAll("#success-notification-content")[0]
+          .cloneNode(true) as HTMLElement;
+
+        // Update the notification content for status change action
+        const titleEl = successEl.querySelector('.font-medium');
+        const messageEl = successEl.querySelector('.text-slate-500');
+        if (titleEl) titleEl.textContent = "Status Updated!";
+        if (messageEl) messageEl.textContent = "Successfully updated billboard status";
+
+        successEl.classList.remove("hidden");
+        Toastify({
+          node: successEl,
+          duration: 8000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
       },
 
       function (error: any) {
-        console.error("Error fetching recent searches:", error);
+        console.error("Error updating status:", error);
         setLoading(false);
 
         setErrorMessage(error);
-        toast.error(error);
+        const failedEl = document
+          .querySelectorAll("#failed-notification-content")[0]
+          .cloneNode(true) as HTMLElement;
+        
+        // Update the notification content for status change error
+        const titleEl = failedEl.querySelector('.font-medium');
+        const messageEl = failedEl.querySelector('.text-slate-500');
+        if (titleEl) titleEl.textContent = "Failed to Update Status!";
+        if (messageEl) messageEl.textContent = error || "Failed to update billboard status";
+        
+        failedEl.classList.remove("hidden");
+        Toastify({
+          node: failedEl,
+          duration: 8000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
       },
       user?.token && user.token
     );
@@ -331,14 +382,54 @@ export default function Main() {
           payload: billboardToDelete.id,
         });
 
-        toast.success("Billboard deleted successfully");
+        const successEl = document
+          .querySelectorAll("#success-notification-content")[0]
+          .cloneNode(true) as HTMLElement;
+
+        // Update the notification content for delete action
+        const titleEl = successEl.querySelector('.font-medium');
+        const messageEl = successEl.querySelector('.text-slate-500');
+        if (titleEl) titleEl.textContent = "Billboard Deleted!";
+        if (messageEl) messageEl.textContent = "Successfully deleted billboard";
+
+        successEl.classList.remove("hidden");
+        Toastify({
+          node: successEl,
+          duration: 8000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
       },
       function (error: any) {
         console.error("Error deleting billboard:", error);
         setLoading(false);
         setDeleteConfirmationModal(false);
         setBillboardToDelete(null);
-        toast.error(error || "Failed to delete billboard");
+        
+        setErrorMessage(error || "Failed to delete billboard");
+        const failedEl = document
+          .querySelectorAll("#failed-notification-content")[0]
+          .cloneNode(true) as HTMLElement;
+        
+        // Update the notification content for delete error
+        const titleEl = failedEl.querySelector('.font-medium');
+        const messageEl = failedEl.querySelector('.text-slate-500');
+        if (titleEl) titleEl.textContent = "Failed to Delete!";
+        if (messageEl) messageEl.textContent = error || "Failed to delete billboard";
+        
+        failedEl.classList.remove("hidden");
+        Toastify({
+          node: failedEl,
+          duration: 8000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
       },
       user?.token && user.token
     );
@@ -799,9 +890,9 @@ export default function Main() {
       <Notification id="success-notification-content" className="flex  ">
         <Lucide icon="CheckCircle" className="text-success" />
         <div className="ml-4 mr-4">
-          <div className="font-medium">Billboard Added!</div>
+          <div className="font-medium">Success!</div>
           <div className="mt-1 text-slate-500">
-            Successfully added new billboard
+            Operation completed successfully
           </div>
         </div>
       </Notification>
@@ -815,31 +906,7 @@ export default function Main() {
         </div>
       </Notification>
       
-      {/* Toast notifications */}
-      <Toaster 
-        position="top-right"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: '#363636',
-            color: '#fff',
-          },
-          success: {
-            duration: 3000,
-            iconTheme: {
-              primary: '#4ade80',
-              secondary: '#fff',
-            },
-          },
-          error: {
-            duration: 4000,
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: '#fff',
-            },
-          },
-        }}
-      />
+
     </>
   );
 }
