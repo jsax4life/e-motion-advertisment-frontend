@@ -7,6 +7,7 @@ import _, { set } from "lodash";
 import clsx from "clsx";
 import { useState, useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import { usePaginatedBillboards } from "../../hooks/useBillboards";
 
 import Button from "../../base-components/Button";
 import Pagination from "../../base-components/Pagination";

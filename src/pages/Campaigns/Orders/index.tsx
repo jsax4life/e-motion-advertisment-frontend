@@ -399,7 +399,6 @@ export default function Main() {
 
           <OrderCreationModal
             clients={clients}
-            availableBillboards={billboards}
             isOpen={isModalOpen}
             isLoading={loading}
             onClose={() => setIsModalOpen(false)}

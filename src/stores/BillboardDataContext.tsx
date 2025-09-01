@@ -9,12 +9,33 @@ const pullBillboardReducer = (state: any, action: { type: any; billboard: any; p
             return action.billboard;
         }
         case 'ADD_BILLBOARD': {
+            // Check if billboard already exists to avoid duplicates
+            const existingIndex = state.findIndex((billboard: any) => billboard.id === action.payload.id);
+            if (existingIndex !== -1) {
+                // Update existing billboard
+                const updatedBillboards = [...state];
+                updatedBillboards[existingIndex] = action.payload;
+                return updatedBillboards;
+            }
+            // Add new billboard
             const updatedBillboards = [...state, action.payload];
+            return updatedBillboards;
+        }
+        case 'UPDATE_BILLBOARD': {
+            const updatedBillboards = state.map((billboard: any) => 
+                billboard.id === action.payload.id ? { ...billboard, ...action.payload } : billboard
+            );
             return updatedBillboards;
         }
         case 'DELETE_BILLBOARD': {
             const updatedBillboards = state.filter((billboard: any) => billboard.id !== action.payload);
             return updatedBillboards;
+        }
+        case 'MERGE_BILLBOARDS': {
+            // Merge new billboards with existing ones, avoiding duplicates
+            const existingIds = state.map((billboard: any) => billboard.id);
+            const newBillboards = action.billboard.filter((billboard: any) => !existingIds.includes(billboard.id));
+            return [...state, ...newBillboards];
         }
         default:
             return state;

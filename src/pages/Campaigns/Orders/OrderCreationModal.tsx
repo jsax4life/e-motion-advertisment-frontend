@@ -20,12 +20,12 @@ import { formatCurrency, formatDate } from "../../../utils/utils";
 import { useFetchStates } from "../../../lib/Hook";
 import PdfUploadSection from "./PdfUploadSection";
 import { DateTime } from "litepicker/dist/types/datetime";
+import { useAvailableBillboards } from "../../../hooks/useBillboards";
 
 interface BillboardCreationModalProps {
   isOpen: boolean;
   isLoading: boolean;
   clients: Client[];
-  availableBillboards: AvailableBillboard[];
   onClose: () => void;
   onSubmit: (data: any, fileForm: any) => void;
 }
@@ -99,11 +99,43 @@ const OrderCreationModal: React.FC<BillboardCreationModalProps> = ({
   isOpen,
   isLoading,
   clients,
-  availableBillboards,
   onClose,
   onSubmit,
 }) => {
+  // Use our custom hook to fetch all available billboards
+  const { availableBillboards, loading: billboardsLoading, error: billboardsError } = useAvailableBillboards();
   const [sendButtonRef] = useState(React.createRef<HTMLButtonElement>());
+
+  // Billboard search and dropdown state
+  const [billboardSearchTerm, setBillboardSearchTerm] = useState("");
+  const [isBillboardDropdownOpen, setIsBillboardDropdownOpen] = useState(false);
+
+  // Filtered billboards based on search term
+  const filteredBillboards = availableBillboards?.filter((billboard) => {
+    if (!billboardSearchTerm) return true;
+    
+    const searchLower = billboardSearchTerm.toLowerCase();
+    return (
+      billboard.billboardName.toLowerCase().includes(searchLower) ||
+      billboard.address.toLowerCase().includes(searchLower) ||
+      billboard.state.toLowerCase().includes(searchLower) ||
+      billboard.internalCode.toLowerCase().includes(searchLower) ||
+      billboard.serialNumber.toLowerCase().includes(searchLower)
+    );
+  }) || [];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.billboard-dropdown')) {
+        setIsBillboardDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const [duration, setDuration] = useState<string>("");
   const [startDate, setStartDate] = useState<string>("");
@@ -572,42 +604,154 @@ console.log(selectedBillboard)
               <div className="col-span-12">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
-                  htmlFor="client_type"
+                  htmlFor="billboard_id"
                 >
                   Billboard Name
                 </FormLabel>
-                <FormSelect
-                  name="billboard_id"
-                  onChange={handleBillboardChange}
-                  formSelectSize="lg"
-                  value={formData.billboard_id}
-                  className="w-full"
-                >
-                  <option disabled selected value="">
-                    --select--
-                  </option>
-                  {availableBillboards?.map((billboard) => (
-                    <option
-                      key={billboard.id}
-                      value={billboard.id}
-                      disabled={
-                        (billboard.billboardType === "digital" &&
-                          billboard?.available_slots?.length < 1) ||
-                        (billboard.billboardType === "static" &&
-                          billboard?.available_faces?.length < 1)
+                
+                {/* Searchable Billboard Dropdown */}
+                <div className="relative billboard-dropdown">
+                  <div className="relative">
+                                      <input
+                    type="text"
+                    placeholder="Search billboards..."
+                    value={billboardSearchTerm}
+                    onChange={(e) => setBillboardSearchTerm(e.target.value)}
+                    onFocus={() => setIsBillboardDropdownOpen(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        setIsBillboardDropdownOpen(false);
                       }
-                    >
-                      {billboard.billboardName} (
-                      {billboard.billboardType === "digital"
-                        ? `${billboard?.available_slots?.length} of ${billboard?.numberOfSlotsOrFaces} slots available`
-                        : `${billboard?.available_faces.length} of ${billboard?.numberOfSlotsOrFaces} faces available`}
-                      )
-                    </option>
-                  ))}
-                </FormSelect>
-                {errors.client_type && (
-                  <p className="text-red-500">
-                    {errors.client_type.message?.toString()}
+                    }}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-customColor focus:border-transparent outline-none"
+                  />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                      <Lucide 
+                        icon={isBillboardDropdownOpen ? "ChevronUp" : "ChevronDown"} 
+                        className="w-5 h-5 text-slate-400" 
+                      />
+                    </div>
+                  </div>
+
+                  {/* Dropdown Menu */}
+                  {isBillboardDropdownOpen && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {/* Loading State */}
+                      {billboardsLoading && (
+                        <div className="px-4 py-3 text-slate-500 text-center">
+                          <div className="flex items-center justify-center space-x-2">
+                            <LoadingIcon icon="oval" className="w-4 h-4" />
+                            <span>Loading billboards...</span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Error State */}
+                      {billboardsError && !billboardsLoading && (
+                        <div className="px-4 py-3 text-red-500 text-center">
+                          <div className="flex items-center justify-center space-x-2">
+                            <Lucide icon="AlertCircle" className="w-4 h-4" />
+                            <span>{billboardsError}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Search Results */}
+                      {!billboardsLoading && !billboardsError && (
+                        <>
+                          {filteredBillboards.length > 0 ? (
+                            filteredBillboards.map((billboard) => {
+                              const isDisabled = 
+                                (billboard.billboardType === "digital" && billboard?.available_slots?.length < 1) ||
+                                (billboard.billboardType === "static" && billboard?.available_faces?.length < 1);
+                              
+                              return (
+                                <div
+                                  key={billboard.id}
+                                  onClick={() => {
+                                    if (!isDisabled) {
+                                      handleBillboardChange({
+                                        target: { value: billboard.id }
+                                      } as React.ChangeEvent<HTMLSelectElement>);
+                                      setBillboardSearchTerm(billboard.billboardName);
+                                      setIsBillboardDropdownOpen(false);
+                                    }
+                                  }}
+                                  className={`px-4 py-3 cursor-pointer hover:bg-slate-50 border-b border-slate-100 last:border-b-0 ${
+                                    isDisabled 
+                                      ? 'opacity-50 cursor-not-allowed bg-slate-100' 
+                                      : 'hover:bg-slate-50'
+                                  } ${
+                                    formData.billboard_id === billboard.id ? 'bg-customColor/10 border-l-4 border-l-customColor' : ''
+                                  }`}
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <div className="flex-1">
+                                      <div className="font-medium text-slate-900">
+                                        {billboard.billboardName}
+                                      </div>
+                                                                        <div className="text-sm text-slate-600 mt-1">
+                                    {billboard.address.length > 30 ? `${billboard.address.substring(0, 30)}...` : billboard.address} • {billboard.state}
+                                  </div>
+                                    </div>
+                                    <div className="text-right ml-2">
+                                      <div className={`text-xs px-2 py-1 rounded-full ${
+                                        billboard.billboardType === "digital" 
+                                          ? 'bg-blue-100 text-blue-700' 
+                                          : 'bg-green-100 text-green-700'
+                                      }`}>
+                                        {billboard.billboardType}
+                                      </div>
+                                      <div className="text-xs text-slate-500 mt-1">
+                                        {billboard.billboardType === "digital"
+                                          ? `${billboard?.available_slots?.length || 0}/${billboard?.numberOfSlotsOrFaces} slots`
+                                          : `${billboard?.available_faces?.length || 0}/${billboard?.numberOfSlotsOrFaces} faces`}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className="px-4 py-3 text-slate-500 text-center">
+                              {billboardSearchTerm ? 'No billboards found' : 'No billboards available'}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Selected Billboard Display */}
+                  {formData.billboard_id && selectedBillboard && (
+                    <div className="mt-2 p-3 bg-customColor/5 border border-customColor/20 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-slate-900">
+                            {selectedBillboard.billboardName}
+                          </div>
+                          <div className="text-sm text-slate-600">
+                            {selectedBillboard.address.length > 30 ? `${selectedBillboard.address.substring(0, 30)}...` : selectedBillboard.address} • {selectedBillboard.state}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setFormData(prev => ({ ...prev, billboard_id: "" }));
+                            setSelectedBillboard(undefined);
+                            setBillboardSearchTerm("");
+                          }}
+                          className="text-slate-400 hover:text-slate-600"
+                        >
+                          <Lucide icon="X" className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {errors.billboard_id && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.billboard_id.message?.toString()}
                   </p>
                 )}
               </div>
