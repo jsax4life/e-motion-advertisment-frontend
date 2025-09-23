@@ -166,7 +166,7 @@ export default function AddNewAdmiin() {
 
                         <div className="mt-3">
                           <FormLabel htmlFor="role">
-                            Role
+                            Roles
                           </FormLabel>
                           <FormSelect
                             id="role"

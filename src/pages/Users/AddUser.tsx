@@ -190,7 +190,7 @@ export default function AddNewUser() {
 
                         <div className="mt-3">
                           <FormLabel htmlFor="role">
-                            Role
+                            Roles
                           </FormLabel>
                           <FormSelect
                             id="role"
@@ -204,7 +204,7 @@ export default function AddNewUser() {
                             }
                           >
                             <option value="" selected disabled>
-                              --Select--
+                              --Selects Role--
                             </option>
                             <option value="registration_officer">Registration Officer</option>
                             <option value="attachment_officer">Attachment Officer</option>

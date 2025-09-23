@@ -188,7 +188,9 @@ const OrderCreationModal: React.FC<BillboardCreationModalProps> = ({
     end_date: "",
     actual_amount: 0,
     billboard_price_per_day: 0,
- 
+    discount_amount: 0,
+    discount_type: "percentage", // "percentage" or "fixed"
+    discounted_amount: 0,
   });
 
   
@@ -212,6 +214,7 @@ const OrderCreationModal: React.FC<BillboardCreationModalProps> = ({
   const [billboards, setBillboards] = useState<any[]>([]); // List of billboards in the order
   const [usedSlotsFaces, setUsedSlotsFaces] = useState<Record<string, string[]>>({});
   const [mediaPurchaseOrder, setMediaPurchaseOrder] = useState<File | null>(null);
+  const [expandedDiscounts, setExpandedDiscounts] = useState<Record<number, boolean>>({});
 
 
   useEffect(() => {
@@ -277,6 +280,14 @@ const OrderCreationModal: React.FC<BillboardCreationModalProps> = ({
    
     }
   }, [paymentPeriod]);
+
+  // Update order details when billboards change
+  useEffect(() => {
+    setOrderDetails((prev) => ({
+      ...prev,
+      discount_order_amount: calculateTotalDiscountedAmount()
+    }));
+  }, [billboards]);
 
 
   // Handle form field changes
@@ -355,6 +366,9 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       end_date: "",
       billboard_price_per_day: 0,
       actual_amount: 0,
+      discount_amount: 0,
+      discount_type: "percentage",
+      discounted_amount: 0,
     });
 
     // // Mark the selected slot/face as used
@@ -421,6 +435,48 @@ console.log(formData);
     return Math.ceil(timeDifference / (1000 * 3600 * 24)); // Convert milliseconds to days
   };
 
+  // Calculate discounted amount for a billboard
+  const calculateDiscountedAmount = (actualAmount: number, discountAmount: number, discountType: string) => {
+    if (discountType === "percentage") {
+      return actualAmount - (actualAmount * discountAmount / 100);
+    } else {
+      return Math.max(0, actualAmount - discountAmount);
+    }
+  };
+
+  // Handle discount changes for individual billboards
+  const handleBillboardDiscountChange = (index: number, field: string, value: any) => {
+    setBillboards((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      
+      // Recalculate discounted amount
+      if (field === "discount_amount" || field === "discount_type") {
+        const actualAmount = updated[index].actual_amount;
+        const discountAmount = updated[index].discount_amount;
+        const discountType = updated[index].discount_type;
+        updated[index].discounted_amount = calculateDiscountedAmount(actualAmount, discountAmount, discountType);
+      }
+      
+      return updated;
+    });
+  };
+
+  // Calculate total discounted amount for all billboards
+  const calculateTotalDiscountedAmount = () => {
+    return billboards.reduce((total, billboard) => {
+      return total + (billboard.discounted_amount || billboard.actual_amount);
+    }, 0);
+  };
+
+  // Toggle discount section visibility
+  const toggleDiscountSection = (index: number) => {
+    setExpandedDiscounts((prev) => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
+
   // console.log(formData);
 
   const handleSubmitOrder = async (data: any) => {
@@ -455,9 +511,11 @@ console.log(formData);
       ...orderDetails,
       billboards,
       // media_purchase_order: mediaPurchaseOrder,
-      // total_order_amount : billboards.reduce((acc, item) => acc + item.actual_amount, 0),
       total_order_amount: parseFloat(
         billboards.reduce((acc, item) => acc + item.actual_amount, 0).toFixed(2)
+      ),
+      discount_order_amount: parseFloat(
+        calculateTotalDiscountedAmount().toFixed(2)
       )
     };
 
@@ -933,72 +991,131 @@ console.log(selectedBillboard)
               <div className="border-b border-slate-200 "></div>
 
 {billboards.length > 0 && (
-  <div className="col-span-12 flex flex-col gap-y-2">
+  <div className="col-span-12 flex flex-col gap-y-4">
     <h3 className="text-lg font-semibold ">Added Billboards</h3>
     {billboards.map((billboard, index) => (
       <div
         key={index}
-        className="flex items-center lg:space-x-8 space-x-2  text-xs lg:text-sm p-2 lg:p-4 bg-primary text-customColor rounded-2xl "
+        className="border border-slate-200 rounded-lg p-4 bg-slate-50"
       >
-        <div className="w-full ">
-          <div className="text-sm md:text-[16px] text-black font-semibold mb-2">
-            {
-              availableBillboards.find((b) => b.id == billboard.billboard_id)
-                ?.billboardName
-            }
-          </div>
-          <div className="flex space-x-2 text-xs capitalize ">
-            <div className="bg-violet-200 text-violet-600 p-0.5">
-              {
-                availableBillboards.find((b) => b.id == billboard.billboard_id)
-                  ?.orientation
-              }
+        {/* Billboard Info */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex-1">
+            <div className="text-sm md:text-[16px] text-black font-semibold mb-2">
+              {(() => {
+                const billboardName = availableBillboards.find((b) => b.id == billboard.billboard_id)?.billboardName || '';
+                return billboardName.length > 25 ? `${billboardName.substring(0, 25)}...` : billboardName;
+              })()}
             </div>
-            <div className="bg-blue-100 text-blue-600 p-0.5">
-              {
-                availableBillboards.find((b) => b.id == billboard.billboard_id)
-                  ?.billboardType
-              }
+            <div className="flex space-x-2 text-xs capitalize">
+              <div className="bg-violet-200 text-violet-600 px-2 py-1 rounded">
+                {
+                  availableBillboards.find((b) => b.id == billboard.billboard_id)
+                    ?.orientation
+                }
+              </div>
+              <div className="bg-blue-100 text-blue-600 px-2 py-1 rounded">
+                {
+                  availableBillboards.find((b) => b.id == billboard.billboard_id)
+                    ?.billboardType
+                }
+              </div>
+              <div className="bg-orange-100 text-orange-500 px-2 py-1 rounded">
+                {billboard.billboard_type === "digital"
+                  ? `Slot ${billboard.slotOrFace}`
+                  : `Face ${billboard.slotOrFace}`}
+              </div>
             </div>
-            <div className="bg-orange-100 text-orange-500 p-0.5">
-              {billboard.billboard_type === "digital"
-                ? `Slot ${billboard.slotOrFace}`
-                : `Face ${billboard.slotOrFace} `}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex lg:w-full w-1/3 justify-end items-center space-x-2">
-          <div className="lg:text-lg text-xs text-customColor font-semibold">
-          <div className="text-slate-500 lg:text-sm text-xs">
-              campaign cost
-            </div>
-            &#x20A6;{formatCurrency(billboard.actual_amount)}
-            
           </div>
           <button
             onClick={() => {
               setBillboards((prev) => prev.filter((_, i) => i !== index));
 
               setUsedSlotsFaces((prev) => {
-                const billboardId = billboard.billboard_id; // Correct key reference
+                const billboardId = billboard.billboard_id;
                 const updatedSlotsFaces = prev[billboardId]
-                  ?.filter((slotOrFace) => slotOrFace !== String(billboard.slot || billboard.face)) || [];
+                  ?.filter((slotOrFace) => slotOrFace !== String(billboard.slotOrFace)) || [];
           
                 return {
                   ...prev,
-                  [billboardId]: updatedSlotsFaces.length > 0 ? updatedSlotsFaces : undefined, // Remove key if empty
+                  [billboardId]: updatedSlotsFaces.length > 0 ? updatedSlotsFaces : undefined,
                 };
               });
             }}
-            className="  hover:bg-white text-customColor hover:text-white rounded-lg w-5 h-5 flex items-center justify-center"
+            className="text-red-500 hover:text-red-700 p-1"
           >
-            {/* &times; */}
-            <Lucide icon="X" className="text-red-600" />
+            <Lucide icon="X" className="w-4 h-4" />
           </button>
         </div>
 
+        {/* Pricing and Discount Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Original Amount */}
+          <div>
+            <label className="text-xs text-slate-600 mb-1 block">Original Amount</label>
+            <div className="text-lg font-semibold text-slate-800">
+              ₦{formatCurrency(billboard.actual_amount)}
+            </div>
+          </div>
 
+          {/* Discount Button or Controls */}
+          <div className="space-y-2">
+            {!expandedDiscounts[index] ? (
+              <div className="flex justify-end">
+                <button
+                  onClick={() => toggleDiscountSection(index)}
+                  className="text-xs bg-customColor text-white px-3 py-2 rounded hover:bg-customColor/90 transition-colors"
+                >
+                  Apply Discount
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <label className="text-xs text-slate-600 mb-1 block">Apply Discount</label>
+                <div className="flex space-x-2">
+                  <FormSelect
+                    value={billboard.discount_type || "percentage"}
+                    onChange={(e) => handleBillboardDiscountChange(index, "discount_type", e.target.value)}
+                    className="text-xs border border-slate-300 rounded px-2 py-2 w-8"
+                  >
+                    <option value="percentage">%</option>
+                    <option value="fixed">₦</option>
+                  </FormSelect>
+                  <input
+                    type="number"
+                    value={billboard.discount_amount || 0}
+                    onChange={(e) => handleBillboardDiscountChange(index, "discount_amount", parseFloat(e.target.value) || 0)}
+                    placeholder="0"
+                    className="text-xs border border-slate-300 rounded px-2 py-1 flex-1"
+                    min="0"
+                    max={billboard.discount_type === "percentage" ? 100 : billboard.actual_amount}
+                  />
+                </div>
+                <button
+                  onClick={() => toggleDiscountSection(index)}
+                  className="text-xs text-slate-500 hover:text-slate-700"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Final Amount */}
+        <div className="mt-3 pt-3 border-t border-slate-200">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-slate-600">Final Amount:</span>
+            <span className="text-lg font-bold text-customColor">
+              ₦{formatCurrency(billboard.discounted_amount || billboard.actual_amount)}
+            </span>
+          </div>
+          {(billboard.discount_amount > 0) && (
+            <div className="text-xs text-green-600 mt-1">
+              Savings: ₦{formatCurrency(billboard.actual_amount - (billboard.discounted_amount || billboard.actual_amount))}
+            </div>
+          )}
+        </div>
       </div>
     ))}
   </div>
@@ -1210,23 +1327,21 @@ console.log(selectedBillboard)
                   className="font-medium lg:text-[16px] text-black"
                   htmlFor="discount_amount"
                 >
-                  Amount after Discount (Optional)
+                  Total Amount after Discounts
                 </FormLabel>
                 <FormInput
                   formInputSize="lg"
                   id="discount_order_amount"
-                  type="number"
+                  type="text"
                   name="discount_order_amount"
-                  onChange={handleOrderDetailsChange}
-                  value={`${orderDetails.discount_order_amount}`}
-                  placeholder="Type here"
+                  readOnly
+                  value={`₦${formatCurrency(calculateTotalDiscountedAmount())}`}
+                  className="w-full text-sm border rounded bg-gray-100 cursor-not-allowed"
                   // {...register("discount_amount")}
                 />
-                {errors.discount_order_amount && (
-                  <p className="text-red-500">
-                    {errors.discount_order_amount.message?.toString()}
-                  </p>
-                )}
+                <div className="text-xs text-slate-500 mt-1">
+                  Automatically calculated from individual billboard discounts
+                </div>
               </div>
 
 
