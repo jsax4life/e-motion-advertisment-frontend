@@ -593,42 +593,21 @@ console.log(selectedBillboard)
                     
                       options={{
                         singleMode: false,
-                        numberOfMonths: 3, // 2–3 is ideal for UX
+                        numberOfMonths: 2,
                         numberOfColumns: 2,
+                        splitView: true,
                         allowRepick: true,
-                        selectForward: true, // <- this prevents auto-adjusting issue
+                        selectForward: true,
                         showWeekNumbers: true,
-                        // minDate: "",
-                        // maxDays: 20,
                         autoApply: false,
                         dropdowns: {
                           minYear: 1999,
-                          maxYear: null,
+                          maxYear: new Date().getFullYear() + 5,
                           months: true,
                           years: true,
                         },
-                        // format: "YYYY-MM-DD"
                       }}
 
-                      // options={{
-                      //   autoApply: false,
-                      //   singleMode: false,
-                      //   numberOfColumns: 2,
-                      //   numberOfMonths: 6,
-                      //   allowRepick: true, // allows user to change date range easily
-                      //   // autoApply: false,  // only apply when user confirms (optional)
-                      //   // numberOfMonths: 2
-                      //   showWeekNumbers: true,
-                      //   selectForward: true, // <- this prevents auto-adjusting issue
-                      //   // minDate: null,
-                      //   // maxDays: null,
-                      //   dropdowns: {
-                      //     minYear: 1999,
-                      //     maxYear: null,
-                      //     months: true,
-                      //     years: true,
-                      //   },
-                      // }}
                       className="block py-3 pl-8 mx-auto"
                     />
                     <div className="absolute flex items-center justify-center  bottom-4 left-2  text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">

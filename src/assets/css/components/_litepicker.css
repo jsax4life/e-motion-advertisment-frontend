@@ -5,6 +5,11 @@
   z-index: 999999 !important;
   margin-top: 7px;
   box-shadow: 0px 3px 20px #00000014;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   @media (max-width: calc(theme("screens.lg") - 1px)) {
     width: 310px;
   }
@@ -41,10 +46,18 @@
     background-color: transparent;
     padding-top: 0;
   }
+  .container__main {
+    flex: 1 1 auto;
+    min-height: 0;
+    /* scrolling on parent .litepicker */
+  }
   .container__footer {
     border-top: 1px solid theme("colors.slate.200" / 60%);
     margin: 0;
     padding: theme("spacing.3");
+    position: sticky;
+    bottom: 0;
+    background-color: white;
     @media (max-width: calc(theme("screens.lg") - 1px)) {
       display: flex;
       flex-direction: column-reverse;
@@ -94,6 +107,8 @@
     }
   }
   .container__months {
+    flex: 1 1 auto;
+    min-height: 0;
     padding-left: theme("spacing.1");
     padding-right: theme("spacing.1");
     .month-item-weekdays-row {
