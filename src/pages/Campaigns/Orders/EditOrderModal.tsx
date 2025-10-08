@@ -302,6 +302,33 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
       orientation: selectedBillboard?.orientation || "",
       billboard_price_per_day: selectedBillboard?.pricePerDay || 0,
     }));
+
+    if (selectedBillboard) {
+      // Initialize bulk hole selection for lamp pole billboards
+      if (selectedBillboard.billboardType === "lamp_pole") {
+        const globalAvailableHoles = selectedBillboard.available_lamp_holes || [];
+        if (globalAvailableHoles.length > 0) {
+          // Get holes that have been used in the current order session
+          const usedHolesInCurrentSession = usedSlotsFaces[billboardId] || [];
+          const usedHoleNumbers = usedHolesInCurrentSession.map(holeLabel => 
+            parseInt(holeLabel.replace('Hole ', ''))
+          );
+
+          // Filter out holes that are already used in the current session
+          const availableHoles = globalAvailableHoles.filter(hole => 
+            !usedHoleNumbers.includes(hole)
+          );
+
+          const firstHole = availableHoles[0] || globalAvailableHoles[0] || 1;
+          setBulkHoleSelection({
+            startHole: firstHole,
+            endHole: firstHole,
+            totalHoles: 1,
+            selectedHoles: [firstHole]
+          });
+        }
+      }
+    }
   };
 
   console.log(orderToEdit);
@@ -518,11 +545,33 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
     const selectedBillboard = availableBillboards.find((b: any) => b.id === formData.billboard_id);
     if (!selectedBillboard || selectedBillboard.billboardType !== "lamp_pole") return;
 
-    const maxHoles = selectedBillboard.available_lamp_holes?.length || 0;
-    const validStartHole = Math.max(1, Math.min(startHole, maxHoles));
-    const validEndHole = Math.max(validStartHole, Math.min(endHole, maxHoles));
+    const globalAvailableHoles = selectedBillboard.available_lamp_holes || [];
+    if (globalAvailableHoles.length === 0) return;
+
+    // Get holes that have been used in the current order session
+    const usedHolesInCurrentSession = usedSlotsFaces[formData.billboard_id] || [];
+    const usedHoleNumbers = usedHolesInCurrentSession.map(holeLabel => 
+      parseInt(holeLabel.replace('Hole ', ''))
+    );
+
+    // Filter out holes that are already used in the current session
+    const availableHoles = globalAvailableHoles.filter(hole => 
+      !usedHoleNumbers.includes(hole)
+    );
+
+    if (availableHoles.length === 0) return;
+
+    const minHole = availableHoles[0];
+    const maxHole = availableHoles[availableHoles.length - 1];
     
-    const selectedHoles = Array.from({ length: validEndHole - validStartHole + 1 }, (_, i) => validStartHole + i);
+    // Ensure start and end holes are within available range
+    const validStartHole = Math.max(minHole, Math.min(startHole, maxHole));
+    const validEndHole = Math.max(validStartHole, Math.min(endHole, maxHole));
+    
+    // Only select holes that are actually available
+    const selectedHoles = availableHoles.filter(hole => 
+      hole >= validStartHole && hole <= validEndHole
+    );
     
     setBulkHoleSelection({
       startHole: validStartHole,
@@ -618,12 +667,37 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
     });
 
     // Reset bulk hole selection
-    setBulkHoleSelection({
-      startHole: 1,
-      endHole: 1,
-      totalHoles: 1,
-      selectedHoles: []
-    });
+    const selectedBillboard = availableBillboards.find((b: any) => b.id === formData.billboard_id);
+    if (selectedBillboard && selectedBillboard.billboardType === "lamp_pole") {
+      const globalAvailableHoles = selectedBillboard.available_lamp_holes || [];
+      if (globalAvailableHoles.length > 0) {
+        // Get holes that have been used in the current order session
+        const usedHolesInCurrentSession = usedSlotsFaces[formData.billboard_id] || [];
+        const usedHoleNumbers = usedHolesInCurrentSession.map(holeLabel => 
+          parseInt(holeLabel.replace('Hole ', ''))
+        );
+
+        // Filter out holes that are already used in the current session
+        const availableHoles = globalAvailableHoles.filter(hole => 
+          !usedHoleNumbers.includes(hole)
+        );
+
+        const firstHole = availableHoles[0] || globalAvailableHoles[0] || 1;
+        setBulkHoleSelection({
+          startHole: firstHole,
+          endHole: firstHole,
+          totalHoles: 1,
+          selectedHoles: [firstHole]
+        });
+      }
+    } else {
+      setBulkHoleSelection({
+        startHole: 1,
+        endHole: 1,
+        totalHoles: 1,
+        selectedHoles: []
+      });
+    }
 
     // Update the used slots and faces
     setUsedSlotsFaces((prev) => {
@@ -1274,8 +1348,30 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
                           </label>
                           <FormInput
                             type="number"
-                            min="1"
-                            max={availableBillboards.find((b: any) => b.id === formData.billboard_id)?.available_lamp_holes?.length || 0}
+                            min={(() => {
+                              const billboard = availableBillboards.find((b: any) => b.id === formData.billboard_id);
+                              const globalHoles = billboard?.available_lamp_holes || [];
+                              const usedHoles = usedSlotsFaces[formData.billboard_id] || [];
+                              const usedHoleNumbers = usedHoles.map(holeLabel => 
+                                parseInt(holeLabel.replace('Hole ', ''))
+                              );
+                              const availableHoles = globalHoles.filter(hole => 
+                                !usedHoleNumbers.includes(hole)
+                              );
+                              return availableHoles[0] || 1;
+                            })()}
+                            max={(() => {
+                              const billboard = availableBillboards.find((b: any) => b.id === formData.billboard_id);
+                              const globalHoles = billboard?.available_lamp_holes || [];
+                              const usedHoles = usedSlotsFaces[formData.billboard_id] || [];
+                              const usedHoleNumbers = usedHoles.map(holeLabel => 
+                                parseInt(holeLabel.replace('Hole ', ''))
+                              );
+                              const availableHoles = globalHoles.filter(hole => 
+                                !usedHoleNumbers.includes(hole)
+                              );
+                              return availableHoles[availableHoles.length - 1] || 1;
+                            })()}
                             value={bulkHoleSelection.startHole}
                             onChange={(e) => {
                               const startHole = parseInt(e.target.value) || 1;
@@ -1291,7 +1387,18 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
                           <FormInput
                             type="number"
                             min={bulkHoleSelection.startHole}
-                            max={availableBillboards.find((b: any) => b.id === formData.billboard_id)?.available_lamp_holes?.length || 0}
+                            max={(() => {
+                              const billboard = availableBillboards.find((b: any) => b.id === formData.billboard_id);
+                              const globalHoles = billboard?.available_lamp_holes || [];
+                              const usedHoles = usedSlotsFaces[formData.billboard_id] || [];
+                              const usedHoleNumbers = usedHoles.map(holeLabel => 
+                                parseInt(holeLabel.replace('Hole ', ''))
+                              );
+                              const availableHoles = globalHoles.filter(hole => 
+                                !usedHoleNumbers.includes(hole)
+                              );
+                              return availableHoles[availableHoles.length - 1] || 1;
+                            })()}
                             value={bulkHoleSelection.endHole}
                             onChange={(e) => {
                               const endHole = parseInt(e.target.value) || bulkHoleSelection.startHole;
