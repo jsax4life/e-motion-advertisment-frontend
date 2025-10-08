@@ -48,6 +48,7 @@ const billboard_types  =[
   "Digital",
   "Static",
   "Bespoke",
+  "Lamp Pole",
 ]
 
 const orientations = [

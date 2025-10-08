@@ -186,6 +186,8 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
             <div className="bg-orange-100 text-orange-500 p-0.5">
               {billboard.billboard_type === "digital"
                 ? `Slot ${billboard.slotOrFace}`
+                : billboard.billboard_type === "lamp_pole"
+                ? `Hole ${billboard.slotOrFace}`
                 : `Face ${billboard.slotOrFace} `}
             </div>
           </div>

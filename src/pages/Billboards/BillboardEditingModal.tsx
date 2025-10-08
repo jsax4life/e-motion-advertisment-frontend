@@ -26,7 +26,7 @@ interface Billboard {
   serialNumber: string;
   internalCode: string;
   billboardName: string;
-  billboardType: "static" | "digital" | "bespoke";
+  billboardType: "static" | "digital" | "bespoke" | "lamp_pole";
   mediaType: string;
   numberOfSlotsOrFaces: number;
   numberOfFaces: number;
@@ -695,6 +695,7 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
                   <option value="static">Static</option>
                   <option value="digital">Digital</option>
                   <option value="bespoke">Bespoke (Innovative)</option>
+                  <option value="lamp_pole">Lamp Pole</option>
                 </FormSelect>
                 {errors.billboardType && (
                   <p className="text-red-500">
@@ -715,6 +716,8 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
     >
       {billboard.billboardType === "digital"
         ? "Number of Slots"
+        : billboard.billboardType === "lamp_pole"
+        ? "Number of Holes"
         : "Number of Faces"}
     </FormLabel>
 
@@ -730,7 +733,8 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
 {(() => {
         const current = billboard?.numberOfSlotsOrFaces || 1;
         const isDigital = billboard.billboardType === "digital";
-        const max = isDigital ? 8 : 3;
+        const isLampPole = billboard.billboardType === "lamp_pole";
+        const max = isDigital ? 20 : isLampPole ? 10 : 3;
         let options: number[] = [];
 
         if (billboard.activeStatus === "occupied") {
@@ -747,7 +751,7 @@ const BillboardEditingModal: React.FC<BillboardCreationModalProps> = ({
 
         return options.map((val) => (
           <option key={val} value={val}>
-            {isDigital ? "Slots" : "Faces"} {val}
+            {isDigital ? "Slots" : isLampPole ? "Holes" : "Faces"} {val}
           </option>
         ));
       })()}

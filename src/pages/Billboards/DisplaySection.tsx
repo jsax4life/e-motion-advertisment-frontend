@@ -19,7 +19,7 @@ interface Billboard {
   serialNumber: string;
   internalCode: string;
   billboardName: string;
-  billboardType: "static" | "digital" | "bespoke";
+  billboardType: "static" | "digital" | "bespoke" | "lamp_pole";
   numberOfSlotsOrFaces: number;
   numberOfFaces: number;
   pricePerDay: number;
@@ -34,6 +34,7 @@ interface Billboard {
   width: string;
   available_slots: number[];
   available_faces: BillboardFace[]; // <- updated structure
+  available_lamp_holes: number[];
 
   pricePerMonth: string;
   status: string;
@@ -217,7 +218,9 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
       <div className="flex flex-col  gap-6  col-span-12 lg:col-span-4 ">
      {/* <div className=" p-5  flex flex-col gap-y-4 rounded-2xl  bg-white col-span-12 lg:col-span-4 overflow-auto intro-y 2xl:overflow-visible capitalize ">
         <div className="border-b border-slate-200 pb-4 text-lg font-bold text-black">
-         {billboard?.billboardType === "digital" ? "Slots Available" : "Face Available"}
+         {billboard?.billboardType === "digital" ? "Slots Available" : 
+         billboard?.billboardType === "lamp_pole" ? "Holes Available" :
+         "Face Available"}
         </div>
 
         <div className="flex gap-2  ">
@@ -239,7 +242,9 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
       </div> */}
       <div className="p-5 flex flex-col gap-y-4 rounded-2xl bg-white col-span-12 lg:col-span-4 overflow-auto intro-y 2xl:overflow-visible capitalize">
   <div className="border-b border-slate-200 pb-4 text-lg font-bold text-black">
-    {billboard?.billboardType === "digital" ? "Slots Status" : "Face Status"}
+    {billboard?.billboardType === "digital" ? "Slots Status" : 
+     billboard?.billboardType === "lamp_pole" ? "Holes Status" :
+     "Face Status"}
   </div>
 
   <div className="flex flex-wrap gap-2">
@@ -252,6 +257,14 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
               <div className="font-semibold text-xs">{slot}</div>
             </div>
           ))
+      : billboard?.billboardType === "lamp_pole"
+      ? Array.from({ length: billboard?.numberOfSlotsOrFaces }, (_, i) => i + 1)
+          .filter((hole) => !billboard?.available_lamp_holes?.includes(hole)) // Filter out available holes
+          .map((hole, index) => (
+            <div key={index} className="flex justify-center items-center rounded-lg bg-red-100 text-red-500 p-2 w-7 h-7">
+              <div className="font-semibold text-xs">{hole}</div>
+            </div>
+          ))
       :  Array.from({ length: billboard?.numberOfSlotsOrFaces }, (_, i) => i + 1)
           .filter(face => !availableFaceNumbers.includes(face)) // Filter out available faces
           .map((face, index) => (
@@ -262,7 +275,6 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
               <div className="font-semibold text-xs">{face}</div>
             </div>
           ))
-
           }
 
     {/* Available Slots/Faces */}
@@ -270,6 +282,12 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
       ? billboard?.available_slots.map((slot, index) => (
           <div key={index} className="flex justify-center items-center rounded-lg bg-green-100 text-green-500 p-2 w-7 h-7">
             <div className="font-semibold text-xs">{slot}</div>
+          </div>
+        ))
+      : billboard?.billboardType === "lamp_pole"
+      ? billboard?.available_lamp_holes?.map((hole, index) => (
+          <div key={index} className="flex justify-center items-center rounded-lg bg-green-100 text-green-500 p-2 w-7 h-7">
+            <div className="font-semibold text-xs">{hole}</div>
           </div>
         ))
       : billboard?.available_faces.map((face, index) => (

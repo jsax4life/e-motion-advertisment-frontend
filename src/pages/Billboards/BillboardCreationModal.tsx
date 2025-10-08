@@ -62,10 +62,20 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     // width: yup.string().required("Width is required"),
     numberOfSlotsOrFaces: yup
       .string()
-      .required("Number of placement is required"),
+      .required("Number of placement is required")
+      .test('valid-range', 'Value must be between 1 and 200', function(value) {
+        if (!value) return false;
+        const num = parseInt(value);
+        return !isNaN(num) && num >= 1 && num <= 200;
+      }),
     // numberOfFaces: yup.string().required("Number of Faces is required"),
     // pricePerDay: yup.string().required("Price Per Day is required"),
-    pricePerMonth: yup.string().required("Price Per Month is required"),
+    // pricePerMonth: yup.string().required("Price Per Month is required"),
+    // perHolePricePerMonth: yup.string().when('billboardType', {
+    //   is: 'lamp_pole',
+    //   then: (schema) => schema.required('Per-hole price per month is required for lamp pole'),
+    //   otherwise: (schema) => schema.notRequired(),
+    // }),
     status: yup.string().required("Status is required"),
     // activeStatus: yup.string().required("Active Status is required"),
     orientation: yup.string().required("Board Orientation is required"),
@@ -113,6 +123,7 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     // numberOfFaces: "",
     pricePerDay: "",
     pricePerMonth: "",
+    perHolePricePerMonth: "",
     status: "Active",
     activeStatus: "Vacant",
     images: [] as File[],
@@ -144,6 +155,16 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
         [name]: value,
         pricePerDay: pricePerDay.toFixed(2), // Round to 2 decimal places
       }));
+    } else if (name === "perHolePricePerMonth") {
+      // For lamp pole: set pricePerMonth to the per-hole price (not total)
+      const perHole = parseFloat(value) || 0;
+      const perDay = perHole / 30;
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: value,
+        pricePerMonth: isNaN(perHole) ? "" : perHole.toFixed(2),
+        pricePerDay: isNaN(perDay) ? "" : perDay.toFixed(2),
+      }));
     } else {
       setFormData((prevFormData) => ({
         ...prevFormData,
@@ -152,8 +173,10 @@ const BillboardCreationModal: React.FC<BillboardCreationModalProps> = ({
     }
 
     if (name === "billboardType") {
-      if (value === "static" || value === "bespoke" || value === "digital") {
-        setValue("numberOfSlotsOrFaces", ""); // Reset numberOfSlots
+      if (value === "static" || value === "bespoke") {
+        setValue("numberOfSlotsOrFaces", ""); // Reset for static/bespoke
+      } else if (value === "digital" || value === "lamp_pole") {
+        setValue("numberOfSlotsOrFaces", "1"); // Initialize to 1 for digital/lamp_pole
       }
     }
     // Handle logic for resetting dependent fields
@@ -220,10 +243,16 @@ console.log(formData);
       // serialNumber: "6768702",
       images: base64Images, // Include Base64 images
       faceDescriptions: formData.billboardType === "static" ? faces : undefined,
-
+      
+      // Ensure pricePerMonth has the correct value and exclude perHolePricePerMonth
+      pricePerMonth: formData.pricePerMonth,
+      // pricePerDay: formData.pricePerDay,
     };
+    
+    // Remove perHolePricePerMonth from payload as it's not needed by backend
+    delete payload.perHolePricePerMonth;
 
-    // console.log(payload);
+    console.log(payload);
     onSubmit(payload);
     // Reset form data after submission
     setFormData({
@@ -244,6 +273,7 @@ console.log(formData);
       showDescriptionInputFor: null,
       pricePerDay: "",
       pricePerMonth: "",
+      perHolePricePerMonth: "",
       status: "Active",
       activeStatus: "Vacant",
       images: [],
@@ -554,6 +584,7 @@ console.log(formData);
     <option value="static">Static</option>
     <option value="digital">Digital</option>
     <option value="bespoke">Bespoke (Innovative)</option>
+    <option value="lamp_pole">Lamp Pole</option>
   </FormSelect>
   {errors.billboardType && (
     <p className="text-red-500">{errors.billboardType.message?.toString()}</p>
@@ -676,10 +707,11 @@ console.log(formData);
 )}
 
   
-              {/* Number of Slots for Digital FormSelection only*/}
+              {/* Number of Slots/Faces/Holes */}
 
               {(formData.billboardType === "digital" ||
-                formData.billboardType === "static") && (
+                formData.billboardType === "static" ||
+                formData.billboardType === "lamp_pole") && (
                 <div className="col-span-12">
                   <FormLabel
                     className="font-medium lg:text-[16px] text-black"
@@ -687,34 +719,107 @@ console.log(formData);
                   >
                     {formData.billboardType === "digital"
                       ? "Number of Slots"
+                      : formData.billboardType === "lamp_pole"
+                      ? "Number of Holes"
                       : "Number of Faces"}
                   </FormLabel>
-                  <FormSelect
-                    formSelectSize="lg"
-                    // name="numberOfSlots"
-                    value={formData.numberOfSlotsOrFaces}
-                    {...register("numberOfSlotsOrFaces", {
-                      onChange: (e) => {
-                        handleChange(e);
-                      },
-                    })}
-                    className="w-full p-2 border rounded"
-                  >
-                      <option value=""  selected>
-                            --Select-- 
-                          </option>
-                    {formData.billboardType === "digital"
-                      ? [...Array(8)].map((_, i) => (
-                          <option key={i + 1} value={i + 1}>
-                            Slot {i + 1}
-                          </option>
-                        ))
-                      : [...Array(4)].map((_, i) => (
-                          <option key={i + 1} value={i + 1}>
-                            Face {i + 1}
-                          </option>
-                        ))}
-                  </FormSelect>
+                  
+                  {/* Custom input for digital and lamp_pole, FormSelect for static */}
+                  {formData.billboardType === "digital" || formData.billboardType === "lamp_pole" ? (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentValue = parseInt(formData.numberOfSlotsOrFaces) || 1;
+                          if (currentValue > 1) {
+                            const newValue = currentValue - 1;
+                            setValue("numberOfSlotsOrFaces", newValue.toString());
+                            setFormData((prev) => ({
+                              ...prev,
+                              numberOfSlotsOrFaces: newValue.toString(),
+                            }));
+                          }
+                        }}
+                        className="flex items-center justify-center w-10 h-10 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                        disabled={parseInt(formData.numberOfSlotsOrFaces) <= 1}
+                      >
+                        <Lucide icon="Minus" className="w-4 h-4" />
+                      </button>
+                      
+                      <FormInput
+                        type="number"
+                        min="1"
+                        max="200"
+                        value={formData.numberOfSlotsOrFaces}
+                        {...register("numberOfSlotsOrFaces", {
+                          onChange: (e) => {
+                            const value = e.target.value;
+                            if (value === "" || (parseInt(value) >= 1 && parseInt(value) <= 200)) {
+                              handleChange(e);
+                              // For lamp pole, pricePerMonth stays as per-hole price (not total)
+                              // The total will be calculated during order creation
+                            }
+                          },
+                        })}
+                        className="flex-1 text-center"
+                        placeholder="Enter number"
+                      />
+                      
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentValue = parseInt(formData.numberOfSlotsOrFaces) || 1;
+                          if (currentValue < 200) {
+                            const newValue = currentValue + 1;
+                            setValue("numberOfSlotsOrFaces", newValue.toString());
+                            setFormData((prev) => ({
+                              ...prev,
+                              numberOfSlotsOrFaces: newValue.toString(),
+                            }));
+                            // For lamp pole, pricePerMonth stays as per-hole price (not total)
+                            // The total will be calculated during order creation
+                          }
+                        }}
+                        className="flex items-center justify-center w-10 h-10 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                        disabled={parseInt(formData.numberOfSlotsOrFaces) >= 200}
+                      >
+                        <Lucide icon="Plus" className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <FormSelect
+                      formSelectSize="lg"
+                      value={formData.numberOfSlotsOrFaces}
+                      {...register("numberOfSlotsOrFaces", {
+                        onChange: (e) => {
+                          handleChange(e);
+                        },
+                      })}
+                      className="w-full p-2 border rounded"
+                    >
+                      <option value="" selected>
+                        --Select-- 
+                      </option>
+                      {[...Array(4)].map((_, i) => (
+                        <option key={i + 1} value={i + 1}>
+                          Face {i + 1}
+                        </option>
+                      ))}
+                    </FormSelect>
+                  )}
+                  
+                  {errors.numberOfSlotsOrFaces && (
+                    <p className="text-red-500">
+                      {errors.numberOfSlotsOrFaces.message?.toString()}
+                    </p>
+                  )}
+                  
+                  {/* Helper text for digital and lamp_pole */}
+                  {(formData.billboardType === "digital" || formData.billboardType === "lamp_pole") && (
+                    <p className="text-xs text-slate-500 mt-1">
+                      Enter a value between 1 and 200
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -918,36 +1023,70 @@ console.log(formData);
 )}
          
 
-               {/* Price Per Month */}
+              {/* Price Per Hole (Per Month) - Lamp Pole */}
+              {formData.billboardType === 'lamp_pole' && (
+              <div className="col-span-12">
+                <FormLabel
+                  className="font-medium lg:text-[16px] text-black"
+                  htmlFor="perHolePricePerMonth"
+                >
+                  Price Per Hole (Per Month)
+                </FormLabel>
+                <FormInput
+                  formInputSize="lg"
+                  type="number"
+                  value={formData.perHolePricePerMonth}
+                  {...register("perHolePricePerMonth", {
+                    onChange: (e) => {
+                      handleChange(e);
+                    },
+                  })}
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter per-hole monthly price"
+                />
+                {errors.perHolePricePerMonth && (
+                  <p className="text-red-500">
+                    {errors.perHolePricePerMonth.message?.toString()}
+                  </p>
+                )}
+              </div>
+              )}
+
+              {/* Price Per Month (Total) */}
               <div className="col-span-12">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
                   htmlFor="pricePerMonth"
                 >
-                  Amount (Per Month)
+                  Amount (Per Month){formData.billboardType === 'lamp_pole' ? ' (Per Hole)' : ''}
                 </FormLabel>
                 <FormInput
                   formInputSize="lg"
                   
                   type="number"
                   value={formData.pricePerMonth}
-
                   {...register("pricePerMonth", {
                     onChange: (e) => {
-                      handleChange(e);
+                      if (formData.billboardType !== 'lamp_pole') {
+                        handleChange(e);
+                      }
                     },
                   })}
                   className="w-full p-2 border rounded"
+                  disabled={formData.billboardType === 'lamp_pole'}
                 />
+                {formData.billboardType === 'lamp_pole' && (
+                  <p className="text-xs text-slate-500 mt-1">Per-hole price (total calculated during order creation)</p>
+                )}
               </div>
 
-              {/* Price Per Day */}
+              {/* Price Per Day (Total) */}
               <div className="col-span-12">
                 <FormLabel
                   className="font-medium lg:text-[16px] text-black"
                   htmlFor="pricePerDay"
                 >
-                  Amount (Per Day)
+                  Amount (Per Day){formData.billboardType === 'lamp_pole' ? ' (Per Hole)' : ''}
                 </FormLabel>
                 <FormInput
                   formInputSize="lg"

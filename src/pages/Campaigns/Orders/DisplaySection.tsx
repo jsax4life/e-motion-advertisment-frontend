@@ -35,7 +35,7 @@ interface Order {
   payment_option: string;
   media_purchase_order: string;
   total_order_amount: number;
-  discount_amount: number;
+  discount_order_amount: number;
   // Add other fields as needed
 }
 
@@ -150,7 +150,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                    </div>
                   </Table.Td>
                   <Table.Td className="first:rounded-l-md last:rounded-r-md w-40 bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
-                    <div>&#x20A6;{formatCurrency(order?.total_order_amount)}</div>
+                    <div>&#x20A6;{formatCurrency(order?.discount_order_amount || order?.total_order_amount)}</div>
                   </Table.Td>
 
                   <Table.Td className="first:rounded-l-md text-sm last:rounded-r-md bg-white border-slate-200 border-b dark:bg-darkmode-600 py-0 relative before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400">

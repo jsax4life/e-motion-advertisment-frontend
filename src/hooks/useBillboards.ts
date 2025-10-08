@@ -3,12 +3,17 @@ import { useContext } from "react";
 import { UserContext } from "../stores/UserContext";
 import API from "../utils/API";
 
+interface BillboardFace {
+  face_number: number;
+  description: string | null;
+}
+
 interface Billboard {
   id: string;
   serialNumber: string;
   internalCode: string;
   billboardName: string;
-  billboardType: "static" | "digital" | "bespoke";
+  billboardType: "static" | "digital" | "bespoke" | "lamp_pole";
   numberOfSlotsOrFaces: number;
   pricePerDay: number;
   state: string;
@@ -19,7 +24,8 @@ interface Billboard {
   height: string;
   width: string;
   available_slots: number[];
-  available_faces: any[];
+  available_faces: BillboardFace[];
+  available_lamp_holes: number[];
   pricePerMonth: string;
   status: string;
   activeStatus: string;

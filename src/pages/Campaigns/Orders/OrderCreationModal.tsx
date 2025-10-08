@@ -73,7 +73,7 @@ interface AvailableBillboard {
   serialNumber: string;
   internalCode: string;
   billboardName: string;
-  billboardType: "static" | "digital" | "bespoke";
+  billboardType: "static" | "digital" | "bespoke" | "lamp_pole";
   // numberOfSlots: number;
   // numberOfFaces: number;
   numberOfSlotsOrFaces: number;
@@ -87,6 +87,7 @@ interface AvailableBillboard {
   width: string;
   available_slots: number[];
   available_faces: BillboardFace[];
+  available_lamp_holes: number[];
 
   pricePerMonth: string;
   status: string;
@@ -216,6 +217,14 @@ const OrderCreationModal: React.FC<BillboardCreationModalProps> = ({
   const [mediaPurchaseOrder, setMediaPurchaseOrder] = useState<File | null>(null);
   const [expandedDiscounts, setExpandedDiscounts] = useState<Record<number, boolean>>({});
 
+  // State for bulk hole selection for lamp pole billboards
+  const [bulkHoleSelection, setBulkHoleSelection] = useState({
+    startHole: 1,
+    endHole: 1,
+    totalHoles: 1,
+    selectedHoles: [] as number[]
+  });
+
 
   useEffect(() => {
     // Split the date range when it updates
@@ -250,8 +259,10 @@ const OrderCreationModal: React.FC<BillboardCreationModalProps> = ({
         );
 
         if (selectedBillboard) {
-          // const numberOfDays = calculateNumberOfDays(startDate, endDate);
-          const actualAmount =  numberOfDays * selectedBillboard.pricePerDay
+          const perUnitPricePerDay = selectedBillboard.pricePerDay;
+          
+          // actual_amount should always be the per-day price (per-hole for lamp pole, per-billboard for others)
+          const actualAmount = perUnitPricePerDay;
          
           setFormData((prev) => ({
             ...prev,
@@ -324,15 +335,44 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!billboard) return [];
 
     const used = usedSlotsFaces[billboardId] || [];
-    const total = type === "digital" ? billboard.available_slots : billboard.available_faces;
+    const total = type === "digital" ? billboard.available_slots : 
+                  type === "lamp_pole" ? billboard.available_lamp_holes : 
+                  billboard.available_faces;
 
     return Array.from({ length: Number(total) }, (_, i) => {
-      const slotOrFace = type === "Digital" ? `Slot ${i + 1}` : `Face ${i + 1}`;
+      const slotOrFace = type === "digital" ? `Slot ${i + 1}` : 
+                        type === "lamp_pole" ? `Hole ${i + 1}` :
+                        `Face ${i + 1}`;
       return {
         value: slotOrFace,
         isUsed: used.includes(slotOrFace),
       };
     });
+  };
+
+  // Handle bulk hole selection for lamp pole billboards
+  const handleBulkHoleSelection = (startHole: number, endHole: number) => {
+    const selectedBillboard = availableBillboards.find((b) => b.id === formData.billboard_id);
+    if (!selectedBillboard || selectedBillboard.billboardType !== "lamp_pole") return;
+
+    const maxHoles = selectedBillboard.available_lamp_holes?.length || 0;
+    const validStartHole = Math.max(1, Math.min(startHole, maxHoles));
+    const validEndHole = Math.max(validStartHole, Math.min(endHole, maxHoles));
+    
+    const selectedHoles = Array.from({ length: validEndHole - validStartHole + 1 }, (_, i) => validStartHole + i);
+    
+    setBulkHoleSelection({
+      startHole: validStartHole,
+      endHole: validEndHole,
+      totalHoles: selectedHoles.length,
+      selectedHoles
+    });
+
+    // Update form data with the first hole (for compatibility)
+    setFormData((prev) => ({
+      ...prev,
+      slotOrFace: `Hole ${validStartHole}`,
+    }));
   };
 
   const handleAddBilboard = () => {
@@ -342,26 +382,74 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       !formData.billboard_type ||
       !formData.orientation ||
       !formData.start_date ||
-      !formData.end_date  ||
-      !formData.slotOrFace
-      
+      !formData.end_date
     ) {
       alert("Please fill all required fields.");
       return;
     }
 
-    // Add the current form data to the billboard list
-    // setOrders((prev) => [...prev, formData]);
-    setBillboards((prev) => [...prev, formData]);
+    // For lamp pole billboards, validate bulk hole selection
+    if (formData.billboard_type === "lamp_pole") {
+      if (bulkHoleSelection.totalHoles === 0) {
+        alert("Please select at least one hole for lamp pole billboard.");
+        return;
+      }
+    } else {
+      // For non-lamp pole billboards, validate slot/face selection
+      if (!formData.slotOrFace) {
+        alert("Please select a slot/face.");
+        return;
+      }
+    }
 
-    // Reset the form (optional)
+    // Create billboard entries based on type
+    if (formData.billboard_type === "lamp_pole") {
+      // Create a single grouped entry for selected holes
+      const perHoleAmount = formData.actual_amount || 0; // This is per-hole per-day amount
+      const campaignDuration = orderDetails.campaign_duration || 0;
+      const totalCampaignAmount = perHoleAmount * (bulkHoleSelection.totalHoles || 1) * campaignDuration;
+      
+      const groupedEntry = {
+        ...formData,
+        // Use a descriptive slotOrFace label for grouped selection
+        slotOrFace: `Holes ${bulkHoleSelection.startHole}-${bulkHoleSelection.endHole}`,
+        is_bulk_selection: true,
+        bulk_start_hole: bulkHoleSelection.startHole,
+        bulk_end_hole: bulkHoleSelection.endHole,
+        bulk_total_holes: bulkHoleSelection.totalHoles,
+        campaign_duration: campaignDuration,
+        // Store per-hole amount and total campaign amount
+        actual_amount: perHoleAmount, // Keep per-hole per-day amount for calculations
+        total_campaign_amount: totalCampaignAmount, // Total for entire campaign
+        discount_amount: 0,
+        discount_type: "percentage",
+        discounted_amount: totalCampaignAmount,
+      } as any;
+
+      setBillboards((prev) => [...prev, groupedEntry]);
+    } else {
+      // Single entry for non-lamp pole billboards
+      const perDayAmount = formData.actual_amount || 0; // This is per-day amount
+      const campaignDuration = orderDetails.campaign_duration || 0;
+      const totalCampaignAmount = perDayAmount * campaignDuration;
+      
+      const billboardWithTotal = {
+        ...formData,
+        actual_amount: totalCampaignAmount, // Store total campaign amount
+        discount_amount: 0,
+        discount_type: "percentage",
+        discounted_amount: totalCampaignAmount,
+      };
+      
+      setBillboards((prev) => [...prev, billboardWithTotal]);
+    }
+
+    // Reset the form
     setFormData({
       billboard_id: "",
       billboard_type: "",
       orientation: "",
       slotOrFace: "",
-      // slot: "",
-      // face: "",
       start_date: "",
       end_date: "",
       billboard_price_per_day: 0,
@@ -371,25 +459,26 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       discounted_amount: 0,
     });
 
-    // // Mark the selected slot/face as used
-    // setUsedSlotsFaces((prev) => ({
-    //   ...prev,
-    //   [formData.billboard_id]: [...(prev[formData.billboard_id] || []), formData.slotOrFace],
-    // }));
-console.log(formData);
-      // Update the used slots and faces
+    // Reset bulk hole selection
+    setBulkHoleSelection({
+      startHole: 1,
+      endHole: 1,
+      totalHoles: 1,
+      selectedHoles: []
+    });
+
+    // Update the used slots and faces
     setUsedSlotsFaces((prev) => {
       const updated = { ...prev };
-      if (formData.billboard_type === "digital") {
-        updated[formData.billboard_id] = [...(updated[formData.billboard_id] || []), formData.slotOrFace];
+      if (formData.billboard_type === "lamp_pole") {
+        // Mark all selected holes as used
+        const holeLabels = bulkHoleSelection.selectedHoles.map(hole => `Hole ${hole}`);
+        updated[formData.billboard_id] = [...(updated[formData.billboard_id] || []), ...holeLabels];
       } else {
         updated[formData.billboard_id] = [...(updated[formData.billboard_id] || []), formData.slotOrFace];
       }
       return updated;
     });
-
-    console.log(formData);
-
 
     // Clear the selected billboard
     setSelectedBillboard(undefined);
@@ -401,17 +490,28 @@ console.log(formData);
   const handleBillboardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const billboardId = e.target.value;
     const selectedBillboard = availableBillboards.find((b) => b.id == billboardId);
-    // console.log(typeof(selectedBillboard));
+    
     setFormData((prev) => ({
       ...prev,
       billboard_id: billboardId,
       billboard_type: selectedBillboard?.billboardType || "",
       orientation: selectedBillboard?.orientation || "",
-
       billboard_price_per_day: selectedBillboard?.pricePerDay || 0,
     }));
+
     if (selectedBillboard) {
       setSelectedBillboard(selectedBillboard);
+      
+      // Initialize bulk hole selection for lamp pole billboards
+      if (selectedBillboard.billboardType === "lamp_pole") {
+        const maxHoles = selectedBillboard.available_lamp_holes?.length || 0;
+        setBulkHoleSelection({
+          startHole: 1,
+          endHole: 1,
+          totalHoles: 1,
+          selectedHoles: []
+        });
+      }
     }
   };
 
@@ -452,10 +552,30 @@ console.log(formData);
       
       // Recalculate discounted amount
       if (field === "discount_amount" || field === "discount_type") {
-        const actualAmount = updated[index].actual_amount;
-        const discountAmount = updated[index].discount_amount;
-        const discountType = updated[index].discount_type;
-        updated[index].discounted_amount = calculateDiscountedAmount(actualAmount, discountAmount, discountType);
+        const billboard = updated[index];
+        let actualAmount;
+        
+        // For lamp pole bulk selections, use total campaign amount
+        if (billboard.billboard_type === "lamp_pole" && billboard.is_bulk_selection) {
+          actualAmount = billboard.total_campaign_amount || 0;
+        } else {
+          actualAmount = billboard.actual_amount;
+        }
+        
+        const discountAmount = billboard.discount_amount;
+        const discountType = billboard.discount_type;
+        
+        // Validate discount amount to prevent negative final amounts
+        let validDiscountAmount = discountAmount;
+        if (discountType === "percentage" && discountAmount > 100) {
+          validDiscountAmount = 100;
+          updated[index].discount_amount = 100;
+        } else if (discountType === "fixed" && discountAmount > actualAmount) {
+          validDiscountAmount = actualAmount;
+          updated[index].discount_amount = actualAmount;
+        }
+        
+        updated[index].discounted_amount = calculateDiscountedAmount(actualAmount, validDiscountAmount, discountType);
       }
       
       return updated;
@@ -465,7 +585,12 @@ console.log(formData);
   // Calculate total discounted amount for all billboards
   const calculateTotalDiscountedAmount = () => {
     return billboards.reduce((total, billboard) => {
-      return total + (billboard.discounted_amount || billboard.actual_amount);
+      // For lamp pole bulk selections, use total_campaign_amount or discounted_amount
+      if (billboard.billboard_type === "lamp_pole" && billboard.is_bulk_selection) {
+        return total + (billboard.discounted_amount || billboard.total_campaign_amount || 0);
+      } else {
+        return total + (billboard.discounted_amount || billboard.actual_amount);
+      }
     }, 0);
   };
 
@@ -512,7 +637,14 @@ console.log(formData);
       billboards,
       // media_purchase_order: mediaPurchaseOrder,
       total_order_amount: parseFloat(
-        billboards.reduce((acc, item) => acc + item.actual_amount, 0).toFixed(2)
+        billboards.reduce((acc, item) => {
+          // For lamp pole bulk selections, use total_campaign_amount
+          if (item.billboard_type === "lamp_pole" && item.is_bulk_selection) {
+            return acc + (item.total_campaign_amount || 0);
+          } else {
+            return acc + item.actual_amount;
+          }
+        }, 0).toFixed(2)
       ),
       discount_order_amount: parseFloat(
         calculateTotalDiscountedAmount().toFixed(2)
@@ -700,7 +832,8 @@ console.log(selectedBillboard)
                             filteredBillboards.map((billboard) => {
                               const isDisabled = 
                                 (billboard.billboardType === "digital" && billboard?.available_slots?.length < 1) ||
-                                (billboard.billboardType === "static" && billboard?.available_faces?.length < 1);
+                                (billboard.billboardType === "static" && billboard?.available_faces?.length < 1) ||
+                                (billboard.billboardType === "lamp_pole" && billboard?.available_lamp_holes?.length < 1);
                               
                               return (
                                 <div
@@ -735,6 +868,8 @@ console.log(selectedBillboard)
                                       <div className={`text-xs px-2 py-1 rounded-full ${
                                         billboard.billboardType === "digital" 
                                           ? 'bg-blue-100 text-blue-700' 
+                                          : billboard.billboardType === "lamp_pole"
+                                          ? 'bg-purple-100 text-purple-700'
                                           : 'bg-green-100 text-green-700'
                                       }`}>
                                         {billboard.billboardType}
@@ -742,6 +877,8 @@ console.log(selectedBillboard)
                                       <div className="text-xs text-slate-500 mt-1">
                                         {billboard.billboardType === "digital"
                                           ? `${billboard?.available_slots?.length || 0}/${billboard?.numberOfSlotsOrFaces} slots`
+                                          : billboard.billboardType === "lamp_pole"
+                                          ? `${billboard?.available_lamp_holes?.length || 0}/${billboard?.numberOfSlotsOrFaces} holes`
                                           : `${billboard?.available_faces?.length || 0}/${billboard?.numberOfSlotsOrFaces} faces`}
                                       </div>
                                     </div>
@@ -844,12 +981,14 @@ console.log(selectedBillboard)
 
                {/* Billboard price  */}
       {formData.billboard_price_per_day > 0 && (      <div className="col-span-12">
-              <FormLabel  className="font-medium lg:text-[16px] text-black">Billboard Price/Day</FormLabel>
+              <FormLabel  className="font-medium lg:text-[16px] text-black">
+                {formData.billboard_type === "lamp_pole" ? "Per Hole Price/Day" : "Amount"}
+              </FormLabel>
               <FormInput
               formInputSize="lg"
                 type="number"
                 name="actualAmount"
-                value={formData.billboard_price_per_day}
+                value={formData.actual_amount || 0}
                 readOnly
                 className="w-full p-2 border rounded bg-gray-100 cursor-not-allowed"
               />
@@ -864,50 +1003,104 @@ console.log(selectedBillboard)
                     >
                       {formData?.billboard_type === "digital"
                         ? " Slot Placement"
+                        : formData?.billboard_type === "lamp_pole"
+                        ? " Hole Placement (Bulk Selection)"
                         : "Face Placement"}
                     </FormLabel>
 
-                    <FormSelect
-                      formSelectSize="lg"
-                      name="slotOrFace"
-                    
-                      value={
-                        formData?.slotOrFace}
-                      onChange={handleChange}
-                      // {...register("slot_or_face")}
-                      className="w-full "
-                    >
-                      <option value="">
-                        --Select--
-                        {/* {selectedBillboard.billboardType === "digital" ? "Slot" : "Face"} */}
-                      </option>
-                      {/* {selectedBillboard?.billboardType === "digital"
-                        ? selectedBillboard?.available_slots.map((slot) => (
-                            <option key={slot} value={slot}>
-                              Slot {slot}
-                            </option>
-                          )) || []
-                        : selectedBillboard?.available_faces.map((face) => (
-                            <option key={face} value={face}>
-                              Face {face}
-                            </option>
-                          )) || []} */}
-                            {formData.billboard_type === "digital"
-    ? selectedBillboard?.available_slots
-        .filter(slot => !usedSlotsFaces[selectedBillboard?.id]?.includes(slot.toString())) // Filter used slots
-        .map(slot => (
-          <option key={slot} value={slot}>Slot {slot}</option>
-        ))
-    : selectedBillboard?.available_faces
-        .filter(face => !usedSlotsFaces[selectedBillboard?.id]?.includes(face.face_number.toString())) // Filter used faces
-        .map(face => (
-          <option key={face.face_number} value={face.face_number}>Face {face.face_number}{face.description? ' -' : ''} {face.description}</option>
-        ))
+                    {/* Bulk hole selection for lamp pole billboards */}
+                    {formData.billboard_type === "lamp_pole" ? (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Start Hole
+                            </label>
+                            <FormInput
+                              type="number"
+                              min="1"
+                              max={selectedBillboard?.available_lamp_holes?.length || 0}
+                              value={bulkHoleSelection.startHole}
+                              onChange={(e) => {
+                                const startHole = parseInt(e.target.value) || 1;
+                                handleBulkHoleSelection(startHole, bulkHoleSelection.endHole);
+                              }}
+                              className="w-full"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              End Hole
+                            </label>
+                            <FormInput
+                              type="number"
+                              min={bulkHoleSelection.startHole}
+                              max={selectedBillboard?.available_lamp_holes?.length || 0}
+                              value={bulkHoleSelection.endHole}
+                              onChange={(e) => {
+                                const endHole = parseInt(e.target.value) || bulkHoleSelection.startHole;
+                                handleBulkHoleSelection(bulkHoleSelection.startHole, endHole);
+                              }}
+                              className="w-full"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <p className="text-sm text-blue-700">
+                            <strong>Selected:</strong> Holes {bulkHoleSelection.startHole} to {bulkHoleSelection.endHole} 
+                            ({bulkHoleSelection.totalHoles} holes total)
+                          </p>
+                          <p className="text-xs text-blue-600 mt-1">
+                            Total cost: {formatCurrency(bulkHoleSelection.totalHoles * (formData.actual_amount || 0))}
+                          </p>
+                          <p className="text-xs text-blue-500 mt-1">
+                            Per hole (per day): {formatCurrency(formData.actual_amount || 0)}
+                          </p>
+                        </div>
 
-
-        
-  }
-                    </FormSelect>
+                        <div className="flex flex-wrap gap-2">
+                          {bulkHoleSelection.selectedHoles.slice(0, 10).map(hole => (
+                            <span 
+                              key={hole}
+                              className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+                            >
+                              Hole {hole}
+                            </span>
+                          ))}
+                          {bulkHoleSelection.selectedHoles.length > 10 && (
+                            <span className="text-gray-500 text-xs px-2 py-1">
+                              +{bulkHoleSelection.selectedHoles.length - 10} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      /* Regular slot/face selection for non-lamp pole billboards */
+                      <FormSelect
+                        formSelectSize="lg"
+                        name="slotOrFace"
+                        value={formData?.slotOrFace}
+                        onChange={handleChange}
+                        className="w-full"
+                      >
+                        <option value="">--Select--</option>
+                        {formData.billboard_type === "digital"
+                          ? selectedBillboard?.available_slots
+                              .filter(slot => !usedSlotsFaces[selectedBillboard?.id]?.includes(slot.toString()))
+                              .map(slot => (
+                                <option key={slot} value={slot}>Slot {slot}</option>
+                              ))
+                          : selectedBillboard?.available_faces
+                              .filter(face => !usedSlotsFaces[selectedBillboard?.id]?.includes(face.face_number.toString()))
+                              .map(face => (
+                                <option key={face.face_number} value={face.face_number}>
+                                  Face {face.face_number}{face.description ? ' - ' + face.description : ''}
+                                </option>
+                              ))
+                        }
+                      </FormSelect>
+                    )}
                 </div>
               )}  
 
@@ -1002,6 +1195,10 @@ console.log(selectedBillboard)
               <div className="bg-orange-100 text-orange-500 px-2 py-1 rounded">
                 {billboard.billboard_type === "digital"
                   ? `Slot ${billboard.slotOrFace}`
+                  : billboard.billboard_type === "lamp_pole"
+                  ? billboard.is_bulk_selection 
+                    ? `Holes ${billboard.bulk_start_hole}-${billboard.bulk_end_hole} (${billboard.bulk_total_holes})`
+                    : `Hole ${billboard.slotOrFace}`
                   : `Face ${billboard.slotOrFace}`}
               </div>
             </div>
@@ -1012,8 +1209,23 @@ console.log(selectedBillboard)
 
               setUsedSlotsFaces((prev) => {
                 const billboardId = billboard.billboard_id;
-                const updatedSlotsFaces = prev[billboardId]
-                  ?.filter((slotOrFace) => slotOrFace !== String(billboard.slotOrFace)) || [];
+                let updatedSlotsFaces = prev[billboardId] || [];
+                
+                if (billboard.is_bulk_selection) {
+                  // Remove all holes in the bulk selection
+                  const holeLabels = Array.from(
+                    { length: billboard.bulk_end_hole - billboard.bulk_start_hole + 1 }, 
+                    (_, i) => `Hole ${billboard.bulk_start_hole + i}`
+                  );
+                  updatedSlotsFaces = updatedSlotsFaces.filter(
+                    (slotOrFace) => !holeLabels.includes(slotOrFace)
+                  );
+                } else {
+                  // Remove single slot/face
+                  updatedSlotsFaces = updatedSlotsFaces.filter(
+                    (slotOrFace) => slotOrFace !== String(billboard.slotOrFace)
+                  );
+                }
           
                 return {
                   ...prev,
@@ -1029,12 +1241,31 @@ console.log(selectedBillboard)
 
         {/* Pricing and Discount Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Original Amount */}
+          {/* Amounts Breakdown */}
           <div>
-            <label className="text-xs text-slate-600 mb-1 block">Original Amount</label>
-            <div className="text-lg font-semibold text-slate-800">
-              ₦{formatCurrency(billboard.actual_amount)}
-            </div>
+            <label className="text-xs text-slate-600 mb-2 block">Amount</label>
+            {billboard.billboard_type === "lamp_pole" && billboard.is_bulk_selection ? (
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between"><span className="text-slate-600">Per hole (per day)</span><span className="font-medium">₦{formatCurrency(billboard.actual_amount || 0)}</span></div>
+                <div className="flex justify-between"><span className="text-slate-600">Holes</span><span className="font-medium">{billboard.bulk_total_holes}</span></div>
+                <div className="flex justify-between"><span className="text-slate-600">Total (per day)</span><span className="font-semibold text-slate-800">₦{formatCurrency((billboard.actual_amount || 0) * (billboard.bulk_total_holes || 1))}</span></div>
+                <div className="flex justify-between"><span className="text-slate-600">Campaign duration</span><span className="font-medium">{billboard.campaign_duration || 0} days</span></div>
+                <div className="flex justify-between"><span className="text-slate-600">Total for campaign</span><span className="font-semibold text-green-600">₦{formatCurrency(((billboard.actual_amount || 0) * (billboard.bulk_total_holes || 1) * (billboard.campaign_duration || 0)))}</span></div>
+              </div>
+            ) : (
+              <div className="text-lg font-semibold text-slate-800">
+                ₦{formatCurrency(billboard.actual_amount)}
+              </div>
+            )}
+            
+            {/* Show total campaign amount for lamp pole bulk selections */}
+            {billboard.billboard_type === "lamp_pole" && billboard.is_bulk_selection && (
+              <div className="mt-2 pt-2 border-t border-slate-200">
+                <div className="text-sm font-semibold text-slate-800">
+                  Total Campaign Amount: ₦{formatCurrency(billboard.total_campaign_amount || 0)}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Discount Button or Controls */}
@@ -1067,7 +1298,18 @@ console.log(selectedBillboard)
                     placeholder="0"
                     className="text-xs border border-slate-300 rounded px-2 py-1 flex-1"
                     min="0"
-                    max={billboard.discount_type === "percentage" ? 100 : billboard.actual_amount}
+                    max={(() => {
+                      if (billboard.discount_type === "percentage") {
+                        return 100; // Max 100% for percentage
+                      } else {
+                        // For fixed amount, use the appropriate amount based on billboard type
+                        if (billboard.billboard_type === "lamp_pole" && billboard.is_bulk_selection) {
+                          return billboard.total_campaign_amount || 0;
+                        } else {
+                          return billboard.actual_amount || 0;
+                        }
+                      }
+                    })()}
                   />
                 </div>
                 <button
@@ -1086,12 +1328,12 @@ console.log(selectedBillboard)
           <div className="flex justify-between items-center">
             <span className="text-sm text-slate-600">Final Amount:</span>
             <span className="text-lg font-bold text-customColor">
-              ₦{formatCurrency(billboard.discounted_amount || billboard.actual_amount)}
+              ₦{formatCurrency(billboard.discounted_amount || (billboard.billboard_type === "lamp_pole" && billboard.is_bulk_selection ? billboard.total_campaign_amount : billboard.actual_amount))}
             </span>
           </div>
           {(billboard.discount_amount > 0) && (
             <div className="text-xs text-green-600 mt-1">
-              Savings: ₦{formatCurrency(billboard.actual_amount - (billboard.discounted_amount || billboard.actual_amount))}
+              Savings: ₦{formatCurrency((billboard.billboard_type === "lamp_pole" && billboard.is_bulk_selection ? billboard.total_campaign_amount : billboard.actual_amount) - (billboard.discounted_amount || (billboard.billboard_type === "lamp_pole" && billboard.is_bulk_selection ? billboard.total_campaign_amount : billboard.actual_amount)))}
             </div>
           )}
         </div>
@@ -1295,7 +1537,14 @@ console.log(selectedBillboard)
                   type="text"
                   name="total_order_amount"
                   readOnly
-                  value={`₦${formatCurrency( billboards.reduce((acc, item) => acc + item.actual_amount, 0))}`}
+                  value={`₦${formatCurrency( billboards.reduce((acc, item) => {
+                    // For lamp pole bulk selections, use total_campaign_amount
+                    if (item.billboard_type === "lamp_pole" && item.is_bulk_selection) {
+                      return acc + (item.total_campaign_amount || 0);
+                    } else {
+                      return acc + item.actual_amount;
+                    }
+                  }, 0))}`}
                   placeholder="Type here"
                   // {...register("actual_amount")}
                 />

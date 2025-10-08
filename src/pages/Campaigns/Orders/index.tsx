@@ -41,10 +41,11 @@ interface AvailableBillboard {
   serialNumber: string,
   internalCode: string,
   billboardName: string;
-  billboardType: "static" | "digital" | "bespoke";
+  billboardType: "static" | "digital" | "bespoke" | "lamp_pole";
   numberOfSlotsOrFaces: number;
   available_faces: BillboardFace[];
   available_slots: number[];
+  available_lamp_holes: number[];
   pricePerDay: number;
     state: string,
     lga: string,
