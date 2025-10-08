@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../../../base-components/Pagination";
 import { FormSelect } from "../../../base-components/Form";
@@ -6,6 +6,9 @@ import Lucide from "../../../base-components/Lucide";
 import { Menu, Tab } from "../../../base-components/Headless";
 import Table from "../../../base-components/Table";
 import { formatCurrency, formatDate } from "../../../utils/utils";
+import DeleteConfirmationModal from "../../../base-components/DeleteConfirmationModal";
+import { useOrderDeletion } from "../../../hooks/useOrderDeletion";
+import Toastify from "toastify-js";
 
 
 const statusColors = {
@@ -71,8 +74,152 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
 }) => {
 
   const navigate = useNavigate();
+  const { 
+    deleteOrder, 
+    forceDeleteOrder, 
+    restoreOrder,
+    isDeleting, 
+    isRestoring,
+    canDeleteOrder, 
+    canForceDeleteOrder,
+    canRestoreOrder 
+  } = useOrderDeletion();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
 
   console.log(orderList);
+
+  const handleDeleteClick = (order: Order) => {
+    console.log('handleDeleteClick called with order:', order);
+    const { canDelete, reason } = canDeleteOrder(order);
+    console.log('Can delete:', canDelete, 'Reason:', reason);
+    
+    if (!canDelete) {
+      // Show error notification
+      const errorEl = document
+        .querySelectorAll("#failed-notification-content")[0]
+        .cloneNode(true) as HTMLElement;
+      errorEl.classList.remove("hidden");
+      errorEl.querySelector(".notification-content")!.textContent = reason || "Cannot delete this order";
+      
+      Toastify({
+        node: errorEl,
+        duration: 5000,
+        newWindow: true,
+        close: true,
+        gravity: "top",
+        position: "right",
+        stopOnFocus: true,
+      }).showToast();
+      return;
+    }
+
+    setOrderToDelete(order);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!orderToDelete) return;
+
+    try {
+      await deleteOrder(orderToDelete);
+      
+      // Show success notification
+      const successEl = document
+        .querySelectorAll("#success-notification-content")[0]
+        .cloneNode(true) as HTMLElement;
+      successEl.classList.remove("hidden");
+      successEl.querySelector(".notification-content")!.textContent = `Order "${orderToDelete.order_id}" deleted successfully`;
+      
+      Toastify({
+        node: successEl,
+        duration: 5000,
+        newWindow: true,
+        close: true,
+        gravity: "top",
+        position: "right",
+        stopOnFocus: true,
+      }).showToast();
+
+      // Refresh the order list
+      fetchCampaignData(pagination.current_page);
+      
+      // Close modal and reset state
+      setDeleteModalOpen(false);
+      setOrderToDelete(null);
+    } catch (error: any) {
+      // Show error notification
+      const errorEl = document
+        .querySelectorAll("#failed-notification-content")[0]
+        .cloneNode(true) as HTMLElement;
+      errorEl.classList.remove("hidden");
+      errorEl.querySelector(".notification-content")!.textContent = error.message || "Failed to delete order";
+      
+      Toastify({
+        node: errorEl,
+        duration: 5000,
+        newWindow: true,
+        close: true,
+        gravity: "top",
+        position: "right",
+        stopOnFocus: true,
+      }).showToast();
+    }
+  };
+
+  const handleForceDeleteConfirm = async () => {
+    if (!orderToDelete) return;
+
+    try {
+      await forceDeleteOrder(orderToDelete);
+      
+      // Show success notification
+      const successEl = document
+        .querySelectorAll("#success-notification-content")[0]
+        .cloneNode(true) as HTMLElement;
+      successEl.classList.remove("hidden");
+      successEl.querySelector(".notification-content")!.textContent = `Order "${orderToDelete.order_id}" permanently deleted`;
+      
+      Toastify({
+        node: successEl,
+        duration: 5000,
+        newWindow: true,
+        close: true,
+        gravity: "top",
+        position: "right",
+        stopOnFocus: true,
+      }).showToast();
+
+      // Refresh the order list
+      fetchCampaignData(pagination.current_page);
+      
+      // Close modal and reset state
+      setDeleteModalOpen(false);
+      setOrderToDelete(null);
+    } catch (error: any) {
+      // Show error notification
+      const errorEl = document
+        .querySelectorAll("#failed-notification-content")[0]
+        .cloneNode(true) as HTMLElement;
+      errorEl.classList.remove("hidden");
+      errorEl.querySelector(".notification-content")!.textContent = error.message || "Failed to permanently delete order";
+      
+      Toastify({
+        node: errorEl,
+        duration: 5000,
+        newWindow: true,
+        close: true,
+        gravity: "top",
+        position: "right",
+        stopOnFocus: true,
+      }).showToast();
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalOpen(false);
+    setOrderToDelete(null);
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -81,8 +228,8 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
   return (
     <div className="col-span-12 border rounded-2xl bg-white px-5 sm:px-6 intro-y">
       <div className="grid grid-cols-12 text-slate-600">
-        <div className="col-span-12 overflow-auto intro-y 2xl:overflow-visible">
-          <Table className="border-spacing-y-[8px] border-separate">
+        <div className="col-span-12 overflow-x-auto intro-y 2xl:overflow-visible">
+          <Table className="border-spacing-y-[8px] border-separate min-w-full">
             <Table.Thead className="lg:h-10 text-slate-400">
               <Table.Tr>
                 <Table.Th className="whitespace-nowrap">S/N</Table.Th>
@@ -98,7 +245,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                   STATUS
                 </Table.Th>
                 <Table.Th className="whitespace-nowrap">AMOUNT</Table.Th>
-                <Table.Th className="text-center whitespace-nowrap">
+                <Table.Th className="text-center whitespace-nowrap w-20">
                   ACTION
                 </Table.Th>
               </Table.Tr>
@@ -153,12 +300,12 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                     <div>&#x20A6;{formatCurrency(order?.discount_order_amount || order?.total_order_amount)}</div>
                   </Table.Td>
 
-                  <Table.Td className="first:rounded-l-md text-sm last:rounded-r-md bg-white border-slate-200 border-b dark:bg-darkmode-600 py-0 relative before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400">
+                  <Table.Td className="first:rounded-l-md text-sm last:rounded-r-md bg-white border-slate-200 border-b dark:bg-darkmode-600 py-0 relative w-20 before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400">
                     <Menu className="ml-3">
                       <Menu.Button className="w-5 h-5 text-slate-500">
                         <Lucide icon="MoreVertical" className="w-5 h-5" />
                       </Menu.Button>
-                      <Menu.Items className="w-40">
+                      <Menu.Items className="w-40 z-50">
                         <Menu.Item onClick={() => {navigate(`/campaigns/${order?.id}/details/order`)}}>
                           <Lucide icon="Edit2" className="w-4 h-4 mr-2" /> View
                           Order
@@ -167,7 +314,14 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                           <Lucide icon="Edit2" className="w-4 h-4 mr-2" /> Edit
                           Order
                         </Menu.Item>
-                        <Menu.Item className="text-red-500">
+                        <Menu.Item 
+                          className="text-red-500 hover:bg-red-50 cursor-pointer"
+                          onClick={(e: React.MouseEvent) => {
+                            e.preventDefault();
+                            console.log('Delete clicked for order:', order);
+                            handleDeleteClick(order);
+                          }}
+                        >
                           <Lucide icon="Trash" className="w-4 h-4 mr-2" />{" "}
                           Delete
                         </Menu.Item>
@@ -194,6 +348,23 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
 />
         
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Order"
+        message="Are you sure you want to delete this order? This will move it to the trash where it can be restored later."
+        itemName={orderToDelete ? `${orderToDelete.order_id} - ${orderToDelete.campaign_name}` : ""}
+        isLoading={isDeleting}
+        confirmButtonText="Delete Order"
+        cancelButtonText="Cancel"
+        type="warning"
+        showForceDelete={orderToDelete ? canForceDeleteOrder(orderToDelete).canDelete : false}
+        onForceDelete={handleForceDeleteConfirm}
+        isForceDeleting={isDeleting}
+      />
     </div>
   );
 };

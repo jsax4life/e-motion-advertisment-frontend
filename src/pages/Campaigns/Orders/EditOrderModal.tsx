@@ -396,13 +396,25 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
       : billboard.available_faces;
   
       console.log(totalOptions);
-    // Filter available (not used) options
-    const availableOptions = totalOptions.filter((item: any) => {
-      const id = isDigital ? item.toString() : 
-                 type === 'lamp_pole' ? item.toString() :
-                 item.face_number.toString();
-      return !used.includes(id);
-    });
+    
+    // Filter available (not used) options based on type
+    let availableOptions: any[] = [];
+    
+    if (isDigital || type === 'lamp_pole') {
+      // For digital slots or lamp holes (number arrays)
+      const numberOptions = (totalOptions as number[]) || [];
+      availableOptions = numberOptions.filter((item: number) => {
+        const id = item.toString();
+        return !used.includes(id);
+      });
+    } else {
+      // For faces (BillboardFace arrays)
+      const faceOptions = (totalOptions as any[]) || [];
+      availableOptions = faceOptions.filter((item: any) => {
+        const id = item.face_number.toString();
+        return !used.includes(id);
+      });
+    }
   
     // Generate display strings
     const option = availableOptions.map((item: any) => {
