@@ -23,7 +23,7 @@ interface Campaign {
   payment_option: string;
   media_purchase_order:string;
   total_order_amount: number;
-  discount_order_amount: number;
+  discounted_total: number;
   description: string;
   campaign_start_date: string;
   campaign_end_date: string;
@@ -296,7 +296,7 @@ const DisplayDetailsSection: React.FC<DisplaySectionProps> = ({
               Amount:  <span className="text-xl ml-4 text-slate-400">&#x20A6;{formatCurrency(campaign?.total_order_amount)}</span>
             </div>
             <div className=" font-bold  text-sm text-stone-600 capitalize">
-              Amount after discount <span className="text-xl ml-4">&#x20A6;{formatCurrency(campaign?.discount_order_amount)}</span>
+              Amount after discount <span className="text-xl ml-4">&#x20A6;{formatCurrency(campaign?.discounted_total)}</span>
             </div>
           </div>
       

@@ -59,7 +59,7 @@ interface Campaign {
   campaign_start_date: string;
   campaign_end_date: string;
   total_order_amount: number;
-  discount_order_amount: number;
+  discounted_total: number;
   description: string;
 
   payment_option: string;
@@ -104,7 +104,7 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
     payment_option: "",
     media_purchase_order: "",
     total_order_amount: 0,
-    discount_order_amount: 0,
+    discounted_total: 0,
     description: "",
     status: "",
   });
@@ -214,7 +214,7 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
         payment_option: orderToEdit.payment_option,
         media_purchase_order: orderToEdit.media_purchase_order,
         total_order_amount: orderToEdit.total_order_amount,
-        discount_order_amount: orderToEdit.discount_order_amount,
+        discounted_total: orderToEdit.discounted_total,
         description: orderToEdit.description,
         status: orderToEdit.status,
       });
@@ -816,7 +816,7 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
       payment_option: "",
       media_purchase_order: "",
       total_order_amount: 0,
-      discount_order_amount: 0,
+      discounted_total: 0,
       description: "",
       status: "",
     });
@@ -1765,7 +1765,7 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
                 <FormInput
                   formInputSize="lg"
                   value={`₦${formatCurrency(calculateTotalDiscountedAmount())}`}
-                  id="discount_order_amount"
+                  id="discounted_total"
                   type="text"
                   readOnly
                   className="w-full text-sm border rounded bg-gray-100 cursor-not-allowed"

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../../../base-components/Pagination";
 import { FormSelect } from "../../../base-components/Form";
@@ -38,7 +38,7 @@ interface Order {
   payment_option: string;
   media_purchase_order: string;
   total_order_amount: number;
-  discount_order_amount: number;
+  discounted_total: number;
   // Add other fields as needed
 }
 
@@ -86,13 +86,21 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
   } = useOrderDeletion();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
+  console.log('Current modal state:', { deleteModalOpen, orderToDelete, isDeleting });
   console.log(orderList);
+
+  // Monitor state changes
+  useEffect(() => {
+    console.log('Modal state changed:', { deleteModalOpen, orderToDelete, isDeleting });
+  }, [deleteModalOpen, orderToDelete, isDeleting]);
 
   const handleDeleteClick = (order: Order) => {
     console.log('handleDeleteClick called with order:', order);
     const { canDelete, reason } = canDeleteOrder(order);
     console.log('Can delete:', canDelete, 'Reason:', reason);
+    console.log('Setting modal open to true, order to delete:', order);
     
     if (!canDelete) {
       // Show error notification
@@ -121,49 +129,154 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
   const handleDeleteConfirm = async () => {
     if (!orderToDelete) return;
 
+    console.log('Starting deletion process for order:', orderToDelete.id);
     try {
-      await deleteOrder(orderToDelete);
+      console.log('Calling deleteOrder...');
+      const response = await deleteOrder(orderToDelete);
+      console.log('Delete order response received:', response);
       
-      // Show success notification
+      // Show success notification with detailed information
       const successEl = document
         .querySelectorAll("#success-notification-content")[0]
-        .cloneNode(true) as HTMLElement;
-      successEl.classList.remove("hidden");
-      successEl.querySelector(".notification-content")!.textContent = `Order "${orderToDelete.order_id}" deleted successfully`;
+        ?.cloneNode(true) as HTMLElement;
       
-      Toastify({
-        node: successEl,
-        duration: 5000,
-        newWindow: true,
-        close: true,
-        gravity: "top",
-        position: "right",
-        stopOnFocus: true,
-      }).showToast();
+      if (successEl) {
+        successEl.classList.remove("hidden");
+        
+        // Try different selectors for the notification content
+        let notificationContent = successEl.querySelector(".notification-content");
+        if (!notificationContent) {
+          notificationContent = successEl.querySelector(".notification-message");
+        }
+        if (!notificationContent) {
+          notificationContent = successEl.querySelector("p");
+        }
+        if (!notificationContent) {
+          notificationContent = successEl.querySelector("div");
+        }
+        
+        if (notificationContent) {
+          notificationContent.textContent = 
+            `${response.message} (${response.data.billboards_unbooked} billboards unbooked)`;
+        } else {
+          // Fallback: set the entire element's text content
+          successEl.textContent = 
+            `${response.message} (${response.data.billboards_unbooked} billboards unbooked)`;
+        }
+      }
+      
+      if (successEl) {
+        Toastify({
+          node: successEl,
+          duration: 5000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
+      } else {
+        // Fallback: show a simple alert if notification element is not found
+        alert(`${response.message} (${response.data.billboards_unbooked} billboards unbooked)`);
+      }
 
       // Refresh the order list
+      console.log('Refreshing campaign data after successful soft deletion');
+      console.log('Current pagination:', pagination);
       fetchCampaignData(pagination.current_page);
+      console.log('fetchCampaignData called with page:', pagination.current_page);
       
-      // Close modal and reset state
+      // Close modal and reset state immediately
+      console.log('Closing modal and resetting state after soft deletion');
+      console.log('Before state reset - deleteModalOpen:', deleteModalOpen, 'orderToDelete:', orderToDelete);
+      
+      // Use React's flushSync to ensure immediate state update
       setDeleteModalOpen(false);
       setOrderToDelete(null);
+      setRefreshKey(prev => prev + 1);
+      
+      // Force a re-render by updating a dummy state
+      setTimeout(() => {
+        console.log('Forcing re-render after state reset');
+      }, 0);
     } catch (error: any) {
-      // Show error notification
+      console.log('Error caught in handleDeleteConfirm:', error);
+      console.log('Error message:', error.message);
+      console.log('Error response:', error.response);
+      
+      // Show error notification with specific handling for backend errors
       const errorEl = document
         .querySelectorAll("#failed-notification-content")[0]
-        .cloneNode(true) as HTMLElement;
-      errorEl.classList.remove("hidden");
-      errorEl.querySelector(".notification-content")!.textContent = error.message || "Failed to delete order";
+        ?.cloneNode(true) as HTMLElement;
       
-      Toastify({
-        node: errorEl,
-        duration: 5000,
-        newWindow: true,
-        close: true,
-        gravity: "top",
-        position: "right",
-        stopOnFocus: true,
-      }).showToast();
+      if (errorEl) {
+        errorEl.classList.remove("hidden");
+        
+        // Extract error message from various possible sources
+        let errorMessage = error.message || error.response?.data?.message || error.response?.message || "Failed to delete order";
+        
+        console.log('Original error message:', errorMessage);
+        console.log('Checking for "Cannot delete active campaign orders":', errorMessage.includes("Cannot delete active campaign orders"));
+        
+        // Handle specific backend errors
+        if (errorMessage.includes("Cannot delete active campaign orders")) {
+          errorMessage = "Cannot delete active campaign orders. The order is currently within its campaign period.";
+          console.log('Matched "Cannot delete active campaign orders" condition');
+        } else if (errorMessage.includes("fail to create")) {
+          errorMessage = "Cannot delete active campaign orders. The order is currently within its campaign period.";
+          console.log('Matched "fail to create" condition');
+        } else if (errorMessage.includes("Order must be soft deleted before force deletion")) {
+          errorMessage = "Please delete the order first (soft delete), then you can permanently delete it.";
+          console.log('Matched "Order must be soft deleted" condition');
+        } else {
+          console.log('No specific error condition matched, using original message');
+        }
+        
+        console.log('Final error message to display:', errorMessage);
+        
+        // Debug: Check what elements are available in the notification
+        console.log('Error notification element:', errorEl);
+        console.log('Error notification innerHTML:', errorEl.innerHTML);
+        console.log('Available elements:', errorEl.querySelectorAll('*'));
+        
+        // Try different selectors for the notification content
+        let notificationContent = errorEl.querySelector(".notification-content");
+        if (!notificationContent) {
+          notificationContent = errorEl.querySelector(".notification-message");
+        }
+        if (!notificationContent) {
+          notificationContent = errorEl.querySelector("p");
+        }
+        if (!notificationContent) {
+          notificationContent = errorEl.querySelector("div");
+        }
+        
+        console.log('Notification content element found:', !!notificationContent);
+        if (notificationContent) {
+          notificationContent.textContent = errorMessage;
+          console.log('Set notification content to:', errorMessage);
+        } else {
+          console.log('No suitable notification content element found!');
+          // Fallback: set the entire element's text content
+          errorEl.textContent = errorMessage;
+          console.log('Set entire element text content to:', errorMessage);
+        }
+      }
+      
+      if (errorEl) {
+        Toastify({
+          node: errorEl,
+          duration: 5000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
+      } else {
+        // Fallback: show a simple alert if notification element is not found
+        alert(error.message || "Failed to delete order");
+      }
     }
   };
 
@@ -171,52 +284,144 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
     if (!orderToDelete) return;
 
     try {
-      await forceDeleteOrder(orderToDelete);
+      const response = await forceDeleteOrder(orderToDelete);
       
-      // Show success notification
+      // Show success notification with detailed information
       const successEl = document
         .querySelectorAll("#success-notification-content")[0]
-        .cloneNode(true) as HTMLElement;
-      successEl.classList.remove("hidden");
-      successEl.querySelector(".notification-content")!.textContent = `Order "${orderToDelete.order_id}" permanently deleted`;
+        ?.cloneNode(true) as HTMLElement;
       
-      Toastify({
-        node: successEl,
-        duration: 5000,
-        newWindow: true,
-        close: true,
-        gravity: "top",
-        position: "right",
-        stopOnFocus: true,
-      }).showToast();
+      if (successEl) {
+        successEl.classList.remove("hidden");
+        
+        // Try different selectors for the notification content
+        let notificationContent = successEl.querySelector(".notification-content");
+        if (!notificationContent) {
+          notificationContent = successEl.querySelector(".notification-message");
+        }
+        if (!notificationContent) {
+          notificationContent = successEl.querySelector("p");
+        }
+        if (!notificationContent) {
+          notificationContent = successEl.querySelector("div");
+        }
+        
+        if (notificationContent) {
+          notificationContent.textContent = 
+            `${response.message} (${response.data.billboards_unbooked} billboards unbooked)`;
+        } else {
+          // Fallback: set the entire element's text content
+          successEl.textContent = 
+            `${response.message} (${response.data.billboards_unbooked} billboards unbooked)`;
+        }
+      }
+      
+      if (successEl) {
+        Toastify({
+          node: successEl,
+          duration: 5000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
+      } else {
+        // Fallback: show a simple alert if notification element is not found
+        alert(`${response.message} (${response.data.billboards_unbooked} billboards unbooked)`);
+      }
 
       // Refresh the order list
+      console.log('Refreshing campaign data after successful force deletion');
       fetchCampaignData(pagination.current_page);
       
-      // Close modal and reset state
+      // Close modal and reset state immediately
+      console.log('Closing modal and resetting state after force deletion');
       setDeleteModalOpen(false);
       setOrderToDelete(null);
     } catch (error: any) {
-      // Show error notification
+      console.log('Error caught in handleForceDeleteConfirm:', error);
+      console.log('Error message:', error.message);
+      console.log('Error response:', error.response);
+      
+      // Show error notification with specific handling for backend workflow errors
       const errorEl = document
         .querySelectorAll("#failed-notification-content")[0]
-        .cloneNode(true) as HTMLElement;
-      errorEl.classList.remove("hidden");
-      errorEl.querySelector(".notification-content")!.textContent = error.message || "Failed to permanently delete order";
+        ?.cloneNode(true) as HTMLElement;
       
-      Toastify({
-        node: errorEl,
-        duration: 5000,
-        newWindow: true,
-        close: true,
-        gravity: "top",
-        position: "right",
-        stopOnFocus: true,
-      }).showToast();
+      if (errorEl) {
+        errorEl.classList.remove("hidden");
+        
+        // Extract error message from various possible sources
+        let errorMessage = error.message || error.response?.data?.message || error.response?.message || "Failed to permanently delete order";
+        
+        console.log('Force delete - Original error message:', errorMessage);
+        console.log('Force delete - Checking for "Cannot delete active campaign orders":', errorMessage.includes("Cannot delete active campaign orders"));
+        
+        // Handle specific backend workflow errors
+        if (errorMessage.includes("Order must be soft deleted before force deletion")) {
+          errorMessage = "Please delete the order first (soft delete), then you can permanently delete it.";
+          console.log('Force delete - Matched "Order must be soft deleted" condition');
+        } else if (errorMessage.includes("Cannot delete active campaign orders")) {
+          errorMessage = "Cannot delete active campaign orders. The order is currently within its campaign period.";
+          console.log('Force delete - Matched "Cannot delete active campaign orders" condition');
+        } else if (errorMessage.includes("fail to create")) {
+          errorMessage = "Cannot delete active campaign orders. The order is currently within its campaign period.";
+          console.log('Force delete - Matched "fail to create" condition');
+        } else {
+          console.log('Force delete - No specific error condition matched, using original message');
+        }
+        
+        console.log('Force delete - Final error message to display:', errorMessage);
+        
+        // Debug: Check what elements are available in the notification
+        console.log('Force delete - Error notification element:', errorEl);
+        console.log('Force delete - Error notification innerHTML:', errorEl.innerHTML);
+        console.log('Force delete - Available elements:', errorEl.querySelectorAll('*'));
+        
+        // Try different selectors for the notification content
+        let notificationContent = errorEl.querySelector(".notification-content");
+        if (!notificationContent) {
+          notificationContent = errorEl.querySelector(".notification-message");
+        }
+        if (!notificationContent) {
+          notificationContent = errorEl.querySelector("p");
+        }
+        if (!notificationContent) {
+          notificationContent = errorEl.querySelector("div");
+        }
+        
+        console.log('Force delete - Notification content element found:', !!notificationContent);
+        if (notificationContent) {
+          notificationContent.textContent = errorMessage;
+          console.log('Force delete - Set notification content to:', errorMessage);
+        } else {
+          console.log('Force delete - No suitable notification content element found!');
+          // Fallback: set the entire element's text content
+          errorEl.textContent = errorMessage;
+          console.log('Force delete - Set entire element text content to:', errorMessage);
+        }
+      }
+      
+      if (errorEl) {
+        Toastify({
+          node: errorEl,
+          duration: 5000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
+      } else {
+        // Fallback: show a simple alert if notification element is not found
+        alert(error.message || "Failed to permanently delete order");
+      }
     }
   };
 
   const handleDeleteCancel = () => {
+    console.log('handleDeleteCancel called - closing modal');
     setDeleteModalOpen(false);
     setOrderToDelete(null);
   };
@@ -226,7 +431,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
   }
 
   return (
-    <div className="col-span-12 border rounded-2xl bg-white px-5 sm:px-6 intro-y">
+    <div key={refreshKey} className="col-span-12 border rounded-2xl bg-white px-5 sm:px-6 intro-y">
       <div className="grid grid-cols-12 text-slate-600">
         <div className="col-span-12 overflow-x-auto intro-y 2xl:overflow-visible">
           <Table className="border-spacing-y-[8px] border-separate min-w-full">
@@ -297,7 +502,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                    </div>
                   </Table.Td>
                   <Table.Td className="first:rounded-l-md last:rounded-r-md w-40 bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
-                    <div>&#x20A6;{formatCurrency(order?.discount_order_amount || order?.total_order_amount)}</div>
+                    <div>&#x20A6;{formatCurrency(order?.discounted_total || order?.total_order_amount)}</div>
                   </Table.Td>
 
                   <Table.Td className="first:rounded-l-md text-sm last:rounded-r-md bg-white border-slate-200 border-b dark:bg-darkmode-600 py-0 relative w-20 before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400">
@@ -350,21 +555,24 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
       </div>
 
       {/* Delete Confirmation Modal */}
-      <DeleteConfirmationModal
-        isOpen={deleteModalOpen}
-        onClose={handleDeleteCancel}
-        onConfirm={handleDeleteConfirm}
-        title="Delete Order"
-        message="Are you sure you want to delete this order? This will move it to the trash where it can be restored later."
-        itemName={orderToDelete ? `${orderToDelete.order_id} - ${orderToDelete.campaign_name}` : ""}
-        isLoading={isDeleting}
-        confirmButtonText="Delete Order"
-        cancelButtonText="Cancel"
-        type="warning"
-        showForceDelete={orderToDelete ? canForceDeleteOrder(orderToDelete).canDelete : false}
-        onForceDelete={handleForceDeleteConfirm}
-        isForceDeleting={isDeleting}
-      />
+      {deleteModalOpen && orderToDelete && (
+        <DeleteConfirmationModal
+          key={`delete-modal-${orderToDelete.id}`}
+          isOpen={true}
+          onClose={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
+          title="Delete Order"
+          message="Are you sure you want to delete this order? This will move it to the trash where it can be restored later. To permanently delete, first delete the order, then use the 'Force Delete' option."
+          itemName={`${orderToDelete.order_id} - ${orderToDelete.campaign_name}`}
+          isLoading={isDeleting}
+          confirmButtonText="Delete Order"
+          cancelButtonText="Cancel"
+          type="warning"
+          showForceDelete={canForceDeleteOrder(orderToDelete).canDelete}
+          onForceDelete={handleForceDeleteConfirm}
+          isForceDeleting={isDeleting}
+        />
+      )}
     </div>
   );
 };

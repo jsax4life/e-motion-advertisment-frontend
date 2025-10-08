@@ -19,7 +19,7 @@ interface Campaign {
     payment_option: string,
     media_purchase_order: string,
     total_order_amount: 0,
-    discount_order_amount: 0,
+    discounted_total: 0,
     description: string,
 }
 

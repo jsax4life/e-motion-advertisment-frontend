@@ -44,7 +44,7 @@ interface Order {
   payment_option: string;
   media_purchase_order: string;
   total_order_amount: number;
-  discount_order_amount: number;
+  discounted_total: number;
   payment_status: "pending" | "paid" | "overdue";
   // Add other fields as needed
 }
@@ -114,48 +114,116 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
     if (!orderToDelete) return;
 
     try {
-      await deleteOrder(orderToDelete);
+      const response = await deleteOrder(orderToDelete);
       
-      // Show success notification
+      // Show success notification with detailed information
       const successEl = document
         .querySelectorAll("#success-notification-content")[0]
-        .cloneNode(true) as HTMLElement;
-      successEl.classList.remove("hidden");
-      successEl.querySelector(".notification-content")!.textContent = `Order "${orderToDelete.order_id}" deleted successfully`;
+        ?.cloneNode(true) as HTMLElement;
       
-      Toastify({
-        node: successEl,
-        duration: 5000,
-        newWindow: true,
-        close: true,
-        gravity: "top",
-        position: "right",
-        stopOnFocus: true,
-      }).showToast();
+      if (successEl) {
+        successEl.classList.remove("hidden");
+        
+        // Try different selectors for the notification content
+        let notificationContent = successEl.querySelector(".notification-content");
+        if (!notificationContent) {
+          notificationContent = successEl.querySelector(".notification-message");
+        }
+        if (!notificationContent) {
+          notificationContent = successEl.querySelector("p");
+        }
+        if (!notificationContent) {
+          notificationContent = successEl.querySelector("div");
+        }
+        
+        if (notificationContent) {
+          notificationContent.textContent = 
+            `${response.message} (${response.data.billboards_unbooked} billboards unbooked)`;
+        } else {
+          // Fallback: set the entire element's text content
+          successEl.textContent = 
+            `${response.message} (${response.data.billboards_unbooked} billboards unbooked)`;
+        }
+      }
+      
+      if (successEl) {
+        Toastify({
+          node: successEl,
+          duration: 5000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
+      } else {
+        // Fallback: show a simple alert if notification element is not found
+        alert(`${response.message} (${response.data.billboards_unbooked} billboards unbooked)`);
+      }
 
       // Refresh the order list
+      console.log('Refreshing finance data after successful deletion');
       fetchFinanceData(pagination.current_page);
       
       // Close modal and reset state
+      console.log('Closing modal and resetting state after deletion');
       setDeleteModalOpen(false);
       setOrderToDelete(null);
     } catch (error: any) {
-      // Show error notification
+      // Show error notification with specific handling for backend workflow errors
       const errorEl = document
         .querySelectorAll("#failed-notification-content")[0]
-        .cloneNode(true) as HTMLElement;
-      errorEl.classList.remove("hidden");
-      errorEl.querySelector(".notification-content")!.textContent = error.message || "Failed to delete order";
+        ?.cloneNode(true) as HTMLElement;
       
-      Toastify({
-        node: errorEl,
-        duration: 5000,
-        newWindow: true,
-        close: true,
-        gravity: "top",
-        position: "right",
-        stopOnFocus: true,
-      }).showToast();
+      if (errorEl) {
+        errorEl.classList.remove("hidden");
+        
+        // Extract error message from various possible sources
+        let errorMessage = error.message || error.response?.data?.message || error.response?.message || "Failed to delete order";
+        
+        // Handle specific backend errors
+        if (errorMessage.includes("Cannot delete active campaign orders")) {
+          errorMessage = "Cannot delete active campaign orders. The order is currently within its campaign period.";
+        } else if (errorMessage.includes("fail to create")) {
+          errorMessage = "Cannot delete active campaign orders. The order is currently within its campaign period.";
+        } else if (errorMessage.includes("Order must be soft deleted before force deletion")) {
+          errorMessage = "Please delete the order first (soft delete), then you can permanently delete it.";
+        }
+        
+        // Try different selectors for the notification content
+        let notificationContent = errorEl.querySelector(".notification-content");
+        if (!notificationContent) {
+          notificationContent = errorEl.querySelector(".notification-message");
+        }
+        if (!notificationContent) {
+          notificationContent = errorEl.querySelector("p");
+        }
+        if (!notificationContent) {
+          notificationContent = errorEl.querySelector("div");
+        }
+        
+        if (notificationContent) {
+          notificationContent.textContent = errorMessage;
+        } else {
+          // Fallback: set the entire element's text content
+          errorEl.textContent = errorMessage;
+        }
+      }
+      
+      if (errorEl) {
+        Toastify({
+          node: errorEl,
+          duration: 5000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+        }).showToast();
+      } else {
+        // Fallback: show a simple alert if notification element is not found
+        alert(error.message || "Failed to delete order");
+      }
     }
   };
 
@@ -256,7 +324,7 @@ const DisplaySection: React.FC<DisplaySectionProps> = ({
                    </div>
                   </Table.Td>
                   <Table.Td className="first:rounded-l-md last:rounded-r-md w-40 bg-white border-b-1 dark:bg-darkmode-600 border-slate-200 border-b">
-                    <div>&#x20A6;{formatCurrency(order?.discount_order_amount || order?.total_order_amount)}</div>
+                    <div>&#x20A6;{formatCurrency(order?.discounted_total || order?.total_order_amount)}</div>
                   </Table.Td>
 
                   <Table.Td className="first:rounded-l-md text-sm last:rounded-r-md bg-white border-slate-200 border-b dark:bg-darkmode-600 py-0 relative w-20 before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400">

@@ -427,7 +427,7 @@ console.log(startDate, endDate)
 
              {/* All Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList}
+      <DisplayTable loading={loading} orderList={orderList.filter(order => !order.deleted_at)}
   pagination={pagination}
    setPagination={setPagination}
    fetchCampaignData={fetchOrderData}
@@ -437,7 +437,7 @@ console.log(startDate, endDate)
 
     {/* Running Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "delivered")}
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "delivered" && !order.deleted_at)}
       pagination={pagination}
       setPagination={setPagination}
       fetchCampaignData={fetchOrderData}
@@ -447,7 +447,7 @@ console.log(startDate, endDate)
 
     {/* Ended Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "end")}
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "end" && !order.deleted_at)}
       pagination={pagination}
       setPagination={setPagination}
       fetchCampaignData={fetchOrderData}
@@ -457,7 +457,7 @@ console.log(startDate, endDate)
 
     {/* Frozen Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "frozen")} 
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "frozen" && !order.deleted_at)} 
       pagination={pagination}
       setPagination={setPagination}
       fetchCampaignData={fetchOrderData}
@@ -467,7 +467,7 @@ console.log(startDate, endDate)
 
     {/* Finished Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "finished")} 
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.status === "finished" && !order.deleted_at)} 
       pagination={pagination}
       setPagination={setPagination}
       fetchCampaignData={fetchOrderData}

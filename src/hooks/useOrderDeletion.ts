@@ -9,16 +9,26 @@ interface Order {
   campaign_name: string;
   status: string;
   total_order_amount: number;
-  discount_order_amount: number;
+  discounted_total: number;
   deleted_at?: string | null;
+}
+
+interface DeletionResponse {
+  message: string;
+  data: {
+    order_id: number;
+    campaign_name: string;
+    deleted_at: string;
+    billboards_unbooked: number;
+  };
 }
 
 interface UseOrderDeletionReturn {
   isDeleting: boolean;
   isRestoring: boolean;
-  deleteOrder: (order: Order) => Promise<boolean>;
-  forceDeleteOrder: (order: Order) => Promise<boolean>;
-  restoreOrder: (order: Order) => Promise<boolean>;
+  deleteOrder: (order: Order) => Promise<DeletionResponse>;
+  forceDeleteOrder: (order: Order) => Promise<DeletionResponse>;
+  restoreOrder: (order: Order) => Promise<DeletionResponse>;
   canDeleteOrder: (order: Order) => { canDelete: boolean; reason?: string };
   canForceDeleteOrder: (order: Order) => { canDelete: boolean; reason?: string };
   canRestoreOrder: (order: Order) => { canRestore: boolean; reason?: string };
@@ -48,26 +58,28 @@ export const useOrderDeletion = (): UseOrderDeletionReturn => {
         reason: "This order has already been deleted."
       };
     }
+
+    // Note: Backend will validate if order is within active campaign period
+    // Frontend validation here would require campaign date comparison
+    // The backend error "Cannot delete active campaign orders" will be handled in the UI
     
     return { canDelete: true };
   };
 
   const canForceDeleteOrder = (order: Order): { canDelete: boolean; reason?: string } => {
-    // Force delete has stricter rules - only pending orders can be force deleted
-    const forceDeletableStatuses = ['pending'];
-    
-    if (!forceDeletableStatuses.includes(order.status.toLowerCase())) {
+    // Force delete requires the order to be soft deleted first
+    if (!order.deleted_at) {
       return {
         canDelete: false,
-        reason: `Cannot permanently delete orders with status "${order.status}". Only pending orders can be permanently deleted.`
+        reason: "Order must be soft deleted before force deletion. Use regular delete first."
       };
     }
 
-    // Check if order is already deleted
-    if (order.deleted_at) {
+    // Check if order is already permanently deleted (shouldn't happen, but safety check)
+    if (order.deleted_at && order.status === 'permanently_deleted') {
       return {
         canDelete: false,
-        reason: "This order has already been deleted."
+        reason: "Order is already permanently deleted"
       };
     }
     
@@ -86,7 +98,7 @@ export const useOrderDeletion = (): UseOrderDeletionReturn => {
     return { canRestore: true };
   };
 
-  const deleteOrder = async (order: Order): Promise<boolean> => {
+  const deleteOrder = async (order: Order): Promise<DeletionResponse> => {
     // Check if order can be deleted
     const { canDelete, reason } = canDeleteOrder(order);
     if (!canDelete) {
@@ -105,10 +117,11 @@ export const useOrderDeletion = (): UseOrderDeletionReturn => {
             deleted_at: new Date().toISOString(),
             reason: 'User initiated soft deletion'
           },
-          (response: any) => {
+          (response: DeletionResponse) => {
             console.log('Order soft deleted successfully:', response);
+            console.log('Setting isDeleting to false in success callback');
             setIsDeleting(false);
-            resolve(true);
+            resolve(response);
           },
           (error: any) => {
             console.error('Error soft deleting order:', error);
@@ -124,7 +137,7 @@ export const useOrderDeletion = (): UseOrderDeletionReturn => {
     }
   };
 
-  const forceDeleteOrder = async (order: Order): Promise<boolean> => {
+  const forceDeleteOrder = async (order: Order): Promise<DeletionResponse> => {
     // Check if order can be force deleted
     const { canDelete, reason } = canForceDeleteOrder(order);
     if (!canDelete) {
@@ -143,10 +156,10 @@ export const useOrderDeletion = (): UseOrderDeletionReturn => {
             deleted_at: new Date().toISOString(),
             reason: 'User initiated permanent deletion'
           },
-          (response: any) => {
+          (response: DeletionResponse) => {
             console.log('Order permanently deleted successfully:', response);
             setIsDeleting(false);
-            resolve(true);
+            resolve(response);
           },
           (error: any) => {
             console.error('Error permanently deleting order:', error);
@@ -162,7 +175,7 @@ export const useOrderDeletion = (): UseOrderDeletionReturn => {
     }
   };
 
-  const restoreOrder = async (order: Order): Promise<boolean> => {
+  const restoreOrder = async (order: Order): Promise<DeletionResponse> => {
     // Check if order can be restored
     const { canRestore, reason } = canRestoreOrder(order);
     if (!canRestore) {
@@ -181,10 +194,10 @@ export const useOrderDeletion = (): UseOrderDeletionReturn => {
             restored_at: new Date().toISOString(),
             reason: 'User initiated restoration'
           },
-          (response: any) => {
+          (response: DeletionResponse) => {
             console.log('Order restored successfully:', response);
             setIsRestoring(false);
-            resolve(true);
+            resolve(response);
           },
           (error: any) => {
             console.error('Error restoring order:', error);

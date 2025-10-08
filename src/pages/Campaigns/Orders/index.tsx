@@ -20,6 +20,7 @@ import OrderCreationModal from "./OrderCreationModal";
 import Notification from "../../../base-components/Notification";
 import Toastify from "toastify-js";
 import DisplaySection from "./DisplaySection";
+import DeletedOrdersSection from "./DeletedOrdersSection";
 import FilterChips from "../../../components/FilterChips";
 import OrderFilterModal from "./delivered/OrderFilterModal";
 
@@ -102,6 +103,24 @@ export default function Main() {
     per_page: 10,
     total: 0,
   });
+
+  // Separate pagination for Trash tab
+  const [trashPagination, setTrashPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+    per_page: 10,
+    total: 0,
+  });
+
+  // Reset trash pagination when switching to trash tab
+  const handleTrashTabClick = () => {
+    setTrashPagination({
+      current_page: 1,
+      last_page: 1,
+      per_page: 10,
+      total: 0,
+    });
+  };
 
   // console.log(vehicleList)
 
@@ -439,8 +458,8 @@ export default function Main() {
                   {/* <Lucide icon="Shield" className="w-4 h-4 mr-2" /> */}
                   <div>Pending</div>
 
-                  {orderList.filter(order => order.status === "pending").length > 0 && (
-                      <div className="bg-red-500 text-white rounded-full px-2 py-1">{orderList.filter(order => order.status === "pending").length}</div>
+                  {orderList.filter(order => order.status === "pending" && !order.deleted_at).length > 0 && (
+                      <div className="bg-red-500 text-white rounded-full px-2 py-1">{orderList.filter(order => order.status === "pending" && !order.deleted_at).length}</div>
                  )}
 
                 </Tab.Button>
@@ -456,6 +475,18 @@ export default function Main() {
                 <Tab.Button className="flex items-center  cursor-pointer">
                   {/* <Lucide icon="Lock" className="w-4 h-4 mr-2" />  */}
                   Delivered
+                </Tab.Button>
+              </Tab>
+              
+              <Tab fullWidth={false}>
+                <Tab.Button className="flex items-center cursor-pointer" onClick={handleTrashTabClick}>
+                  <Lucide icon="Trash2" className="w-4 h-4 mr-2" />
+                  Trash
+                  {orderList.filter(order => order.deleted_at).length > 0 && (
+                    <div className="bg-orange-500 text-white rounded-full px-2 py-1 ml-2">
+                      {orderList.filter(order => order.deleted_at).length}
+                    </div>
+                  )}
                 </Tab.Button>
               </Tab>
             </Tab.List>
@@ -485,7 +516,7 @@ export default function Main() {
             )}
 
             <Tab.Panel>
-              <DisplaySection loading={loading} orderList={orderList} 
+              <DisplaySection loading={loading} orderList={orderList.filter(order => !order.deleted_at)} 
               fetchCampaignData={fetchOrderData}
               pagination={pagination}
               setPagination={setPagination}
@@ -493,7 +524,7 @@ export default function Main() {
             </Tab.Panel>
 
             <Tab.Panel>
-              <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "pending")} 
+              <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "pending" && !order.deleted_at)} 
                  fetchCampaignData={fetchOrderData}
                  pagination={pagination}
                  setPagination={setPagination}
@@ -502,7 +533,7 @@ export default function Main() {
             </Tab.Panel>
 
             <Tab.Panel>
-            <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "approved")} 
+            <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "approved" && !order.deleted_at)} 
              fetchCampaignData={fetchOrderData}
              pagination={pagination}
              setPagination={setPagination}
@@ -510,11 +541,21 @@ export default function Main() {
             </Tab.Panel>
 
             <Tab.Panel>
-            <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "delivered")}
+            <DisplaySection loading={loading} orderList={orderList.filter(order => order.status === "delivered" && !order.deleted_at)}
              fetchCampaignData={fetchOrderData}
              pagination={pagination}
              setPagination={setPagination}
             />
+            </Tab.Panel>
+            
+            <Tab.Panel>
+              <DeletedOrdersSection 
+                loading={loading} 
+                orderList={orderList.filter(order => order.deleted_at)} 
+                fetchCampaignData={fetchOrderData}
+                pagination={trashPagination}
+                setPagination={setTrashPagination}
+              />
             </Tab.Panel>
 
           </Tab.Panels>

@@ -58,11 +58,11 @@ export const ErpDashboardOld = ({ top_clients, top_billboards, top_campaigns, it
 
 <AnalyticsCard
   title="Top Clients"
-  itemData={top_clients?.map((client: { id: any; company_name: any; logo: any; campaign_order_sum_total_order_amount: any; campaign_order_count: any; }) => ({
+  itemData={top_clients?.map((client: { id: any; company_name: any; logo: any; total_spent: any; campaign_order_count: any; }) => ({
     id: client.id,
     name: client.company_name,
     image: client.logo,
-    value: `₦${formatCurrency(client.campaign_order_sum_total_order_amount)}`,
+    value: `₦${formatCurrency(client.total_spent)}`,
     secondaryValue: `${client.campaign_order_count}`,
   }))}
   valueLabel="Total spent"

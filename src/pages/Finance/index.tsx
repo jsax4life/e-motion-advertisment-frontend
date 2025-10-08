@@ -366,7 +366,7 @@ if (filter === "Date") {
 
              {/* All Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList} 
+      <DisplayTable loading={loading} orderList={orderList.filter(order => !order.deleted_at)} 
         fetchFinanceData={fetchOrderData}
         pagination={pagination}
          setPagination={setPagination}
@@ -375,7 +375,7 @@ if (filter === "Date") {
 
     {/* paid Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.payment_status === "paid")} 
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.payment_status === "paid" && !order.deleted_at)} 
       fetchFinanceData={fetchOrderData}
       pagination={pagination}
        setPagination={setPagination}
@@ -384,7 +384,7 @@ if (filter === "Date") {
 
     {/* pending Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.payment_status === "pending")}
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.payment_status === "pending" && !order.deleted_at)}
       
       fetchFinanceData={fetchOrderData}
         pagination={pagination}
@@ -394,7 +394,7 @@ if (filter === "Date") {
 
     {/* overdue Campaigns */}
     <Tab.Panel>
-      <DisplayTable loading={loading} orderList={orderList.filter(order => order.payment_status === "overdue")} 
+      <DisplayTable loading={loading} orderList={orderList.filter(order => order.payment_status === "overdue" && !order.deleted_at)} 
       fetchFinanceData={fetchOrderData}
       pagination={pagination}
        setPagination={setPagination}

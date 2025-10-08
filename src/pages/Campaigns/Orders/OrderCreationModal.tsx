@@ -59,7 +59,7 @@ type OrderDetails = {
   payment_option: string;
   media_purchase_order: File | null;
   total_order_amount: number;
-  discount_order_amount: number;
+  discounted_total: number;
   description: string;
 };
 
@@ -208,7 +208,7 @@ const OrderCreationModal: React.FC<BillboardCreationModalProps> = ({
     payment_option: "",
     media_purchase_order: null,
     total_order_amount: 0,
-    discount_order_amount: 0,
+    discounted_total: 0,
     description: "",
   });
 
@@ -296,7 +296,7 @@ const OrderCreationModal: React.FC<BillboardCreationModalProps> = ({
   useEffect(() => {
     setOrderDetails((prev) => ({
       ...prev,
-      discount_order_amount: calculateTotalDiscountedAmount()
+      discounted_total: calculateTotalDiscountedAmount()
     }));
   }, [billboards]);
 
@@ -669,7 +669,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           }
         }, 0).toFixed(2)
       ),
-      discount_order_amount: parseFloat(
+      discounted_total: parseFloat(
         calculateTotalDiscountedAmount().toFixed(2)
       )
     };
@@ -692,7 +692,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       payment_option: "",
       media_purchase_order: null,
       total_order_amount: 0,
-      discount_order_amount: 0,
+      discounted_total: 0,
       description: "",
     });
 
@@ -1612,9 +1612,9 @@ console.log(selectedBillboard)
                 </FormLabel>
                 <FormInput
                   formInputSize="lg"
-                  id="discount_order_amount"
+                  id="discounted_total"
                   type="text"
-                  name="discount_order_amount"
+                  name="discounted_total"
                   readOnly
                   value={`₦${formatCurrency(calculateTotalDiscountedAmount())}`}
                   className="w-full text-sm border rounded bg-gray-100 cursor-not-allowed"
