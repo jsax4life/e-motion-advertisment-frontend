@@ -15,12 +15,16 @@ type BillboardItem = {
   vacant_billboard_space: any;
   total_digital_billboard_available: any;
   total_static_billboard_available: any;
+  total_lamp_pole_billboard_available: any;
 
   total_static_billboard_occupied: any;
   total_static_billboard_vacant: any;
 
   total_digital_billboard_occupied: any;
   total_digital_billboard_vacant: any;
+
+  total_lamp_pole_billboard_occupied: any;
+  total_lamp_pole_billboard_vacant: any;
 
   total_revenue: any,
   occupancy_percentage: any,
@@ -48,7 +52,7 @@ export const ErpDashboardOld = ({ top_clients, top_billboards, top_campaigns, it
 
           {/* Billboard Overview Section */}
           <div className="flex flex-col gap-6 w-full">
-            <BillboardOverviewSection totalBillboardSpace={itemData.total_billboard_space} totaldBillboardOccupied={itemData.occupied_billboards} totalBillboardVacant={itemData.vacant_billboard_space} totalStaticOccupied={itemData.total_static_billboard_occupied}  totalDigitalOccupied={itemData.total_digital_billboard_occupied} totalStaticVacant={itemData.total_static_billboard_vacant}  totalDigitalVacant={itemData.total_digital_billboard_vacant} postpaid={itemData.postpaid}  totalRevenue={itemData.total_revenue} upfront={itemData.upfront}  occupancyPercentage={itemData.occupancy_percentage}  totalDigitalAvailable={itemData.total_digital_billboard_available} totalStaticAvailable={itemData.total_static_billboard_available} />
+            <BillboardOverviewSection totalBillboardSpace={itemData.total_billboard_space} totaldBillboardOccupied={itemData.occupied_billboards} totalBillboardVacant={itemData.vacant_billboard_space} totalStaticOccupied={itemData.total_static_billboard_occupied}  totalDigitalOccupied={itemData.total_digital_billboard_occupied} totalLampPoleOccupied={itemData.total_lamp_pole_billboard_occupied} totalStaticVacant={itemData.total_static_billboard_vacant}  totalDigitalVacant={itemData.total_digital_billboard_vacant} totalLampPoleVacant={itemData.total_lamp_pole_billboard_vacant} postpaid={itemData.postpaid}  totalRevenue={itemData.total_revenue} upfront={itemData.upfront}  occupancyPercentage={itemData.occupancy_percentage}  totalDigitalAvailable={itemData.total_digital_billboard_available} totalStaticAvailable={itemData.total_static_billboard_available} totalLampPoleAvailable={itemData.total_lamp_pole_billboard_available} />
 
             {/* Three Column Layout */}
           

@@ -206,12 +206,16 @@ console.log(params)
 
   total_digital_billboard_available: occupancy?.total?.digital,
   total_static_billboard_available: occupancy?.total?.static,
+  total_lamp_pole_billboard_available: occupancy?.total?.lamp_pole,
 
   total_static_billboard_occupied: occupancy?.occupied?.static,
   total_static_billboard_vacant: occupancy?.vacant?.static,
 
   total_digital_billboard_occupied: occupancy?.occupied?.digital,
   total_digital_billboard_vacant: occupancy?.vacant?.digital,
+
+  total_lamp_pole_billboard_occupied: occupancy?.occupied?.lamp_pole,
+  total_lamp_pole_billboard_vacant: occupancy?.vacant?.lamp_pole,
 total_revenue: revenue?.total,
 upfront: revenue?.upfront,
 occupancy_percentage: occupancy?.occupancy_percentage

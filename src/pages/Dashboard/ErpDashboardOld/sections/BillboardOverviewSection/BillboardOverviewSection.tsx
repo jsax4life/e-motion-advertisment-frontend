@@ -17,17 +17,20 @@ type items = {
   totalBillboardVacant: string | number,
   totalStaticAvailable: string | number,
   totalDigitalAvailable: string | number,
+  totalLampPoleAvailable: string | number,
   totalStaticOccupied: string | number,
   totalStaticVacant:  string | number,
   totalDigitalOccupied:  string | number,
   totalDigitalVacant:  string | number,
+  totalLampPoleOccupied: string | number,
+  totalLampPoleVacant: string | number,
   
   occupancyPercentage: number,
 
 }
 
 
-export const BillboardOverviewSection = ({totalRevenue, upfront, postpaid, totalBillboardSpace, totalDigitalAvailable,  totalStaticAvailable, totalDigitalOccupied, totalStaticOccupied, totalStaticVacant, totalDigitalVacant,  totaldBillboardOccupied, totalBillboardVacant, occupancyPercentage}: items): JSX.Element => {
+export const BillboardOverviewSection = ({totalRevenue, upfront, postpaid, totalBillboardSpace, totalDigitalAvailable,  totalStaticAvailable, totalLampPoleAvailable, totalDigitalOccupied, totalStaticOccupied, totalLampPoleOccupied, totalStaticVacant, totalDigitalVacant, totalLampPoleVacant,  totaldBillboardOccupied, totalBillboardVacant, occupancyPercentage}: items): JSX.Element => {
   // Data for revenue cards
   const revenueCards = [
     {
@@ -79,18 +82,21 @@ export const BillboardOverviewSection = ({totalRevenue, upfront, postpaid, total
       title: 'Billboard Space Breakdown',
       digital: totalDigitalAvailable,
       static: totalStaticAvailable,
+      lampPole: totalLampPoleAvailable,
     },
     {
       id: 1,
       title: 'Occupied Billboards Breakdown',
       digital: totalDigitalOccupied,
       static: totalStaticOccupied,
+      lampPole: totalLampPoleOccupied,
     },
     {
       id: 2,
       title: 'Vacant Billboards Breakdown',
       digital: totalDigitalVacant,
       static: totalStaticVacant,
+      lampPole: totalLampPoleVacant,
     },
   ];
   
@@ -101,7 +107,7 @@ export const BillboardOverviewSection = ({totalRevenue, upfront, postpaid, total
     <>
   
 
-                    {tooltipData.map(({ id, title,  digital, static: staticValue }) => (
+                    {tooltipData.map(({ id, title,  digital, static: staticValue, lampPole }) => (
   <div key={id} className="tooltip-content">
     <TippyContent to={`chart-tooltip-${id}`} className="py-1">
       <div className="font-medium dark:text-slate-200 border-b border-slate-300 mb-2">
@@ -118,6 +124,12 @@ export const BillboardOverviewSection = ({totalRevenue, upfront, postpaid, total
           Static:
           <span className="ml-auto font-medium text-success">
             {staticValue}
+          </span>
+        </div>
+        <div className="flex w-20 mr-2 dark:text-slate-400">
+          Lamp Pole:
+          <span className="ml-auto font-medium text-success">
+            {lampPole}
           </span>
         </div>
         <div className="w-24 sm:w-32 lg:w-56" />

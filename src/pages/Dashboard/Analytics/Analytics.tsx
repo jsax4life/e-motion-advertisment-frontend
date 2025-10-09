@@ -1,8 +1,4 @@
-import React from 'react'
-import { Menu } from '../../../base-components/Headless'
-import Lucide from '../../../base-components/Lucide'
-import Avatar from "../../../assets/images/Avatar.png"
-import ClientItem from '../AnalyticsItem'
+
 import AnalyticsItem from './AnalyticsItem'
 
 type items = {
