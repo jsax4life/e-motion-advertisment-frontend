@@ -61,6 +61,9 @@ interface Campaign {
   total_order_amount: number;
   discounted_total: number;
   description: string;
+  excluded_days?: string[];
+  cherry_picked_dates?: string[];
+  date_selection_mode?: "exclude" | "cherry-pick";
 
   payment_option: string;
   media_purchase_order: string;
@@ -131,6 +134,11 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
     totalHoles: 1,
     selectedHoles: [] as number[]
   });
+
+  // State for excluded days
+  const [excludedDays, setExcludedDays] = useState<string[]>([]);
+  const [dateSelectionMode, setDateSelectionMode] = useState<"exclude" | "cherry-pick">("exclude");
+  const [cherryPickedDates, setCherryPickedDates] = useState<string[]>([]);
 
   // Filtered billboards based on search term
   const filteredBillboards = availableBillboards?.filter((billboard: any) => {
@@ -218,6 +226,17 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
         description: orderToEdit.description,
         status: orderToEdit.status,
       });
+
+      // Initialize date selection mode and data
+      if (orderToEdit.date_selection_mode) {
+        setDateSelectionMode(orderToEdit.date_selection_mode);
+      }
+      if (orderToEdit.excluded_days) {
+        setExcludedDays(orderToEdit.excluded_days);
+      }
+      if (orderToEdit.cherry_picked_dates) {
+        setCherryPickedDates(orderToEdit.cherry_picked_dates);
+      }
 
       // Initialize existing billboards with discount fields
       const initializedBillboards = orderToEdit.billboards.map(billboard => ({
@@ -742,6 +761,71 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
   // console.log(billboards);
 
   // console.log(newlyAddedBillboards);
+
+  // Helper function to format date as YYYY-MM-DD
+  const formatDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Helper function to get all dates in range
+  const getDatesInRange = (start: string, end: string): string[] => {
+    const dates: string[] = [];
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+      dates.push(formatDate(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return dates;
+  };
+
+  // Toggle date selection in cherry-pick mode
+  const toggleDateSelection = (date: string) => {
+    if (cherryPickedDates.includes(date)) {
+      setCherryPickedDates(cherryPickedDates.filter(d => d !== date));
+    } else {
+      setCherryPickedDates([...cherryPickedDates, date].sort());
+    }
+  };
+
+  // Get calendar month data
+  const getCalendarData = () => {
+    const startDate = orderDetails.campaign_start_date;
+    const endDate = orderDetails.campaign_end_date;
+    
+    if (!startDate || !endDate) return { months: [], allDates: [] };
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const dates = getDatesInRange(startDate, endDate);
+
+    // Get all unique months in range
+    const months: { month: number; year: number; dates: string[] }[] = [];
+    const current = new Date(start);
+
+    while (current <= end) {
+      const month = current.getMonth();
+      const year = current.getFullYear();
+
+      // Get dates for this month
+      const monthDates = dates.filter(d => {
+        const dDate = new Date(d);
+        return dDate.getMonth() === month && dDate.getFullYear() === year;
+      });
+
+      months.push({ month, year, dates: monthDates });
+      current.setMonth(current.getMonth() + 1);
+    }
+
+    return { months, allDates: dates };
+  };
+
   // handdle submit order
   const handleSubmitOrder = async (data: any) => {
     console.log(orderDetails);
@@ -782,6 +866,9 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
     const payload = {
       ...orderDetails,
       billboards: allBillboards,
+      excluded_days: dateSelectionMode === "exclude" ? excludedDays : [],
+      cherry_picked_dates: dateSelectionMode === "cherry-pick" ? cherryPickedDates : [],
+      date_selection_mode: dateSelectionMode,
       id: orderToEdit?.id, // Include the order edited
       total_order_amount: allBillboards.reduce((acc, item) => {
         // For lamp pole bulk selections, use total_campaign_amount
@@ -807,6 +894,9 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
     setBillboards([]);
     setNewlyAddedBillboards([]);
     setUsedSlotsFaces({});
+    setExcludedDays([]);
+    setCherryPickedDates([]);
+    setDateSelectionMode("exclude");
     setOrderDetails({
       client_id: "",
       campaign_name: "",
@@ -923,6 +1013,190 @@ const OrderEditingModal: React.FC<OrderCreationModalProps> = ({
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Date Selection Mode Section */}
+              <div className="col-span-12">
+                <FormLabel className="font-medium lg:text-[16px] text-black mb-3 block">
+                  Campaign Date Selection (Optional)
+                </FormLabel>
+                
+                {/* Mode Toggle */}
+                <div className="mb-4 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDateSelectionMode("exclude");
+                      setCherryPickedDates([]);
+                    }}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      dateSelectionMode === "exclude"
+                        ? "bg-customColor text-white"
+                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    Exclude Days of Week
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDateSelectionMode("cherry-pick");
+                      setExcludedDays([]);
+                    }}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      dateSelectionMode === "cherry-pick"
+                        ? "bg-customColor text-white"
+                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    Cherry-Pick Dates
+                  </button>
+                </div>
+
+                {/* Exclude Days Mode */}
+                {dateSelectionMode === "exclude" && (
+                  <div className="p-3 border border-slate-200 rounded-lg bg-slate-50">
+                    <p className="text-xs text-slate-600 mb-2">
+                      Select days to exclude (e.g., weekends)
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { value: 'sunday', label: 'Sun' },
+                        { value: 'monday', label: 'Mon' },
+                        { value: 'tuesday', label: 'Tue' },
+                        { value: 'wednesday', label: 'Wed' },
+                        { value: 'thursday', label: 'Thu' },
+                        { value: 'friday', label: 'Fri' },
+                        { value: 'saturday', label: 'Sat' },
+                      ].map((day) => (
+                        <label
+                          key={day.value}
+                          className="flex items-center space-x-1.5 cursor-pointer hover:bg-slate-100 px-2 py-1.5 rounded transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={excludedDays.includes(day.value)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setExcludedDays([...excludedDays, day.value]);
+                              } else {
+                                setExcludedDays(excludedDays.filter(d => d !== day.value));
+                              }
+                            }}
+                            className="rounded border-slate-300 text-customColor focus:ring-customColor"
+                          />
+                          <span className="text-xs text-slate-700">{day.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cherry-Pick Mode */}
+                {dateSelectionMode === "cherry-pick" && (
+                  <div className="p-4 border border-slate-200 rounded-lg bg-slate-50">
+                    {!orderDetails.campaign_start_date || !orderDetails.campaign_end_date ? (
+                      <p className="text-xs text-slate-500 text-center py-4">
+                        Campaign dates are required to cherry-pick dates
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-xs text-slate-600 mb-3">
+                          Click on dates to select/deselect. Selected: {cherryPickedDates.length} day{cherryPickedDates.length !== 1 ? 's' : ''}
+                        </p>
+                        <div className="overflow-x-auto">
+                          <div className="flex gap-4 min-w-max">
+                            {getCalendarData().months.map((monthData, idx) => {
+                              const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                              const firstDate = new Date(monthData.year, monthData.month, 1);
+                              const lastDate = new Date(monthData.year, monthData.month + 1, 0);
+                              const firstDayOfWeek = firstDate.getDay();
+                              const daysInMonth = lastDate.getDate();
+                              
+                              // Get all dates in this month that are in range
+                              const datesInMonth = monthData.dates;
+                              
+                              return (
+                                <div key={`${monthData.year}-${monthData.month}`} className="min-w-[280px]">
+                                  <div className="text-center font-semibold text-sm mb-2 text-slate-700">
+                                    {monthNames[monthData.month]} {monthData.year}
+                                  </div>
+                                  <div className="grid grid-cols-7 gap-1">
+                                    {/* Day headers */}
+                                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                                      <div key={day} className="text-center text-xs font-medium text-slate-500 py-1">
+                                        {day}
+                                      </div>
+                                    ))}
+                                    
+                                    {/* Empty cells for days before month starts */}
+                                    {Array.from({ length: firstDayOfWeek }).map((_, i) => (
+                                      <div key={`empty-${i}`} className="h-8"></div>
+                                    ))}
+                                    
+                                    {/* Days of the month */}
+                                    {Array.from({ length: daysInMonth }).map((_, i) => {
+                                      const day = i + 1;
+                                      const dateStr = formatDate(new Date(monthData.year, monthData.month, day));
+                                      const isInRange = datesInMonth.includes(dateStr);
+                                      const isSelected = cherryPickedDates.includes(dateStr);
+                                      
+                                      return (
+                                        <button
+                                          key={day}
+                                          type="button"
+                                          onClick={() => {
+                                            if (isInRange) {
+                                              toggleDateSelection(dateStr);
+                                            }
+                                          }}
+                                          disabled={!isInRange}
+                                          className={`h-8 w-8 rounded text-xs transition-colors ${
+                                            !isInRange
+                                              ? 'text-slate-300 cursor-not-allowed'
+                                              : isSelected
+                                              ? 'bg-customColor text-white hover:bg-customColor/90'
+                                              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                                          }`}
+                                        >
+                                          {day}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        {cherryPickedDates.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-slate-200">
+                            <p className="text-xs text-slate-600 mb-1">Quick Actions:</p>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const allDates = getDatesInRange(orderDetails.campaign_start_date, orderDetails.campaign_end_date);
+                                  setCherryPickedDates(allDates);
+                                }}
+                                className="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                              >
+                                Select All
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setCherryPickedDates([])}
+                                className="text-xs px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                              >
+                                Clear All
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
 
               <Disclosure.Group variant="boxed">
