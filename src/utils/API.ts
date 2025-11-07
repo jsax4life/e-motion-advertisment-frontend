@@ -74,9 +74,9 @@ import { useNavigate } from "react-router-dom";
 
 
 const API = (method: any, url: any, data: any, callback: any, failback: any, token: any) => {
-    const api = 'http://127.0.0.1:8000/api/admin/';
+    // const api = 'http://127.0.0.1:8000/api/admin/';
         // const api = 'http://159.223.1.96/api/user/';
-    //  const api = 'https://api.loatsadpromomedia.com/api/admin/';
+     const api = 'https://api.loatsadpromomedia.com/api/admin/';
         // const api = 'https://lostardapi.lagrev.net/api/admin/';
     
 
@@ -89,6 +89,8 @@ const API = (method: any, url: any, data: any, callback: any, failback: any, tok
     }
 
     // Check if FormData is being used
+
+    
     const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
 
     console.log(isFormData);

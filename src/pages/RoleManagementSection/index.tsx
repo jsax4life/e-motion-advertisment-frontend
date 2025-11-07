@@ -177,13 +177,6 @@ campaign_delivered_notification : 8,
 campaign_creation_notification: 9
 };
 
-// const initialPrivileges = roles.reduce((acc, role) => {
-//   acc[role] = privileges.reduce((roleAcc, privilege) => {
-//     roleAcc[privilege] = false;
-//     return roleAcc;
-//   }, {} as Record<Privilege, boolean>);
-//   return acc;
-// }, {} as Record<Role, Record<Privilege, boolean>>);
 
 const initialPrivileges = (
   roles: Role[]
