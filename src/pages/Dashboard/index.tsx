@@ -235,7 +235,7 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
   // Check if numberOfRegistrations is valid
   if (!numberOfRegistrations || isNaN(numberOfRegistrations)) {
     return {
-      dailySiitechRevenue: 0,
+      dailyEmotionRevenue: 0,
       dailMoTRevenue: 0,
     };
   }
@@ -245,7 +245,7 @@ const revenueBreakdown = ({ numberOfRegistrations }: { numberOfRegistrations: nu
   const motTotal = numberOfRegistrations * motSharePerVehicle;
 
   const revenueDailyShare = {
-    dailySiitechRevenue: companyTotal,
+    dailyEmotionRevenue: companyTotal,
     dailMoTRevenue: motTotal,
   };
 

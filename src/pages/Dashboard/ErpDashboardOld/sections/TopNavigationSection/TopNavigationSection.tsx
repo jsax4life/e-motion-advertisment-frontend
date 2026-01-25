@@ -21,7 +21,7 @@ export const TopNavigationSection = (): JSX.Element => {
             />
           </div>
           <div className="font-bold text-[#151522] text-[22.4px] leading-[29.2px]">
-            Siitech
+            E-motion
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 import { useState, Fragment, useEffect, useContext, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useCallback } from "react";
 import Lucide from "../../base-components/Lucide";
-import LagoslogoUrl from "../../assets/images/logo.png";
+import LagoslogoUrl from "../../assets/images/emotion-logo.jpeg";
 import { Link } from "react-router-dom";
 import { FormInput } from "../../base-components/Form";
 import { Menu, Popover } from "../../base-components/Headless";
@@ -197,7 +197,7 @@ function Main() {
               className="w-6"
               src={LagoslogoUrl}
             />
-            <span className="ml-3 text-lg text-primary"> Lagrev </span>
+            <span className="ml-3 text-lg text-primary"> E-motion </span>
           </Link> */}
 
           <Link
@@ -209,18 +209,9 @@ function Main() {
           >
             <img
               alt="Enigma Tailwind HTML Admin Template"
-              className="w-6"
+              className="h-10 w-auto"
               src={LagoslogoUrl}
             />
-            <span
-              className={clsx([
-                "ml-3 text-2xl font-bold text-black hidden md:block",
-                
-              ])}
-            >
-              {" "}
-              Siitech{" "}
-            </span>
             
           </Link>
 

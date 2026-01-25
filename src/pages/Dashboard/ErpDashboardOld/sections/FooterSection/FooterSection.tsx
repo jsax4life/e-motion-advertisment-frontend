@@ -13,7 +13,7 @@ export const FooterSection = (): JSX.Element => {
         <div className="flex items-center justify-between">
           <div className="font-description text-sm">
             <span className="text-neutralneutral-400-day">© 2025 - </span>
-            <span className="text-brandbrand-1">Siitech</span>
+            <span className="text-brandbrand-1">E-motion</span>
             <span className="text-neutralneutral-400-day"> ERP Dashboard</span>
           </div>
 

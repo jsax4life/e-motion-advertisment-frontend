@@ -8,7 +8,7 @@ import billboard from "../../assets/images/billboard.png";
 
 import clsx from "clsx";
 
-import Logo from "../../assets/images/logo.png";
+import Logo from "../../assets/images/emotion-logo.jpeg";
 import Notification from "../../base-components/Notification";
 import Lucide from "../../base-components/Lucide";
 import LoadingIcon from "../../base-components/LoadingIcon";

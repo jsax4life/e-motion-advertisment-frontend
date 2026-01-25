@@ -12,7 +12,7 @@ const toRGB = (value) => {
 const brand = process.env.BRAND || "emotion";
 console.log(brand);
 
-const customColor = brand === "loatsard" ? "#B11F15" : "#2775FF"; // red or default blue
+const customColor =  "#2775FF"; 
 
 
 

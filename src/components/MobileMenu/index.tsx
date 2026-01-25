@@ -14,7 +14,7 @@ import { useAppSelector } from "../../stores/hooks";
 import { FormattedMenu, nestedMenu } from "../../layouts/SideMenu/side-menu";
 import { linkTo, enter, leave } from "./mobile-menu";
 import Lucide from "../../base-components/Lucide";
-import logoUrl from "../../assets/images/logo.svg";
+import logoUrl from "../../assets/images/emotion-logo.jpeg";
 import clsx from "clsx";
 import SimpleBar from "simplebar";
 import { UserContext } from "../../stores/UserContext";
@@ -76,7 +76,7 @@ function Main() {
         <div className="h-[70px] px-3 sm:px-8 flex items-center">
           <a href="" className="flex mr-auto">
             <img
-              alt="lostard"
+              alt="E-motion"
               className="w-6"
               src={logoUrl}
             />
