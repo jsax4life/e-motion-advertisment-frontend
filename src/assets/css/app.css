@@ -71,3 +71,15 @@
 @import "./components/_litepicker.css";
 @import "./components/_full-calendar.css";
 @import "./components/_tabulator.css";
+
+
+/* Hide number input spinner buttons */
+input[type="number"].no-spinner::-webkit-inner-spin-button,
+input[type="number"].no-spinner::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"].no-spinner {
+  -moz-appearance: textfield;
+}

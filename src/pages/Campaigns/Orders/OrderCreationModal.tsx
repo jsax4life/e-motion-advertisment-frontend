@@ -1625,6 +1625,7 @@ console.log(selectedBillboard)
                     type="number"
                     value={billboard.discount_amount || 0}
                     onChange={(e) => handleBillboardDiscountChange(index, "discount_amount", parseFloat(e.target.value) || 0)}
+                    onFocus={(e) => e.target.select()}
                     placeholder="0"
                     className="text-xs border border-slate-300 rounded px-2 py-1 flex-1"
                     min="0"

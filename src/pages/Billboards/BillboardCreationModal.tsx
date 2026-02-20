@@ -1072,7 +1072,7 @@ console.log(formData);
                       }
                     },
                   })}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded no-spinner"
                   disabled={formData.billboardType === 'lamp_pole'}
                 />
                 {formData.billboardType === 'lamp_pole' && (
